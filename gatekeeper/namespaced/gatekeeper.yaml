@@ -1,0 +1,364 @@
+---
+# Source: gatekeeper/templates/gatekeeper-critical-pods-resourcequota.yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-critical-pods
+spec:
+  hard:
+    pods: 100
+  scopeSelector:
+    matchExpressions:
+      - operator: In
+        scopeName: PriorityClass
+        values:
+          - system-cluster-critical
+          - system-cluster-critical
+---
+# Source: gatekeeper/templates/gatekeeper-controller-manager-poddisruptionbudget.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-controller-manager
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: 'gatekeeper'
+      chart: 'gatekeeper'
+      control-plane: controller-manager
+      gatekeeper.sh/operation: webhook
+      gatekeeper.sh/system: "yes"
+      heritage: 'Helm'
+      release: 'gatekeeper'
+---
+# Source: gatekeeper/templates/gatekeeper-admin-serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-admin
+---
+# Source: gatekeeper/templates/gatekeeper-webhook-server-cert-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  annotations: {}
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-webhook-server-cert
+---
+# Source: gatekeeper/templates/gatekeeper-manager-role-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-manager-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+# Source: gatekeeper/templates/gatekeeper-webhook-service-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-webhook-service
+spec:
+  ports:
+    - port: 443
+      targetPort: webhook-server
+  selector:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    control-plane: controller-manager
+    gatekeeper.sh/operation: webhook
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+---
+# Source: gatekeeper/templates/gatekeeper-audit-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    control-plane: audit-controller
+    gatekeeper.sh/operation: audit
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-audit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: 'gatekeeper'
+      chart: 'gatekeeper'
+      control-plane: audit-controller
+      gatekeeper.sh/operation: audit
+      gatekeeper.sh/system: "yes"
+      heritage: 'Helm'
+      release: 'gatekeeper'
+  template:
+    metadata:
+      annotations:
+        container.seccomp.security.alpha.kubernetes.io/manager: runtime/default
+      labels:
+        app: 'gatekeeper'
+        chart: 'gatekeeper'
+        control-plane: audit-controller
+        gatekeeper.sh/operation: audit
+        gatekeeper.sh/system: "yes"
+        heritage: 'Helm'
+        release: 'gatekeeper'
+    spec:
+      affinity: {}
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - --audit-interval=60
+            - --log-level=INFO
+            - --constraint-violations-limit=20
+            - --audit-from-cache=false
+            - --audit-chunk-size=0
+            - --audit-match-kind-only=false
+            - --emit-audit-events=false
+            - --operation=audit
+            - --operation=status
+            - --logtostderr
+            - --health-addr=:9090
+            - --prometheus-port=8888
+          command:
+            - /manager
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          image: 'openpolicyagent/gatekeeper:v3.6.0'
+          imagePullPolicy: 'IfNotPresent'
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9090
+          name: manager
+          ports:
+            - containerPort: 8888
+              name: metrics
+              protocol: TCP
+            - containerPort: 9090
+              name: healthz
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 9090
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+            readOnlyRootFilesystem: true
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 1000
+      hostNetwork: false
+      imagePullSecrets: []
+      nodeSelector:
+        kubernetes.io/os: linux
+      priorityClassName: system-cluster-critical
+      serviceAccountName: gatekeeper-admin
+      terminationGracePeriodSeconds: 60
+      tolerations: []
+---
+# Source: gatekeeper/templates/gatekeeper-controller-manager-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    control-plane: controller-manager
+    gatekeeper.sh/operation: webhook
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-controller-manager
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: 'gatekeeper'
+      chart: 'gatekeeper'
+      control-plane: controller-manager
+      gatekeeper.sh/operation: webhook
+      gatekeeper.sh/system: "yes"
+      heritage: 'Helm'
+      release: 'gatekeeper'
+  template:
+    metadata:
+      annotations:
+        container.seccomp.security.alpha.kubernetes.io/manager: runtime/default
+      labels:
+        app: 'gatekeeper'
+        chart: 'gatekeeper'
+        control-plane: controller-manager
+        gatekeeper.sh/operation: webhook
+        gatekeeper.sh/system: "yes"
+        heritage: 'Helm'
+        release: 'gatekeeper'
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: gatekeeper.sh/operation
+                      operator: In
+                      values:
+                        - webhook
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      automountServiceAccountToken: true
+      containers:
+        - args:
+            - --port=8443
+            - --health-addr=:9090
+            - --prometheus-port=8888
+            - --logtostderr
+            - --log-denies=false
+            - --emit-admission-events=false
+            - --log-level=INFO
+            - --exempt-namespace=default
+            - --operation=webhook
+            - --enable-mutation=false
+          command:
+            - /manager
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          image: 'openpolicyagent/gatekeeper:v3.6.0'
+          imagePullPolicy: 'IfNotPresent'
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9090
+          name: manager
+          ports:
+            - containerPort: 8443
+              name: webhook-server
+              protocol: TCP
+            - containerPort: 8888
+              name: metrics
+              protocol: TCP
+            - containerPort: 9090
+              name: healthz
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 9090
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - all
+            readOnlyRootFilesystem: true
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /certs
+              name: cert
+              readOnly: true
+      hostNetwork: false
+      imagePullSecrets: []
+      nodeSelector:
+        kubernetes.io/os: linux
+      priorityClassName: system-cluster-critical
+      serviceAccountName: gatekeeper-admin
+      terminationGracePeriodSeconds: 60
+      tolerations: []
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: gatekeeper-webhook-server-cert
