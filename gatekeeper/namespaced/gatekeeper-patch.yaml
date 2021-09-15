@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatekeeper-audit
+spec:
+  template:
+    spec:
+      containers:
+        - name: manager
+          args:
+            # Args from the upstream
+            - --audit-interval=60
+            - --log-level=INFO
+            - --constraint-violations-limit=20
+            - --audit-from-cache=false
+            - --emit-audit-events=false
+            - --operation=audit
+            - --operation=status
+            - --logtostderr
+            # Args added by us to reduce memory footprint by only requesting
+            # kinds we have constraints for and limting the chunk size.
+            - --audit-match-kind-only=true
+            - --audit-chunk-size=500
+          resources:
+            limits:
+              cpu: 2500m
+              memory: 1000Mi
+            requests:
+              cpu: 200m
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatekeeper-controller-manager
+spec:
+  template:
+    spec:
+      containers:
+        - name: manager
+          args:
+            - --port=8443
+            - --logtostderr
+            - --log-denies=false
+            - --emit-admission-events=false
+            - --log-level=INFO
+            - --exempt-namespace=$(POD_NAMESPACE)
+            - --operation=webhook
+            - --enable-mutation=false
+            - --disable-cert-rotation
+          resources:
+            limits:
+              cpu: 6000m
+              memory: 4000Mi
+            requests:
+              cpu: 200m
