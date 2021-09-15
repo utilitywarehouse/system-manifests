@@ -1,5 +1,28 @@
+---
+# Source: gatekeeper/templates/gatekeeper-critical-pods-resourcequota.yaml
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  labels:
+    app: 'gatekeeper'
+    chart: 'gatekeeper'
+    gatekeeper.sh/system: "yes"
+    heritage: 'Helm'
+    release: 'gatekeeper'
+  name: gatekeeper-critical-pods
+spec:
+  hard:
+    pods: 100
+  scopeSelector:
+    matchExpressions:
+      - operator: In
+        scopeName: PriorityClass
+        values:
+          - system-cluster-critical
+          - system-cluster-critical
+---
 # Source: gatekeeper/templates/gatekeeper-controller-manager-poddisruptionbudget.yaml
-apiVersion: policy/v1beta1
+apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   labels:
@@ -93,7 +116,7 @@ metadata:
 spec:
   ports:
     - port: 443
-      targetPort: 8443
+      targetPort: webhook-server
   selector:
     app: 'gatekeeper'
     chart: 'gatekeeper'
@@ -149,10 +172,13 @@ spec:
             - --constraint-violations-limit=20
             - --audit-from-cache=false
             - --audit-chunk-size=0
+            - --audit-match-kind-only=false
             - --emit-audit-events=false
             - --operation=audit
             - --operation=status
             - --logtostderr
+            - --health-addr=:9090
+            - --prometheus-port=8888
           command:
             - /manager
           env:
@@ -165,7 +191,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: 'openpolicyagent/gatekeeper:v3.4.0'
+          image: 'openpolicyagent/gatekeeper:v3.6.0'
           imagePullPolicy: 'IfNotPresent'
           livenessProbe:
             httpGet:
@@ -203,6 +229,7 @@ spec:
       imagePullSecrets: []
       nodeSelector:
         kubernetes.io/os: linux
+      priorityClassName: system-cluster-critical
       serviceAccountName: gatekeeper-admin
       terminationGracePeriodSeconds: 60
       tolerations: []
@@ -260,6 +287,8 @@ spec:
       containers:
         - args:
             - --port=8443
+            - --health-addr=:9090
+            - --prometheus-port=8888
             - --logtostderr
             - --log-denies=false
             - --emit-admission-events=false
@@ -279,7 +308,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
-          image: 'openpolicyagent/gatekeeper:v3.4.0'
+          image: 'openpolicyagent/gatekeeper:v3.6.0'
           imagePullPolicy: 'IfNotPresent'
           livenessProbe:
             httpGet:
@@ -324,6 +353,7 @@ spec:
       imagePullSecrets: []
       nodeSelector:
         kubernetes.io/os: linux
+      priorityClassName: system-cluster-critical
       serviceAccountName: gatekeeper-admin
       terminationGracePeriodSeconds: 60
       tolerations: []
