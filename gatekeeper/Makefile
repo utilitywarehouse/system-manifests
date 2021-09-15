@@ -23,6 +23,6 @@ helm-namespaced: helm-fetch
 	# - Select resources with a namespace field
 	# - Exclude RoleBindings (should be set in the overlay)
 	# - Remove the namespace field
-	helm template --release-name gatekeeper --set postInstall.labelNamespace.enabled=false --no-hooks gatekeeper-$(HELM_VERSION).tgz | \
+	helm template --release-name gatekeeper --set postInstall.labelNamespace.enabled=false --set resourceQuota=false --no-hooks gatekeeper-$(HELM_VERSION).tgz | \
 		yq eval 'select(.metadata | has("namespace")) | select(.kind != "RoleBinding") | del(.metadata.namespace)' - \
 		> namespaced/gatekeeper.yaml
