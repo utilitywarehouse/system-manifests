@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-state-metrics
+spec:
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+        - name: kube-state-metrics
+          args:
+            - --metric-annotations-allowlist=pods=[injector.tumblr.com/request]
+            - --metric-labels-allowlist=namespaces=[uw.systems/owner],pods=[app,app.kubernetes.io/name]
