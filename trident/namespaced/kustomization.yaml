@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # Trident upstream manifests are fetched using the tridentctl client:
+  # https://netapp-trident.readthedocs.io/en/stable-v20.04/kubernetes/tridentctl-install.html
+  # ./tridentctl install -n sys-trident  --generate-custom-yaml
+  - trident-daemonset.yaml
+  - trident-deployment.yaml
+  - trident-serviceaccount.yaml
+  - trident-service.yaml
+patchesStrategicMerge:
+  - trident-daemonset-tolerations-patch.yaml

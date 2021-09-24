@@ -1,0 +1,448 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentversions.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - name: Version
+          type: string
+          description: The Trident version
+          priority: 0
+          jsonPath: .trident_version
+  scope: Namespaced
+  names:
+    plural: tridentversions
+    singular: tridentversion
+    kind: TridentVersion
+    shortNames:
+      - tver
+      - tversion
+    categories:
+      - trident
+      - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentbackends.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - name: Backend
+          type: string
+          description: The backend name
+          priority: 0
+          jsonPath: .backendName
+        - name: Backend UUID
+          type: string
+          description: The backend UUID
+          priority: 0
+          jsonPath: .backendUUID
+  scope: Namespaced
+  names:
+    plural: tridentbackends
+    singular: tridentbackend
+    kind: TridentBackend
+    shortNames:
+      - tbe
+      - tbackend
+    categories:
+      - trident
+      - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentbackendconfigs.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Backend Name
+          type: string
+          description: The backend name
+          priority: 0
+          jsonPath: .status.backendInfo.backendName
+        - name: Backend UUID
+          type: string
+          description: The backend UUID
+          priority: 0
+          jsonPath: .status.backendInfo.backendUUID
+        - name: Phase
+          type: string
+          description: The backend config phase
+          priority: 0
+          jsonPath: .status.phase
+        - name: Status
+          type: string
+          description: The result of the last operation
+          priority: 0
+          jsonPath: .status.lastOperationStatus
+        - name: Storage Driver
+          type: string
+          description: The storage driver type
+          priority: 1
+          jsonPath: .spec.storageDriverName
+        - name: Deletion Policy
+          type: string
+          description: The deletion policy
+          priority: 1
+          jsonPath: .status.deletionPolicy
+  scope: Namespaced
+  names:
+    plural: tridentbackendconfigs
+    singular: tridentbackendconfig
+    kind: TridentBackendConfig
+    shortNames:
+      - tbc
+      - tbconfig
+      - tbackendconfig
+    categories:
+      - trident
+      - trident-internal
+      - trident-external
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentmirrorrelationships.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                state:
+                  type: string
+                  enum:
+                    - ""
+                    - promoted
+                    - established
+                    - reestablished
+                volumeMappings:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      latestSnapshotHandle:
+                        type: string
+                      localPVCName:
+                        type: string
+                      remoteVolumeHandle:
+                        type: string
+                    required:
+                      - localPVCName
+                  minItems: 1
+                  maxItems: 1
+              required:
+                - volumeMappings
+            status:
+              type: object
+              properties:
+                conditions:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lastTransitionTime:
+                        type: string
+                      localPVCName:
+                        type: string
+                      localVolumeHandle:
+                        type: string
+                      remoteVolumeHandle:
+                        type: string
+                      message:
+                        type: string
+                      observedGeneration:
+                        type: integer
+                      state:
+                        type: string
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - description: The desired mirror state
+          jsonPath: .spec.state
+          name: Desired State
+          type: string
+        - description: Local PVCs for the mirror
+          jsonPath: .spec.volumeMappings[*].localPVCName
+          name: Local PVC
+          type: string
+        - description: Status
+          jsonPath: .status.conditions[*].state
+          name: Actual state
+          type: string
+        - description: Status message
+          jsonPath: .status.conditions[*].message
+          name: Message
+          type: string
+  scope: Namespaced
+  names:
+    plural: tridentmirrorrelationships
+    singular: tridentmirrorrelationship
+    kind: TridentMirrorRelationship
+    shortNames:
+      - tmr
+      - tmrelationship
+      - tmirrorrelationship
+    categories:
+      - trident
+      - trident-internal
+      - trident-external
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentsnapshotinfos.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                snapshotName:
+                  type: string
+              required:
+                - snapshotName
+            status:
+              type: object
+              properties:
+                lastTransitionTime:
+                  type: string
+                observedGeneration:
+                  type: integer
+                snapshotHandle:
+                  type: string
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Snapshot Handle
+          type: string
+          description: VolumeSnapshotContent Handle
+          priority: 0
+          jsonPath: .status.snapshotHandle
+  scope: Namespaced
+  names:
+    plural: tridentsnapshotinfos
+    singular: tridentsnapshotinfo
+    kind: TridentSnapshotInfo
+    shortNames:
+      - tsi
+      - tsinfo
+      - tsnapshotinfo
+    categories:
+      - trident
+      - trident-internal
+      - trident-external
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentstorageclasses.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+  scope: Namespaced
+  names:
+    plural: tridentstorageclasses
+    singular: tridentstorageclass
+    kind: TridentStorageClass
+    shortNames:
+      - tsc
+      - tstorageclass
+    categories:
+      - trident
+      - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentvolumes.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - name: Age
+          type: date
+          priority: 0
+          jsonPath: .metadata.creationTimestamp
+        - name: Size
+          type: string
+          description: The volume's size
+          priority: 1
+          jsonPath: .config.size
+        - name: Storage Class
+          type: string
+          description: The volume's storage class
+          priority: 1
+          jsonPath: .config.storageClass
+        - name: State
+          type: string
+          description: The volume's state
+          priority: 1
+          jsonPath: .state
+        - name: Protocol
+          type: string
+          description: The volume's protocol
+          priority: 1
+          jsonPath: .config.protocol
+        - name: Backend UUID
+          type: string
+          description: The volume's backend UUID
+          priority: 1
+          jsonPath: .backendUUID
+        - name: Pool
+          type: string
+          description: The volume's pool
+          priority: 1
+          jsonPath: .pool
+  scope: Namespaced
+  names:
+    plural: tridentvolumes
+    singular: tridentvolume
+    kind: TridentVolume
+    shortNames:
+      - tvol
+      - tvolume
+    categories:
+      - trident
+      - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentnodes.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+  scope: Namespaced
+  names:
+    plural: tridentnodes
+    singular: tridentnode
+    kind: TridentNode
+    shortNames:
+      - tnode
+    categories:
+      - trident
+      - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridenttransactions.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+  scope: Namespaced
+  names:
+    plural: tridenttransactions
+    singular: tridenttransaction
+    kind: TridentTransaction
+    shortNames:
+      - ttx
+      - ttransaction
+    categories:
+      - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentsnapshots.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      additionalPrinterColumns:
+        - name: State
+          type: string
+          description: The snapshot's state
+          priority: 1
+          jsonPath: .state
+  scope: Namespaced
+  names:
+    plural: tridentsnapshots
+    singular: tridentsnapshot
+    kind: TridentSnapshot
+    shortNames:
+      - tss
+      - tsnap
+      - tsnapshot
+    categories:
+      - trident
+      - trident-internal

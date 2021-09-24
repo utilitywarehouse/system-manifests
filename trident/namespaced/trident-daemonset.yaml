@@ -1,0 +1,170 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: trident-csi
+  labels:
+    app: node.csi.trident.netapp.io
+    kubectl.kubernetes.io/default-container: trident-main
+spec:
+  selector:
+    matchLabels:
+      app: node.csi.trident.netapp.io
+  template:
+    metadata:
+      labels:
+        app: node.csi.trident.netapp.io
+    spec:
+      serviceAccount: trident-csi
+      hostNetwork: true
+      hostIPC: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: trident-main
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["SYS_ADMIN"]
+            allowPrivilegeEscalation: true
+          image: netapp/trident:21.07.1
+          command:
+            - /trident_orchestrator
+          args:
+            - "--no_persistence"
+            - "--rest=false"
+            - "--csi_node_name=$(KUBE_NODE_NAME)"
+            - "--csi_endpoint=$(CSI_ENDPOINT)"
+            - "--csi_role=node"
+            - "--log_format=text"
+            - "--node_prep=false"
+            - "--https_rest"
+            - "--https_port=17546"
+            - -debug
+          startupProbe:
+            httpGet:
+              path: /liveness
+              scheme: HTTPS
+              port: 17546
+            failureThreshold: 5
+            timeoutSeconds: 1
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /liveness
+              scheme: HTTPS
+              port: 17546
+            failureThreshold: 3
+            timeoutSeconds: 1
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              scheme: HTTPS
+              port: 17546
+            failureThreshold: 5
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          env:
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://plugin/csi.sock
+            # We need our custom iscsiadm to take precedence over the host's, so put
+            # /opt/bin/iscsi at the top of the $PATH
+            - name: PATH
+              value: /opt/bin/iscsi/:/netapp:/bin
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: plugins-mount-dir
+              mountPath: /var/lib/kubelet/plugins
+            - name: pods-mount-dir
+              mountPath: /var/lib/kubelet/pods
+              mountPropagation: "Bidirectional"
+            - name: dev-dir
+              mountPath: /dev
+            - name: sys-dir
+              mountPath: /sys
+            - name: host-dir
+              mountPath: /host
+              mountPropagation: "Bidirectional"
+            - name: trident-tracking-dir
+              mountPath: /var/lib/trident/tracking
+            - name: certs
+              mountPath: /certs
+              readOnly: true
+            # Mount the custom iscsiadm binary
+            - name: iscsi-bin
+              mountPath: /opt/bin/iscsi
+        - name: driver-registrar
+          image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.2.0
+          args:
+            - "--v=2"
+            - "--csi-address=$(ADDRESS)"
+            - "--kubelet-registration-path=$(REGISTRATION_PATH)"
+          env:
+            - name: ADDRESS
+              value: /plugin/csi.sock
+            - name: REGISTRATION_PATH
+              value: "/var/lib/kubelet/plugins/csi.trident.netapp.io/csi.sock"
+            - name: KUBE_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: plugin-dir
+              mountPath: /plugin
+            - name: registration-dir
+              mountPath: /registration
+      nodeSelector:
+        kubernetes.io/os: linux
+        kubernetes.io/arch: amd64
+      tolerations:
+        - effect: NoExecute
+          operator: Exists
+        - effect: NoSchedule
+          operator: Exists
+      volumes:
+        - name: plugin-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins/csi.trident.netapp.io/
+            type: DirectoryOrCreate
+        - name: registration-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins_registry/
+            type: Directory
+        - name: plugins-mount-dir
+          hostPath:
+            path: /var/lib/kubelet/plugins
+            type: DirectoryOrCreate
+        - name: pods-mount-dir
+          hostPath:
+            path: /var/lib/kubelet/pods
+            type: DirectoryOrCreate
+        - name: dev-dir
+          hostPath:
+            path: /dev
+            type: Directory
+        - name: sys-dir
+          hostPath:
+            path: /sys
+            type: Directory
+        - name: host-dir
+          hostPath:
+            path: /
+            type: Directory
+        - name: trident-tracking-dir
+          hostPath:
+            path: /var/lib/trident/tracking
+            type: DirectoryOrCreate
+        # Custom iscsiadm binary located under /opt/bin/iscsi host path
+        - name: iscsi-bin
+          hostPath:
+            path: /opt/bin/iscsi
+            type: DirectoryOrCreate
+        - name: certs
+          secret:
+            secretName: trident-csi

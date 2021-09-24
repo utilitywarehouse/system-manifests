@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: trident-csi
+spec:
+  template:
+    spec:
+      tolerations:
+        - key: node.kubernetes.io/unschedulable
+          effect: NoSchedule
