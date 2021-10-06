@@ -1,0 +1,15 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: gatekeeper-validating-webhook-configuration
+webhooks:
+  - clientConfig:
+      service:
+        namespace: null
+    rules: null
+    name: validation.gatekeeper.sh
+  - clientConfig:
+      caBundle: null
+      service:
+        namespace: null
+    name: check-ignore-label.gatekeeper.sh

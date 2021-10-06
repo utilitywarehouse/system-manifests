@@ -16,7 +16,7 @@ helm-cluster: helm-fetch
 	# - Exclude ClusterRoleBindings (should be set in the overlay)
 	helm template --release-name --include-crds --set postInstall.labelNamespace.enabled=false --no-hooks gatekeeper gatekeeper-$(HELM_VERSION).tgz | \
 		yq eval 'select(.metadata | has("namespace") | not) | select(.kind != "ClusterRoleBinding")' - \
-		> cluster/gatekeeper.yaml
+		> cluster/upstream/gatekeeper.yaml
 
 .PHONY: helm-namespaced
 helm-namespaced: helm-fetch
@@ -25,4 +25,4 @@ helm-namespaced: helm-fetch
 	# - Remove the namespace field
 	helm template --release-name gatekeeper --set postInstall.labelNamespace.enabled=false --set resourceQuota=false --no-hooks gatekeeper-$(HELM_VERSION).tgz | \
 		yq eval 'select(.metadata | has("namespace")) | select(.kind != "RoleBinding") | del(.metadata.namespace)' - \
-		> namespaced/gatekeeper.yaml
+		> namespaced/upstream/gatekeeper.yaml

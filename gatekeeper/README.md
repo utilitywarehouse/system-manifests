@@ -1,32 +1,17 @@
 # gatekeeper
+These manifests abstract all the common configuration to deploy gatekeeper in our clusters
 
-Kustomize bases to deploy Open Policy Agent gatekeeper.
+## Overview
 
-## Usage
+There are 3 layers of configuration
 
-The resources are divided into two bases:
+* upstream: manifests from gatekeeper's official helm deployment, plus the basic patch to make it adaptable
+* UW: custom UW configurations and addons, common to all clusters, leveraging upstream manifests
+* cluster: cluster specific resources and patches, leveraging UW's manifests
 
-- `cluster` - cluster scoped resources
-- `namespaced` - namespaced resources
+Refer to the `example/` for how to deploy it in our clusters
 
-Reference them in your `kustomization.yaml`, like so:
-
-```
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-bases:
-  - github.com/utilitywarehouse/system-manifests/gatekeeper/cluster
-  - github.com/utilitywarehouse/system-manifests/gatekeeper/namespaced
-```
-
-Define the gatekeeper configuration suitable for your environment.
-
-Refer to the `example/`.
-
-Note that you need to [provide the `ClusterRoleBinding` for gatekeeper's service
-account](example/rbac.yaml). This is required in order to keep the base namespace-agnostic.
-
-## Update
+## Updating upstream
 
 To update the upstream version, edit `HELM_VERSION` in the
 [`Makefile`](Makefile) and run:
@@ -38,14 +23,5 @@ make helm
 Note: requires `helm` v3 and `yq` v3.
 
 This will update the files:
-- [`cluster/gatekeeper.yaml`](cluster/gatekeeper.yaml)
-- [`namespaced/gatekeeper.yaml`](namespaced/gatekeeper.yaml)
-
-Patch changes on top of the upstream in the patches:
-- [`cluster/gatekeeper-patch.yaml`](cluster/gatekeeper-patch.yaml)
-- [`namespaced/gatekeeper-patch.yaml`](namespaced/gatekeeper-patch.yaml)
-
-
-## Templates
-
-Our library of `ConstraintTemplates` can also be pulled in as a base. See [gatekeeper-template-manifests](https://github.com/utilitywarehouse/gatekeeper-template-manifests).
+- [`cluster/upstream/gatekeeper.yaml`](cluster/upstream/gatekeeper.yaml)
+- [`namespaced/upstream/gatekeeper.yaml`](namespaced/upstream/gatekeeper.yaml)
