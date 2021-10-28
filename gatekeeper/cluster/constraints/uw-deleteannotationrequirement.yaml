@@ -1,0 +1,13 @@
+# block namespace delete requests unless the namespace is annotated with uw.systems/delete-allowed: "true"
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: DeleteAnnotationRequirement
+metadata:
+  name: namespace-delete-allowed-annotation
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Namespace"]
+  parameters:
+    name: "uw.systems/delete-allowed"
+    value: "true"

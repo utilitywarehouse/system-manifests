@@ -1,0 +1,12 @@
+# Block the use of NodePort services
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: BlockNodePort
+metadata:
+  name: block-node-port
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Service"]
+  parameters:
+    exceptions: []

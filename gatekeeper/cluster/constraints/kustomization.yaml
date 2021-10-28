@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # source-templatename.yaml
+  - gatekeeper-k8sexternalips.yaml
+  - gatekeeper-k8srequiredlabels.yaml
+  - semaphore-semaphoremirrornamelength.yaml
+  - uw-annotationvalidation.yaml
+  - uw-blocknodeport.yaml
+  - uw-deleteannotationrequirement.yaml
+  - uw-ingressrequirehost.yaml
+  - uw-ingressroutematchrestriction.yaml
+  - uw-namelabelmatch.yaml
+  - uw-podnoderestriction.yaml
+  - uw-restrictedtainttoleration.yaml

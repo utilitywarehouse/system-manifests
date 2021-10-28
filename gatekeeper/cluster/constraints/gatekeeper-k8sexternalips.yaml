@@ -1,0 +1,14 @@
+# Mitigates CVE-2020-8554 by preventing the use of any externalIPs on services
+#  - https://www.stackrox.com/post/2020/12/cve-2020-8554-man-in-the-middle-vulnerability-in-kubernetes-top-recommendations/
+#  - https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-8554
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sExternalIPs
+metadata:
+  name: "allowed-external-ips"
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Service"]
+  parameters:
+    allowedIPs: []
