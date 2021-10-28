@@ -1,0 +1,10 @@
+modules:
+  http_2xx_gatekeeper:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: "ip4" # defaults to "ip6"
+      headers:
+        Content-type: application/json
+      tls_config:
+        ca_file: /etc/tls/ca.crt

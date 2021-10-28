@@ -1,0 +1,17 @@
+# block non-system pods from being scheduled onto master nodes
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: PodNodeRestriction
+metadata:
+  name: "master"
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces:
+      - kube-system
+      - sys-*
+  parameters:
+    message: "Pod is not allowed to be scheduled onto master nodes"
+    matchLabels:
+      node-role.kubernetes.io/master: ""

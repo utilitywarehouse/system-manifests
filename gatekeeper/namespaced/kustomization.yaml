@@ -1,6 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - gatekeeper.yaml
-patchesStrategicMerge:
-  - gatekeeper-patch.yaml
+  - upstream/
+
+  - blackbox-exporter.yaml
+  - gatekeeper-cert.yaml
+  - gatekeeper-config.yaml
+  - gatekeeper-metrics.yaml
+  - networkpolicies.yaml
+  - rbac.yaml
+configMapGenerator:
+  - name: blackbox-exporter
+    files:
+      - config.yml=resources/blackbox-exporter-config.yaml

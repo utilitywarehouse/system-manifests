@@ -2,14 +2,31 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
   name: gatekeeper-validating-webhook-configuration
+  annotations:
+    cert-manager.io/inject-ca-from: sys-gatekeeper/gatekeeper-serving-cert
 webhooks:
-  - clientConfig:
+  - name: validation.gatekeeper.sh
+    clientConfig:
       service:
-        namespace: null
-    rules: null
-    name: validation.gatekeeper.sh
-  - clientConfig:
-      caBundle: null
+        namespace: sys-gatekeeper
+    rules:
+      - apiGroups:
+          - "*"
+        apiVersions:
+          - "*"
+        operations:
+          - CREATE
+          - UPDATE
+          - DELETE
+        resources:
+          - "ingresses"
+          - "ingressroutetcps"
+          - "ingressroutes"
+          - "namespaces"
+          - "pods"
+          - "serviceaccounts"
+          - "services"
+  - name: check-ignore-label.gatekeeper.sh
+    clientConfig:
       service:
-        namespace: null
-    name: check-ignore-label.gatekeeper.sh
+        namespace: sys-gatekeeper
