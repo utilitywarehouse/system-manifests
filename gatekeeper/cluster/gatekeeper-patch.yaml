@@ -5,6 +5,32 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: sys-gatekeeper/gatekeeper-serving-cert
 webhooks:
+  - name: delete.gatekeeper.sh
+    admissionReviewVersions:
+      - v1
+      - v1beta1
+    clientConfig:
+      service:
+        name: gatekeeper-webhook-service
+        namespace: sys-gatekeeper
+        path: /v1/admit
+    failurePolicy: Ignore
+    matchPolicy: Exact
+    namespaceSelector:
+      matchExpressions:
+        - key: admission.gatekeeper.sh/ignore
+          operator: DoesNotExist
+    rules:
+      - apiGroups:
+          - "*"
+        apiVersions:
+          - "v1"
+        operations:
+          - DELETE
+        resources:
+          - "namespaces"
+    sideEffects: None
+    timeoutSeconds: 3
   - name: validation.gatekeeper.sh
     clientConfig:
       service:
@@ -17,7 +43,6 @@ webhooks:
         operations:
           - CREATE
           - UPDATE
-          - DELETE
         resources:
           - "ingresses"
           - "ingressroutetcps"
