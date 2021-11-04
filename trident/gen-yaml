@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# capture current context to reset back to it when we are done
+cc=$(kubectl config current-context)
+kubectl config use-context dev-merit
+# tridenctl needs certs in relative location to where its invoked
+ln -s /root/.kube/certs .
+tridentctl install -n sys-trident --generate-custom-yaml
+
+mv setup/trident-daemonset.yaml namespaced/
+mv setup/trident-deployment.yaml namespaced/
+mv setup/trident-serviceaccount.yaml namespaced/
+mv setup/trident-service.yaml namespaced/
+
+mv setup/trident-clusterrolebinding.yaml cluster/
+mv setup/trident-clusterrole.yaml cluster/
+mv setup/trident-crds.yaml cluster/
+mv setup/trident-podsecuritypolicy.yaml cluster/
+
+# clean up
+sed -E -i 's/^current-context: .+/current-context: '${cc}'/' /root/.kube/config
+rm certs
+rm -r setup

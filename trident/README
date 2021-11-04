@@ -1,0 +1,4 @@
+To update Trident manifests, update the version number inside Dockerfile. Then
+run `make build gen-yaml`.
+
+This will run tridentctl inside Docker and update our manifests
