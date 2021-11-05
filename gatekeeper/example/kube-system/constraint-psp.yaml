@@ -1,0 +1,56 @@
+# Safety net has the widest set of capabilities that we allow cluster-wide
+# The goal is to protect ourselves from leaving a gap in the default constraint
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPCapabilities
+metadata:
+  name: safety-net
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces:
+      - kube-system
+      - sys-*
+  parameters:
+    allowedCapabilities: ["CAP_IPC_LOCK", "SYS_PTRACE"]
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPCapabilities
+metadata:
+  name: allow-sysptrace
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces:
+      - kube-system
+      - sys-*
+    labelSelector:
+      matchExpressions:
+        - key: "uw.systems/capabilities"
+          operator: "In"
+          values: ["sys_ptrace"]
+  parameters:
+    allowedCapabilities: ["SYS_PTRACE"]
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPCapabilities
+metadata:
+  name: allow-ipclock
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    excludedNamespaces:
+      - kube-system
+      - sys-*
+    labelSelector:
+      matchExpressions:
+        - key: "uw.systems/capabilities"
+          operator: "In"
+          values: ["ipc_lock"]
+  parameters:
+    allowedCapabilities: ["CAP_IPC_LOCK"]

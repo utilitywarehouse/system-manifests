@@ -6,5 +6,9 @@ resources:
   # templates from external repos
   - github.com/utilitywarehouse/gatekeeper-template-manifests/base
   - github.com/utilitywarehouse/semaphore-service-mirror/gatekeeper
+  - github.com/open-policy-agent/gatekeeper-library/library/pod-security-policy
+
+  - constraint-psp.yaml
 patchesStrategicMerge:
   - constraint-patch.yaml
+  - constraint-psp-patch.yaml
