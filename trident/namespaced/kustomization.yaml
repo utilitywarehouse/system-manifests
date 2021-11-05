@@ -6,4 +6,5 @@ resources:
   - trident-serviceaccount.yaml
   - trident-service.yaml
 patchesStrategicMerge:
+  - trident-csi-tolerations-patch.yaml
   - trident-daemonset-tolerations-patch.yaml
