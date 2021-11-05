@@ -1,3 +1,4 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,134 +20,133 @@ spec:
     spec:
       serviceAccount: trident-csi
       containers:
-        - name: trident-main
-          image: netapp/trident:21.07.1
-          ports:
-            - containerPort: 8443
-            - containerPort: 8001
-          command:
-            - /trident_orchestrator
-          args:
-            - "--crd_persistence"
-            - "--k8s_pod"
-            - "--https_rest"
-            - "--https_port=8443"
-            - "--csi_node_name=$(KUBE_NODE_NAME)"
-            - "--csi_endpoint=$(CSI_ENDPOINT)"
-            - "--csi_role=controller"
-            - "--log_format=text"
-            - "--address=127.0.0.1"
-            - "--metrics"
-          #- -debug
-          livenessProbe:
-            exec:
-              command:
-                - tridentctl
-                - -s
-                - "127.0.0.1:8000"
-                - version
-            failureThreshold: 2
-            initialDelaySeconds: 120
-            periodSeconds: 120
-            timeoutSeconds: 90
-          env:
-            - name: KUBE_NODE_NAME
-              valueFrom:
-                fieldRef:
-                  apiVersion: v1
-                  fieldPath: spec.nodeName
-            - name: CSI_ENDPOINT
-              value: unix://plugin/csi.sock
-            - name: TRIDENT_SERVER
-              value: "127.0.0.1:8000"
-          volumeMounts:
-            - name: socket-dir
-              mountPath: /plugin
-            - name: certs
-              mountPath: /certs
-              readOnly: true
-        - name: trident-autosupport
-          image: netapp/trident-autosupport:21.01
-          command:
-            - /usr/local/bin/trident-autosupport
-          args:
-            - "--k8s-pod"
-            - "--log-format=text"
-            - "--trident-silence-collector=false"
-          resources:
-            limits:
-              memory: 1Gi
-          volumeMounts:
-            - name: asup-dir
-              mountPath: /asup
-        - name: csi-provisioner
-          image: k8s.gcr.io/sig-storage/csi-provisioner:v2.2.2
-          args:
-            - "--v=2"
-            - "--timeout=600s"
-            - "--csi-address=$(ADDRESS)"
-            - "--retry-interval-start=8s"
-            - "--retry-interval-max=30s"
-          env:
-            - name: ADDRESS
-              value: /var/lib/csi/sockets/pluginproxy/csi.sock
-          volumeMounts:
-            - name: socket-dir
-              mountPath: /var/lib/csi/sockets/pluginproxy/
-        - name: csi-attacher
-          image: k8s.gcr.io/sig-storage/csi-attacher:v3.2.1
-          args:
-            - "--v=2"
-            - "--timeout=60s"
-            - "--retry-interval-start=10s"
-            - "--csi-address=$(ADDRESS)"
-          env:
-            - name: ADDRESS
-              value: /var/lib/csi/sockets/pluginproxy/csi.sock
-          volumeMounts:
-            - name: socket-dir
-              mountPath: /var/lib/csi/sockets/pluginproxy/
-        - name: csi-resizer
-          image: k8s.gcr.io/sig-storage/csi-resizer:v1.1.0
-          args:
-            - "--v=2"
-            - "--timeout=300s"
-            - "--csi-address=$(ADDRESS)"
-          env:
-            - name: ADDRESS
-              value: /var/lib/csi/sockets/pluginproxy/csi.sock
-          volumeMounts:
-            - name: socket-dir
-              mountPath: /var/lib/csi/sockets/pluginproxy/
-        - name: csi-snapshotter
-          image: k8s.gcr.io/sig-storage/csi-snapshotter:v4.1.1
-          args:
-            - "--v=2"
-            - "--timeout=300s"
-            - "--csi-address=$(ADDRESS)"
-          env:
-            - name: ADDRESS
-              value: /var/lib/csi/sockets/pluginproxy/csi.sock
-          volumeMounts:
-            - name: socket-dir
-              mountPath: /var/lib/csi/sockets/pluginproxy/
-      tolerations:
-        # Mark the pod so it can be scheduled on master nodes, to avoid being
-        # killed when rolling workers, which includes attaching/detaching of
-        # volumes
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
+      - name: trident-main
+        image: netapp/trident:21.10.0
+        ports:
+        - containerPort: 8443
+        - containerPort: 8001
+        command:
+        - /trident_orchestrator
+        args:
+        - "--crd_persistence"
+        - "--k8s_pod"
+        - "--https_rest"
+        - "--https_port=8443"
+        - "--csi_node_name=$(KUBE_NODE_NAME)"
+        - "--csi_endpoint=$(CSI_ENDPOINT)"
+        - "--csi_role=controller"
+        - "--log_format=text"
+        - "--address=127.0.0.1"
+        - "--metrics"
+        #- -debug
+        livenessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - "127.0.0.1:8000"
+            - version
+          failureThreshold: 2
+          initialDelaySeconds: 120
+          periodSeconds: 120
+          timeoutSeconds: 90
+        env:
+        - name: KUBE_NODE_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: CSI_ENDPOINT
+          value: unix://plugin/csi.sock
+        - name: TRIDENT_SERVER
+          value: "127.0.0.1:8000"
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /plugin
+        - name: certs
+          mountPath: /certs
+          readOnly: true
+      - name: trident-autosupport
+        image: netapp/trident-autosupport:21.10
+        command:
+        - /usr/local/bin/trident-autosupport
+        args:
+        - "--k8s-pod"
+        - "--log-format=text"
+        - "--trident-silence-collector=false"
+        
+        
+        
+        
+        #- -debug
+        resources:
+          limits:
+            memory: 1Gi
+        volumeMounts:
+        - name: asup-dir
+          mountPath: /asup
+      - name: csi-provisioner
+        image: k8s.gcr.io/sig-storage/csi-provisioner:v3.0.0
+        args:
+        - "--v=2"
+        - "--timeout=600s"
+        - "--csi-address=$(ADDRESS)"
+        - "--retry-interval-start=8s"
+        - "--retry-interval-max=30s"
+        
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-attacher
+        image: k8s.gcr.io/sig-storage/csi-attacher:v3.3.0
+        args:
+        - "--v=2"
+        - "--timeout=60s"
+        - "--retry-interval-start=10s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-resizer
+        image: k8s.gcr.io/sig-storage/csi-resizer:v1.3.0
+        args:
+        - "--v=2"
+        - "--timeout=300s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
+      - name: csi-snapshotter
+        image: k8s.gcr.io/sig-storage/csi-snapshotter:v4.2.1
+        args:
+        - "--v=2"
+        - "--timeout=300s"
+        - "--csi-address=$(ADDRESS)"
+        env:
+        - name: ADDRESS
+          value: /var/lib/csi/sockets/pluginproxy/csi.sock
+        volumeMounts:
+        - name: socket-dir
+          mountPath: /var/lib/csi/sockets/pluginproxy/
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
-        role: master
       volumes:
-        - name: socket-dir
-          emptyDir: {}
-        - name: certs
-          secret:
-            secretName: trident-csi
-        - name: asup-dir
-          emptyDir:
-            medium: ""
-            sizeLimit: 1Gi
+      - name: socket-dir
+        emptyDir:
+      - name: certs
+        secret:
+          secretName: trident-csi
+      - name: asup-dir
+        emptyDir:
+          medium: ""
+          sizeLimit: 1Gi
