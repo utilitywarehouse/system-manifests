@@ -1,3 +1,4 @@
+
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
@@ -6,7 +7,7 @@ spec:
   privileged: true
   allowPrivilegeEscalation: true
   allowedCapabilities:
-    - "SYS_ADMIN"
+  - "SYS_ADMIN"
   hostIPC: true
   hostPID: true
   hostNetwork: true
@@ -19,4 +20,4 @@ spec:
   fsGroup:
     rule: RunAsAny
   volumes:
-    - "*"
+  - '*'
