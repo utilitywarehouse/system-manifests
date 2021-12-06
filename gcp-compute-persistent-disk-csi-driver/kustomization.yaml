@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# gcp-compute-persistent-disk-csi-driver puts everything under a namespace
+# called `gce-pd-csi-driver` and put Cluster scoped resources under the same
+# base. Add an additional overlay to hack the ns and put everything under
+# kube-system to play with the method we apply cluster resources via KA
+namespace: kube-system
+bases:
+  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable?ref=v1.3.4
+patchesStrategicMerge:
+  - csi-gce-pd-controller-patch.yaml
