@@ -1,0 +1,30 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: csi-gce-pd-controller
+spec:
+  template:
+    metadata:
+      annotations:
+        fluentbit.io/exclude: "true"
+    spec:
+      tolerations:
+        # Mark the pod so it can be scheduled on master nodes.
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      # Deploy on masters to be able to get credentials/permissions from the node
+      nodeSelector:
+        role: master
+      containers:
+        - name: gce-pd-driver
+          # Delete the expected gcp credentials secret and mount
+          env:
+            - $patch: delete
+              name: GOOGLE_APPLICATION_CREDENTIALS
+          volumeMounts:
+            - $patch: delete
+              name: cloud-sa-volume
+              mountPath: "/etc/cloud-sa"
+      volumes:
+        - $patch: delete
+          name: cloud-sa-volume
