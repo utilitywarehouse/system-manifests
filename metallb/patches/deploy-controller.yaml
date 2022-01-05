@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller
+  namespace: sys-metallb
+spec:
+  template:
+    spec:
+      containers:
+        - args:
+            - --port=7472
+            - --config=metallb-config
+            - --log-level=info
+          env:
+            - name: METALLB_ML_SECRET_NAME
+              $patch: delete
+          name: controller
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
