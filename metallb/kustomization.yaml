@@ -1,12 +1,75 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-#namespace: sys-metallb
+
+bases:
+  - metallb.yaml
+
+patches:
+  - options:
+      allowNameChange: true
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: sys-metallb:controller
+      - op: replace
+        path: /rules/3/resourceNames
+        value:
+          - metallb-controller
+    target:
+      kind: ClusterRole
+      name: metallb-system:controller
+  - options:
+      allowNameChange: true
+    patch: |-
+      - op: replace
+        path: /metadata/name
+        value: sys-metallb:speaker
+      - op: replace
+        path: /rules/3/resourceNames
+        value:
+          - metallb-speaker
+    target:
+      kind: ClusterRole
+      name: metallb-system:speaker
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: sys-metallb:controller
+    target:
+      kind: ClusterRoleBinding
+      name: metallb-system:controller
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: sys-metallb:speaker
+    target:
+      kind: ClusterRoleBinding
+      name: metallb-system:speaker
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: metallb-controller
+    target:
+      kind: PodSecurityPolicy
+      name: controller
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: metallb-speaker
+    target:
+      kind: PodSecurityPolicy
+      name: speaker
+  - patch: |-
+      - op: remove
+        path: /rules/1  # memberlist
+    target:
+      kind: Role
+      name: controller
+
 patchesStrategicMerge:
-  - patches/delete-cluster-rbac.yaml
-  - patches/delete-psp.yaml
-  - patches/delete-role-rbac.yaml
   - patches/deploy-controller.yaml
   - patches/ds-speaker.yaml
+  - patches/psp.yaml
+
 resources:
   - ds-master-speaker.yaml
-  - metallb.yaml
