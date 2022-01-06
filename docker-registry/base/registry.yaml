@@ -1,0 +1,147 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    ingress.kubernetes.io/affinity: "true"
+    traefik.backend.loadbalancer.stickiness: "true"
+  labels:
+    name: docker-registry
+  name: docker-registry
+spec:
+  selector:
+    app: docker-registry
+  ports:
+    - name: registry
+      protocol: TCP
+      port: 5000
+    - name: auth
+      protocol: TCP
+      port: 5001
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: docker-registry
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-registry
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: docker-registry
+  template:
+    metadata:
+      name: docker-registry
+      labels:
+        app: docker-registry
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - docker-registry
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      initContainers:
+        # merge sensitive values with the rest of the auth config; this allows
+        # passwords to be stored in an encrypted form while the rest of the
+        # config remains readable
+        - name: merge-config
+          image: mikefarah/yq:3.4.1
+          command:
+            - sh
+            - -c
+            - |
+              yq m /workdir/config/auth_config.yml /workdir/secret-config/auth_config.yml > /config/auth_config.yml
+          volumeMounts:
+            - name: merged-auth-config
+              mountPath: /config
+            - name: registry-auth-config
+              mountPath: /workdir/config
+            - name: registry-auth-config-secret
+              mountPath: /workdir/secret-config
+      containers:
+        - name: docker-registry
+          image: registry:2.7.1
+          resources:
+            requests:
+              cpu: 0m
+              memory: 32Mi
+            limits:
+              cpu: 4000m
+              memory: 256Mi
+          volumeMounts:
+            - name: registry-config
+              mountPath: /etc/docker/registry/
+              readOnly: true
+            - name: registry-auth-cert
+              mountPath: /etc/tls
+              readOnly: true
+          ports:
+            - containerPort: 5000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+        - name: docker-registry-auth
+          image: cesanta/docker_auth:1.5.0
+          args:
+            - /config/auth_config.yml
+            - -logtostderr=true
+          resources:
+            requests:
+              cpu: 0m
+              memory: 32Mi
+            limits:
+              cpu: 4000m
+              memory: 256Mi
+          volumeMounts:
+            - name: merged-auth-config
+              mountPath: /config
+              readOnly: true
+            - name: registry-auth-cert
+              mountPath: /etc/tls
+              readOnly: true
+          ports:
+            - containerPort: 5001
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5001
+      volumes:
+        - name: merged-auth-config
+          emptyDir: {}
+        - name: registry-auth-cert
+          secret:
+            secretName: registry-auth-cert
+            defaultMode: 0400
+        - name: registry-auth-config-secret
+          secret:
+            secretName: registry-auth
+        - name: registry-auth-config
+          configMap:
+            name: registry-auth
+        - name: registry-config
+          configMap:
+            name: registry
+            items:
+              - key: config.yml
+                path: config.yml

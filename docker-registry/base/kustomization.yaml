@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+bases:
+  - github.com/utilitywarehouse/registry-browser/manifests/base?ref=v0.1.1
+resources:
+  - registry-cert-reloader.yaml
+  - registry.yaml
+configMapGenerator:
+  - name: registry-cert-reloader
+    files:
+      - resources/cert-reloader.sh
+  - name: registry
+    files:
+      - resources/config.yml

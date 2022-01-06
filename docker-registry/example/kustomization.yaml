@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../base
+  #- github.com/utilitywarehouse/docker-registry-manifests//base?ref=1.1.0
+
+  - registry-ingress.yaml
+  - rbac.yaml
+patchesStrategicMerge:
+  - registry-patch.yaml
+secretGenerator:
+  - name: registry
+    envs:
+      - secrets/credentials
+    type: Opaque
+  - name: registry-auth
+    files:
+      - secrets/auth_config.yml
+    type: Opaque
+  - name: registry-browser
+    envs:
+      - secrets/registry-browser
+    type: Opaque
