@@ -12,8 +12,8 @@ spec:
             - --config=metallb-config
             - --log-level=info
           env:
-            - name: METALLB_ML_SECRET_NAME
-              $patch: delete
+            - $patch: delete
+              name: METALLB_ML_SECRET_NAME
           name: controller
           resources:
             limits:
