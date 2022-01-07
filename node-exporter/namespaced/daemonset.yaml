@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 100%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+      name: node-exporter
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9100"
+    spec:
+      serviceAccountName: node-exporter
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+        - image: quay.io/prometheus/node-exporter:v1.3.1
+          name: node-exporter
+          args:
+            - "--collector.textfile.directory=/text-collectors"
+            - "--no-collector.ipvs"
+          resources:
+            requests:
+              cpu: 0m
+              memory: 24Mi
+            limits:
+              cpu: 300m
+              memory: 128Mi
+          ports:
+            - containerPort: 9100
+              hostPort: 9100
+              name: scrape
+          volumeMounts:
+            - mountPath: /text-collectors
+              name: text-collectors-vol
+      hostNetwork: true
+      hostPID: true
+      volumes:
+        - name: text-collectors-vol
+          hostPath:
+            path: /etc/prom-text-collectors
