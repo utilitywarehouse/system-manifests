@@ -102,7 +102,7 @@ metadata:
 spec:
   ports:
     - name: https
-      port: 443
+      port: 4443
       protocol: TCP
       targetPort: https
   selector:
@@ -130,7 +130,7 @@ spec:
       containers:
         - args:
             - --cert-dir=/tmp
-            - --secure-port=443
+            - --secure-port=4443
             - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
             - --kubelet-use-node-status-port
             - --metric-resolution=15s
@@ -145,7 +145,7 @@ spec:
             periodSeconds: 10
           name: metrics-server
           ports:
-            - containerPort: 443
+            - containerPort: 4443
               name: https
               protocol: TCP
           readinessProbe:
