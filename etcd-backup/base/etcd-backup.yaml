@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: etcd-backup
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::000000000000:role/xxxx"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-backup
+spec:
+  schedule: "0 */12 * * *" # Every 12 hours
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: etcd-backup
+          annotations:
+            injector.tumblr.com/request: vault-init-container-aws
+        spec:
+          serviceAccountName: etcd-backup
+          initContainers:
+            - name: etcd-backup
+              image: quay.io/coreos/etcd:v3.5.1
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  etcdctl \
+                  --endpoints=https://$(ETCD_HOSTNAME):2379 \
+                  --cacert=/etc/kubernetes/pki/etcd/ca.pem \
+                  --cert=/etc/kubernetes/pki/etcd/apiserver.pem \
+                  --key=/etc/kubernetes/pki/etcd/apiserver-key.pem \
+                  snapshot save /backup/etcd-snapshot.db
+              volumeMounts:
+                - mountPath: /etc/kubernetes/pki/etcd
+                  name: etcd-certs
+                  readOnly: true
+                - mountPath: /backup
+                  name: backup
+          containers:
+            - name: etcd-bucket-push
+              image: amazon/aws-cli
+              args:
+                - s3
+                - cp
+                - /backup/etcd-snapshot.db
+                - s3://$(BUCKET)/$(FILENAME)
+              volumeMounts:
+                - mountPath: /backup
+                  name: backup
+          restartPolicy: OnFailure
+          tolerations:
+            # Mark the pod so it can be scheduled on master nodes.
+            - key: node-role.kubernetes.io/master
+              effect: NoSchedule
+          nodeSelector:
+            role: master
+          volumes:
+            - name: etcd-certs
+              hostPath:
+                path: /etc/kubernetes/ssl/
+            - name: backup
+              emptyDir: {}
