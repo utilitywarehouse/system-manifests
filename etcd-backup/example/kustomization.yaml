@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - github.com/utilitywarehouse/system-manifests/etcd-backup/base?ref=aaaaaaaaaa
+patches:
+  - target:
+      kind: ServiceAccount
+      name: etcd-backup
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/vault.uw.systems~1aws-role
+        value: "arn:aws:iam::950135041896:role/system-etcd-backup-bucket-rw"
+  - target:
+      kind: CronJob
+      name: etcd-backup
+    patch: |-
+      - op: add
+        path: /spec/jobTemplate/spec/template/spec/initContainers/0/env
+        value:
+          - name: ETCD_HOSTNAME
+            value: etcd-0.dev.merit.uw.systems
+      - op: add
+        path: /spec/jobTemplate/spec/template/spec/containers/0/env
+        value:
+          - name: BUCKET
+            value: uw-dev-system-etcd-backup
+          - name: FILENAME
+            value: dev-merit-etcd-snapshot.db
