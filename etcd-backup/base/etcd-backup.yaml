@@ -34,6 +34,9 @@ spec:
                   --cert=/etc/kubernetes/pki/etcd/apiserver.pem \
                   --key=/etc/kubernetes/pki/etcd/apiserver-key.pem \
                   snapshot save /backup/etcd-snapshot.db
+              resources:
+                limits:
+                  memory: 1Gi
               volumeMounts:
                 - mountPath: /etc/kubernetes/pki/etcd
                   name: etcd-certs
@@ -48,6 +51,9 @@ spec:
                 - cp
                 - /backup/etcd-snapshot.db
                 - s3://$(BUCKET)/$(FILENAME)
+              resources:
+                limits:
+                  memory: 1Gi
               volumeMounts:
                 - mountPath: /backup
                   name: backup
