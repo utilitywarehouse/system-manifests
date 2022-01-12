@@ -4,8 +4,8 @@ kind: Deployment
 metadata:
   name: trident-csi
   labels:
-    kubectl.kubernetes.io/default-container: trident-main
     app: controller.csi.trident.netapp.io
+    kubectl.kubernetes.io/default-container: trident-main
 spec:
   replicas: 1
   strategy:
@@ -21,7 +21,7 @@ spec:
       serviceAccount: trident-csi
       containers:
       - name: trident-main
-        image: netapp/trident:21.10.0
+        image: netapp/trident:21.10.1
         ports:
         - containerPort: 8443
         - containerPort: 8001
