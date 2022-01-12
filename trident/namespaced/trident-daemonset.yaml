@@ -27,7 +27,7 @@ spec:
           capabilities:
             add: ["SYS_ADMIN"]
           allowPrivilegeEscalation: true
-        image: netapp/trident:21.10.0
+        image: netapp/trident:21.10.1
         command:
         - /trident_orchestrator
         args:
