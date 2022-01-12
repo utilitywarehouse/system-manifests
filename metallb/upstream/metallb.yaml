@@ -4,7 +4,7 @@ metadata:
   labels:
     app: metallb
   name: controller
-  namespace: sys-metallb
+  namespace: metallb-system
 spec:
   allowPrivilegeEscalation: false
   allowedCapabilities: []
@@ -46,7 +46,7 @@ metadata:
   labels:
     app: metallb
   name: speaker
-  namespace: sys-metallb
+  namespace: metallb-system
 spec:
   allowPrivilegeEscalation: false
   allowedCapabilities:
@@ -85,7 +85,7 @@ metadata:
   labels:
     app: metallb
   name: controller
-  namespace: sys-metallb
+  namespace: metallb-system
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -93,7 +93,7 @@ metadata:
   labels:
     app: metallb
   name: speaker
-  namespace: sys-metallb
+  namespace: metallb-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -178,7 +178,7 @@ metadata:
   labels:
     app: metallb
   name: config-watcher
-  namespace: sys-metallb
+  namespace: metallb-system
 rules:
 - apiGroups:
   - ''
@@ -195,7 +195,7 @@ metadata:
   labels:
     app: metallb
   name: pod-lister
-  namespace: sys-metallb
+  namespace: metallb-system
 rules:
 - apiGroups:
   - ''
@@ -210,7 +210,7 @@ metadata:
   labels:
     app: metallb
   name: controller
-  namespace: sys-metallb
+  namespace: metallb-system
 rules:
 - apiGroups:
   - ''
@@ -248,7 +248,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: controller
-  namespace: sys-metallb
+  namespace: metallb-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -263,7 +263,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: speaker
-  namespace: sys-metallb
+  namespace: metallb-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -271,7 +271,7 @@ metadata:
   labels:
     app: metallb
   name: config-watcher
-  namespace: sys-metallb
+  namespace: metallb-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -288,7 +288,7 @@ metadata:
   labels:
     app: metallb
   name: pod-lister
-  namespace: sys-metallb
+  namespace: metallb-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -303,7 +303,7 @@ metadata:
   labels:
     app: metallb
   name: controller
-  namespace: sys-metallb
+  namespace: metallb-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -319,7 +319,7 @@ metadata:
     app: metallb
     component: speaker
   name: speaker
-  namespace: sys-metallb
+  namespace: metallb-system
 spec:
   selector:
     matchLabels:
@@ -335,53 +335,53 @@ spec:
         component: speaker
     spec:
       containers:
-        - args:
-          - --port=7472
-          - --config=config
-          - --log-level=info
-          env:
-          - name: METALLB_NODE_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
-          - name: METALLB_HOST
-            valueFrom:
-              fieldRef:
-                fieldPath: status.hostIP
-          - name: METALLB_ML_BIND_ADDR
-            valueFrom:
-              fieldRef:
-                fieldPath: status.podIP
-          # needed when another software is also using memberlist / port 7946
-          # when changing this default you also need to update the container ports definition
-          # and the PodSecurityPolicy hostPorts definition
-          #- name: METALLB_ML_BIND_PORT
-          #  value: "7946"
-          - name: METALLB_ML_LABELS
-            value: "app=metallb,component=speaker"
-          - name: METALLB_ML_SECRET_KEY
-            valueFrom:
-              secretKeyRef:
-                name: memberlist
-                key: secretkey
-          image: quay.io/metallb/speaker:v0.11.0
-          name: speaker
-          ports:
-          - containerPort: 7472
-            name: monitoring
-          - containerPort: 7946
-            name: memberlist-tcp
-          - containerPort: 7946
-            name: memberlist-udp
-            protocol: UDP
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              add:
-              - NET_RAW
-              drop:
-              - ALL
-            readOnlyRootFilesystem: true
+      - args:
+        - --port=7472
+        - --config=config
+        - --log-level=info
+        env:
+        - name: METALLB_NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: METALLB_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: METALLB_ML_BIND_ADDR
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        # needed when another software is also using memberlist / port 7946
+        # when changing this default you also need to update the container ports definition
+        # and the PodSecurityPolicy hostPorts definition
+        #- name: METALLB_ML_BIND_PORT
+        #  value: "7946"
+        - name: METALLB_ML_LABELS
+          value: "app=metallb,component=speaker"
+        - name: METALLB_ML_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: memberlist
+              key: secretkey
+        image: quay.io/metallb/speaker:v0.11.0
+        name: speaker
+        ports:
+        - containerPort: 7472
+          name: monitoring
+        - containerPort: 7946
+          name: memberlist-tcp
+        - containerPort: 7946
+          name: memberlist-udp
+          protocol: UDP
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - NET_RAW
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
       hostNetwork: true
       nodeSelector:
         kubernetes.io/os: linux
@@ -399,7 +399,7 @@ metadata:
     app: metallb
     component: controller
   name: controller
-  namespace: sys-metallb
+  namespace: metallb-system
 spec:
   revisionHistoryLimit: 3
   selector:

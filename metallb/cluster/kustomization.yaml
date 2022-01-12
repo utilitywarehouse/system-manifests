@@ -2,8 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 bases:
-  - metallb.yaml
-
+  - ../upstream/
+  
 patches:
   - options:
       allowNameChange: true
@@ -35,6 +35,9 @@ patches:
       - op: replace
         path: /metadata/name
         value: sys-metallb:controller
+      - op: replace
+        path: /subjects/0/namespace
+        value: sys-metallb
     target:
       kind: ClusterRoleBinding
       name: metallb-system:controller
@@ -42,6 +45,9 @@ patches:
       - op: replace
         path: /metadata/name
         value: sys-metallb:speaker
+      - op: replace
+        path: /subjects/0/namespace
+        value: sys-metallb
     target:
       kind: ClusterRoleBinding
       name: metallb-system:speaker
@@ -59,17 +65,7 @@ patches:
     target:
       kind: PodSecurityPolicy
       name: speaker
-  - patch: |-
-      - op: remove
-        path: /rules/1  # memberlist
-    target:
-      kind: Role
-      name: controller
 
 patchesStrategicMerge:
-  - patches/deploy-controller.yaml
-  - patches/ds-speaker.yaml
+  - patches/ignore.yaml
   - patches/psp.yaml
-
-resources:
-  - ds-master-speaker.yaml

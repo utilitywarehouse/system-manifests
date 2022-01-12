@@ -5,7 +5,6 @@ metadata:
     app: master-metallb
     component: master-speaker
   name: master-speaker
-  namespace: sys-metallb
 spec:
   selector:
     matchLabels:
