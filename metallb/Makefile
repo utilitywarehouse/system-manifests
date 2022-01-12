@@ -5,10 +5,9 @@ version=v0.11.0
 
 
 
-all: get-upstream
+all: get-upstream build
 
 build:
-	# TODO
 	@echo
 	kustomize build ./namespaced > final/metallb-namespaced.yaml
 	kustomize build ./cluster    > final/metallb-cluster.yaml
