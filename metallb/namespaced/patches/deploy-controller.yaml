@@ -13,7 +13,7 @@ spec:
             - --log-level=info
           env:
             - $patch: delete
-              name: METALLB_ML_SECRET_NAME
+              name: METALLB_ML_SECRET_NAME  # only required for L2/ARP mode
           name: controller
           resources:
             limits:
