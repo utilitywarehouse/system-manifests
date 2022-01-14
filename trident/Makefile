@@ -9,5 +9,3 @@ gen-yaml:
 	-v $${HOME}/.kube:/root/.kube:rw \
 	-v $${PWD}:/opt/trident \
 	tridentctl /opt/trident/gen-yaml
-	@echo "ATTENTION!!!"
-	@echo "Beware of `type` duplication in CRD: https://github.com/NetApp/trident/issues/671"

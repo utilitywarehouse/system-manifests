@@ -1,5 +1,15 @@
 #!/bin/sh
 
+# Trident is shipping broken yaml (https://github.com/NetApp/trident/issues/671)
+# This function fixes it so kustomize can build it
+cleanup_duplicated_entry() {
+  # Find the line where the crd starts
+  crdstart=$(grep -n tridentmirrorrelationships.trident.netapp.io ./cluster/trident-crds.yaml | awk '{print $1+0}')
+  # From the crd start to the first ocurrence of "type: array" ... ($crdstart,/type: array/)
+  # Remove all lines that include "type:array"...({/type: array/d})
+  sed -i "$crdstart,/type: array/{/type: array/d}" ./cluster/trident-crds.yaml
+}
+
 # capture current context to reset back to it when we are done
 cc=$(kubectl config current-context)
 kubectl config use-context dev-merit
@@ -17,6 +27,7 @@ mv setup/trident-clusterrole.yaml cluster/
 mv setup/trident-crds.yaml cluster/
 mv setup/trident-podsecuritypolicy.yaml cluster/
 
+cleanup_duplicated_entry
 # clean up
 sed -E -i 's/^current-context: .+/current-context: '${cc}'/' /root/.kube/config
 rm certs
