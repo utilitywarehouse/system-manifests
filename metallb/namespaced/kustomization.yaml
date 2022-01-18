@@ -4,8 +4,6 @@ kind: Kustomization
 bases:
   - ../upstream/
 
-namespace: sys-metallb
-
 patches:
   - patch: |-  # the following rules are only required for L2/ARP mode
       - op: remove

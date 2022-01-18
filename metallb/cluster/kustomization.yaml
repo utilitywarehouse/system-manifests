@@ -27,20 +27,6 @@ patches:
       name: metallb-system:speaker
   - patch: |-
       - op: replace
-        path: /subjects/0/namespace
-        value: sys-metallb
-    target:
-      kind: ClusterRoleBinding
-      name: metallb-system:controller
-  - patch: |-
-      - op: replace
-        path: /subjects/0/namespace
-        value: sys-metallb
-    target:
-      kind: ClusterRoleBinding
-      name: metallb-system:speaker
-  - patch: |-
-      - op: replace
         path: /metadata/name
         value: metallb-controller
     target:
