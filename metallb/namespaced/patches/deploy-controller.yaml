@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller
+  namespace: metallb-system
+spec:
+  template:
+    spec:
+      containers:
+        - args:
+            - --port=7472
+            - --config=metallb-config
+            - --log-level=info
+          env:
+            - $patch: delete
+              name: METALLB_ML_SECRET_NAME  # only required for L2/ARP mode
+          name: controller
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi

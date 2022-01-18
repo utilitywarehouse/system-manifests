@@ -1,0 +1,60 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../upstream/
+  
+patches:
+  - options:
+      allowNameChange: true
+    patch: |-
+      - op: replace
+        path: /rules/3/resourceNames  # use the renamed PSP
+        value:
+          - metallb-controller
+    target:
+      kind: ClusterRole
+      name: metallb-system:controller
+  - options:
+      allowNameChange: true
+    patch: |-
+      - op: replace
+        path: /rules/3/resourceNames  # use the renamed PSP
+        value:
+          - metallb-speaker
+    target:
+      kind: ClusterRole
+      name: metallb-system:speaker
+  - patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: sys-metallb
+    target:
+      kind: ClusterRoleBinding
+      name: metallb-system:controller
+  - patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: sys-metallb
+    target:
+      kind: ClusterRoleBinding
+      name: metallb-system:speaker
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: metallb-controller
+    target:
+      kind: PodSecurityPolicy
+      name: controller
+  - patch: |-
+      - op: replace
+        path: /metadata/name
+        value: metallb-speaker
+      - op: remove
+        path: /spec/hostPorts/1  # upstream has extra ports for L2/ARP mode
+    target:
+      kind: PodSecurityPolicy
+      name: speaker
+
+patchesStrategicMerge:
+  - patches/ignore.yaml
