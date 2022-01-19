@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-HELM_VERSION=3.6.0
+HELM_VERSION=3.7.0
 
 .PHONY: helm
 helm: helm-fetch helm-cluster helm-namespaced
