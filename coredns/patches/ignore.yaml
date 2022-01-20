@@ -4,17 +4,3 @@ kind: ConfigMap
 metadata:
   name: coredns
   namespace: kube-system
----
-$patch: delete
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: coredns
-  namespace: kube-system
----
-$patch: delete
-apiVersion: v1
-kind: Service
-metadata:
-  name: kube-dns
-  namespace: kube-system

@@ -4,6 +4,25 @@ kind: Kustomization
 bases:
   - upstream/
 
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+      - op: remove
+        path: /spec/template/spec/nodeSelector
+    target:
+      kind: Deployment
+      name: coredns
+  - patch: |-
+      - op: remove
+        path: /metadata/annotations
+      - op: remove
+        path: /spec/ports/2  # metrics port handled via another svc
+    target:
+      kind: Service
+      name: kube-dns
+
 patchesStrategicMerge:
   - patches/ignore.yaml
 
