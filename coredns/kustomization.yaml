@@ -18,7 +18,7 @@ patches:
       - op: remove
         path: /metadata/annotations
       - op: remove
-        path: /spec/ports/2  # metrics port handled via another svc
+        path: /spec/ports/2  # metrics port handled via separate metrics svc
     target:
       kind: Service
       name: kube-dns

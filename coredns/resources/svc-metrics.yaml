@@ -6,7 +6,7 @@ metadata:
     prometheus.io/scrape: "true"
   labels:
     k8s-app: kube-dns
-  name: coredns-kube-metrics
+  name: coredns-metrics
   namespace: kube-system
 spec:
   ports:
