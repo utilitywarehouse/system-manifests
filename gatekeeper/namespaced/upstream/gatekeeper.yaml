@@ -146,7 +146,7 @@ spec:
       containers:
         - args:
             - --audit-interval=60
-            - --log-level=INFO
+            - --log-level=WARNING
             - --constraint-violations-limit=20
             - --audit-from-cache=false
             - --audit-chunk-size=500
@@ -279,7 +279,7 @@ spec:
             - --logtostderr
             - --log-denies=false
             - --emit-admission-events=false
-            - --log-level=INFO
+            - --log-level=WARNING
             - --exempt-namespace=default
             - --operation=webhook
             - --enable-external-data=false
