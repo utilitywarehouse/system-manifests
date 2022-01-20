@@ -20,7 +20,7 @@ To update the upstream version, edit `HELM_VERSION` in the
 make helm
 ```
 
-Note: requires `helm` v3 and `yq` v3.
+Note: requires `helm` v3, `yq` v3 and `sd`.
 
 This will update the files:
 - [`cluster/upstream/gatekeeper.yaml`](cluster/upstream/gatekeeper.yaml)
