@@ -10,7 +10,7 @@ spec:
           args:
             # Args from the upstream
             - --audit-interval=60
-            - --log-level=INFO
+            - --log-level=WARNING
             - --constraint-violations-limit=20
             - --audit-from-cache=false
             - --audit-chunk-size=0
@@ -49,7 +49,7 @@ spec:
             - --logtostderr
             - --log-denies=false
             - --emit-admission-events=false
-            - --log-level=INFO
+            - --log-level=WARNING
             - --exempt-namespace=$(POD_NAMESPACE)
             - --operation=webhook
             - --enable-mutation=false
