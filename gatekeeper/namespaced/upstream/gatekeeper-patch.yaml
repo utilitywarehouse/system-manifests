@@ -10,22 +10,25 @@ spec:
           args:
             # Args from the upstream
             - --audit-interval=60
-            - --log-level=WARNING
+            # --log-level=INFO
             - --constraint-violations-limit=20
             - --audit-from-cache=false
-            - --audit-chunk-size=0
+            - --audit-chunk-size=500
             # --audit-match-kind-only=false
             - --emit-audit-events=false
             - --operation=audit
             - --operation=status
+            # --operation=mutation-status
             - --logtostderr
             - --health-addr=:9090
             - --prometheus-port=8888
-            # Args added/edited by us to reduce memory footprint by only
-            # requesting kinds we have constraints for and limting the chunk
-            # size.
+            - --enable-external-data=false
+            # Args added/edited by us
+            # * Reduce log noise
+            # * Reduce memory footprint by only requesting kinds we have
+            #   constraints for and disabling mutation
+            - --log-level=WARNING
             - --audit-match-kind-only=true
-            - --audit-chunk-size=500
           resources:
             limits:
               cpu: 2500m
@@ -43,16 +46,24 @@ spec:
       containers:
         - name: manager
           args:
+            # Args from the upstream
             - --port=8443
             - --health-addr=:9090
             - --prometheus-port=8888
             - --logtostderr
             - --log-denies=false
             - --emit-admission-events=false
+            # --log-level=INFO
+            # --exempt-namespace=default
+            - --operation=webhook
+            - --enable-external-data=false
+            # --operation=mutation-webhook
+            # Args added/edited by us
+            # * Reduce log noise
+            # * Reduce memory footprint by disabling mutation
+            # * Disable automatic generation and rotation of TLS certs/keys
             - --log-level=WARNING
             - --exempt-namespace=$(POD_NAMESPACE)
-            - --operation=webhook
-            - --enable-mutation=false
             - --disable-cert-rotation
           resources:
             limits:
