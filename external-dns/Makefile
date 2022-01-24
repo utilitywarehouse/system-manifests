@@ -9,4 +9,4 @@ get-upstream:
 	curl -LOs https://raw.githubusercontent.com/kubernetes-sigs/external-dns/$(COMMIT_REF)/kustomize/external-dns-clusterrolebinding.yaml
 	curl -LOs https://raw.githubusercontent.com/kubernetes-sigs/external-dns/$(COMMIT_REF)/kustomize/external-dns-deployment.yaml
 	curl -LOs https://raw.githubusercontent.com/kubernetes-sigs/external-dns/$(COMMIT_REF)/kustomize/external-dns-serviceaccount.yaml
-	mv -f external-dns-* upstream/
+	mv -fv external-dns-* upstream/
