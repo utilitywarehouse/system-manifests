@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+images:
+  - name: k8s.gcr.io/external-dns/external-dns
+    newTag: v0.10.1
+
+patchesStrategicMerge:
+  - patches/deploy.yaml
+
+resources:
+  - upstream/external-dns-serviceaccount.yaml
+  - upstream/external-dns-clusterrole.yaml
+  - upstream/external-dns-clusterrolebinding.yaml
+  - upstream/external-dns-deployment.yaml
