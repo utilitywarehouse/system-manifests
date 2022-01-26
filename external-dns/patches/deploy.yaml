@@ -9,3 +9,13 @@ spec:
         prometheus.io/path: /metrics
         prometheus.io/port: "7979"
         prometheus.io/scrape: "true"
+    spec:
+      containers:
+        - name: external-dns
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+            requests:
+              cpu: "10m"
+              memory: "128Mi"
