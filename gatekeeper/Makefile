@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-HELM_VERSION=3.7.0
+HELM_VERSION=3.7.1
 
 # Comma separated list of supported api versions
 #

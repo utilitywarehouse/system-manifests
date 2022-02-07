@@ -7,14 +7,3 @@ resources:
   - rbac.yaml
 patchesStrategicMerge:
   - gatekeeper-patch.yaml
-
-# Temporary PSP fix until next version of gatekeeper includes
-#  https://github.com/open-policy-agent/gatekeeper/pull/1711
-patches:
-  - target:
-      kind: PodSecurityPolicy
-      name: gatekeeper-admin
-    patch: |-
-      - op: add
-        path: /spec/volumes/-
-        value: "emptyDir"

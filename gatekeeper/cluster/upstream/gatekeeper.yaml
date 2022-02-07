@@ -1969,6 +1969,7 @@ spec:
     - projected
     - secret
     - downwardAPI
+    - emptyDir
 ---
 # Source: gatekeeper/templates/gatekeeper-manager-role-clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
