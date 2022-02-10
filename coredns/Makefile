@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := get-upstream
 .PHONY: get-upstream
 
-# 1.8.6
-COMMIT_REF=8e13ce82cc607c53551dfe3ab40aef788a69c1ac
+# 1.9.0
+COMMIT_REF=cb075b0a3810ccc0cb83339ddbce4b094c8f499b
 
 get-upstream:
 	curl -Ls \
