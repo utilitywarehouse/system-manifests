@@ -5,18 +5,5 @@ resources:
   - upstream/
 
   - rbac.yaml
-patches:
-  - patch: |-
-      - op: replace
-        path: /webhooks/0/clientConfig/service/namespace
-        value: sys-gatekeeper
-      # A special replacement character ~1 is used to replace / in label name.
-      - op: add
-        path: /metadata/annotations/cert-manager.io~1inject-ca-from
-        value: sys-gatekeeper/gatekeeper-serving-cert
-    target:
-      group: admissionregistration.k8s.io
-      version: v1
-      kind: MutatingWebhookConfiguration
 patchesStrategicMerge:
   - gatekeeper-patch.yaml
