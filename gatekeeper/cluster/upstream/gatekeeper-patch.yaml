@@ -13,3 +13,9 @@ webhooks:
       service:
         namespace: null
     name: check-ignore-label.gatekeeper.sh
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: gatekeeper-mutating-webhook-configuration
+$patch: delete
