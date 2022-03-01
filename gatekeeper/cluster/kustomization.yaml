@@ -5,5 +5,14 @@ resources:
   - upstream/
 
   - rbac.yaml
+patches:
+  - patch: |-
+      - op: replace
+        path: /webhooks/0/clientConfig/service/namespace
+        value: sys-gatekeeper
+    target:
+      group: admissionregistration.k8s.io
+      version: v1
+      kind: MutatingWebhookConfiguration
 patchesStrategicMerge:
   - gatekeeper-patch.yaml
