@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: trident-csi
+  annotations:
+    secret.reloader.stakater.com/reload: "server-tls,client-tls,trident-ca"
+spec:
+  template:
+    spec:
+      tolerations:
+        - key: node.kubernetes.io/unschedulable
+          effect: NoSchedule
+      volumes:
+      - name: certs
+        secret:
+          $patch: delete
+        projected:
+          sources:
+          - secret:
+              name: trident-ca
+              items:
+              - key: tls.crt
+                path: caCert
+              - key: tls.key
+                path: caKey
+          - secret:
+              name: server-tls
+              items:
+              - key: tls.crt
+                path: serverCert
+              - key: tls.key
+                path: serverKey
+          - secret:
+              name: client-tls
+              items:
+              - key: tls.crt
+                path: clientCert
+              - key: tls.key
+                path: clientKey
+          - configMap:
+              name: aes-hack
+              items:
+              - key: emptyKey
+                path: aesKey

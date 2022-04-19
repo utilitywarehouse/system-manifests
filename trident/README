@@ -2,3 +2,13 @@ To update Trident manifests, update the version number inside Dockerfile. Then
 run `make build gen-yaml`.
 
 This will run tridentctl inside Docker and update our manifests
+
+There are additional manifests to deploy certificates to be used by trident and
+work in conjunction with `Reloader`, in order to be able to auto roll pods when
+certificates are rotated.
+A few notes regarding the above:
+- Trident seems to need to mount both server and client side tls to all
+  components, even though they are probably not used.
+- Trident needs a flag to be set for the location of an aes encryption secret,
+  which can point to an empty file if this is not used. This behaviour is not
+  identified as an issue by trident: https://github.com/NetApp/trident/issues/519

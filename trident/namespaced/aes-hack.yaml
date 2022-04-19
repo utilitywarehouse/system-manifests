@@ -1,0 +1,8 @@
+# Trident wants a flag to point to a file storing an aes encryption key, even if
+# this is not used. Hack it via pointing to an empty file
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aes-hack
+data:
+  emptyKey: ""

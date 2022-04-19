@@ -1,0 +1,56 @@
+# https://cert-manager.io/docs/configuration/selfsigned/#bootstrapping-ca-issuers
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: trident-ca
+spec:
+  isCA: true
+  commonName: trident-ca
+  dnsNames:
+  - trident-ca
+  secretName: trident-ca
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer
+spec:
+  ca:
+    secretName: trident-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: server
+spec:
+  issuerRef:
+    name: ca-issuer
+    kind: Issuer
+  commonName: trident-csi
+  dnsNames:
+  - trident-csi
+  secretName: server-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: client
+spec:
+  issuerRef:
+    name: ca-issuer
+    kind: Issuer
+  commonName: trident-node
+  dnsNames:
+  - trident-node
+  secretName: client-tls
