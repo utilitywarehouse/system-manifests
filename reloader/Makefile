@@ -4,7 +4,7 @@
 TAG=v0.0.110
 
 get-upstream:
-	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/deployment.yaml | grep -v namespace > namespaced/deployment.yaml
-	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/serviceaccount.yaml | grep -v namespace > namespaced/serviceaccount.yaml
-	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/clusterrole.yaml | grep -v namespace | sed 's/ClusterRole/Role/g' > namespaced/role.yaml
-	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/clusterrolebinding.yaml | grep -v namespace | sed 's/ClusterRole/Role/g' > namespaced/rolebinding.yaml
+	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/deployment.yaml | grep -v namespace > kube-system/deployment.yaml
+	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/serviceaccount.yaml | grep -v namespace > kube-system/serviceaccount.yaml
+	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/clusterrole.yaml | grep -v namespace > kube-system/clusterrole.yaml
+	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/clusterrolebinding.yaml | grep -v namespace > kube-system/clusterrolebinding.yaml

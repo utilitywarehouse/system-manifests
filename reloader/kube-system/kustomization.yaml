@@ -1,9 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - clusterrolebinding.yaml
+  - clusterrole.yaml
   - deployment.yaml
-  - rolebinding.yaml
-  - role.yaml
   - serviceaccount.yaml
 patchesStrategicMerge:
+  - clusterrolebinding-patch.yaml
   - deployment-patch.yaml

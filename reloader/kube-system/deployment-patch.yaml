@@ -9,8 +9,3 @@ spec:
       - name: reloader-reloader
         args:
           - --reload-strategy=annotations
-        env:
-          - name: KUBERNETES_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace

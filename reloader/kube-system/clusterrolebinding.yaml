@@ -2,7 +2,7 @@
 # Source: reloader/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
   annotations:
     meta.helm.sh/release-name: "reloader"
@@ -15,7 +15,7 @@ metadata:
   name: reloader-reloader-role-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: reloader-reloader-role
 subjects:
   - kind: ServiceAccount
