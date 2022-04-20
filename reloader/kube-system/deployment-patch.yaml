@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reloader-reloader
+spec:
+  template:
+    spec:
+      containers:
+      - name: reloader-reloader
+        args:
+          - --reload-strategy=annotations
