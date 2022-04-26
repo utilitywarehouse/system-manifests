@@ -1,0 +1,11 @@
+- op: add
+  path: /rules/0
+  value:
+    apiGroups:
+      - policy
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+    resourceNames:
+      - ebs-csi-node
