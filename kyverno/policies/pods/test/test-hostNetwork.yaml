@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-hostNetwork-not-set
+  labels:
+    app: test-hostNetwork-not-set
+  namespace: test
+spec:
+  containers:
+  - name: alpine
+    image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-hostNetwork-set-to-false
+  labels:
+    app: test-hostNetwork-set-to-false
+  namespace: test
+spec:
+  containers:
+  - name: alpine
+    image: alpine
+    hostNetwork: false
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-hostNetwork-set-to-true
+  labels:
+    app: test-hostNetwork-set-to-true
+  namespace: test
+spec:
+  containers:
+  - name: alpine
+    image: alpine
+    hostNetwork: true

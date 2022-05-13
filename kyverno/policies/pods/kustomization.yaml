@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- capabilities.yaml
+- hostIPC.yaml
+- hostNetwork.yaml
+- hostPaths.yaml
+- pod-node-restriction.yaml
+- privileged.yaml
+- privilege-escalation.yaml
