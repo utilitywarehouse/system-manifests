@@ -15,7 +15,7 @@ spec:
   validationFailureAction: enforce
   background: true
   rules:
-    - name: privilege-escalation
+    - name: default
       match:
         any:
           - resources:
@@ -31,11 +31,11 @@ spec:
         pattern:
           spec:
             =(ephemeralContainers):
-              - securityContext:
-                  allowPrivilegeEscalation: "false"
+              - =(securityContext):
+                  =(allowPrivilegeEscalation): "false"
             =(initContainers):
-              - securityContext:
-                  allowPrivilegeEscalation: "false"
+              - =(securityContext):
+                  =(allowPrivilegeEscalation): "false"
             containers:
-              - securityContext:
-                  allowPrivilegeEscalation: "false"
+              - =(securityContext):
+                  =(allowPrivilegeEscalation): "false"
