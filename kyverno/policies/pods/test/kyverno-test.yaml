@@ -2,9 +2,11 @@ name: disallow-privileged-containers
 policies:
   - ../hostIPC.yaml
   - ../hostNetwork.yaml
+  - ../privilege-escalation.yaml
 resources:
   - test-hostIPC.yaml
   - test-hostNetwork.yaml
+  - test-privilege-escalation.yaml
 results:
 # Test hostIPC
   - policy: disallow-host-ipc-containers
@@ -36,5 +38,21 @@ results:
   - policy: disallow-host-network-containers
     rule: default
     resource: test-hostNetwork-set-to-true
+    kind: Pod
+    result: fail
+# Test privilege escalation
+  - policy: disallow-privilege-escalation
+    rule: default
+    resource: test-privilege-escalation-not-set
+    kind: Pod
+    result: pass
+  - policy: disallow-privilege-escalation
+    rule: default
+    resource: test-privilege-escalation-set-to-false
+    kind: Pod
+    result: pass
+  - policy: disallow-privilege-escalation
+    rule: default
+    resource: test-privilege-escalation-set-to-true
     kind: Pod
     result: fail
