@@ -1,0 +1,40 @@
+name: disallow-privileged-containers
+policies:
+  - ../hostIPC.yaml
+  - ../hostNetwork.yaml
+resources:
+  - test-hostIPC.yaml
+  - test-hostNetwork.yaml
+results:
+# Test hostIPC
+  - policy: disallow-host-ipc-containers
+    rule: default
+    resource: test-hostIPC-not-set
+    kind: Pod
+    result: pass
+  - policy: disallow-host-ipc-containers
+    rule: default
+    resource: test-hostIPC-set-to-false
+    kind: Pod
+    result: pass
+  - policy: disallow-host-ipc-containers
+    rule: default
+    resource: test-hostIPC-set-to-true
+    kind: Pod
+    result: fail
+# Test hostNetwork
+  - policy: disallow-host-network-containers
+    rule: default
+    resource: test-hostNetwork-not-set
+    kind: Pod
+    result: pass
+  - policy: disallow-host-network-containers
+    rule: default
+    resource: test-hostNetwork-set-to-false
+    kind: Pod
+    result: pass
+  - policy: disallow-host-network-containers
+    rule: default
+    resource: test-hostNetwork-set-to-true
+    kind: Pod
+    result: fail

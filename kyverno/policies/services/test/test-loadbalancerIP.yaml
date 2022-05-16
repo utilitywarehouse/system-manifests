@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-loadBalancerIP-not-set
+  labels:
+    app: test-loadBalancer-not-set
+  namespace: test
+spec:
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-loadBalancerIP-not-allowed
+  labels:
+    app: test-loadBalancer-not-allowed
+  namespace: test
+spec:
+  type: LoadBalancer
+  loadBalancerIP: 1.1.1.1

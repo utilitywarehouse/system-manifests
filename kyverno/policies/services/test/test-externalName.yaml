@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-externalName-localhost-sys-ingress-certs
+  labels:
+    app: test-externalName-localhost-sys-ingress-certs
+  namespace: sys-ingress-certs
+spec:
+  externalName: localhost

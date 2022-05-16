@@ -1,0 +1,42 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pod-capabilities
+  annotations:
+    policies.kyverno.io/title: Pod Capabilities
+    policies.kyverno.io/category: Pod Security Standards (Restricted)
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Adding capabilities other than `NET_BIND_SERVICE` is disallowed. Rules
+      with exeptions for particular workloads must be added here. Default rule
+      maps Kubernetes restricted pod security standard
+      https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    - name: default
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      preconditions:
+        all:
+          - key: "{{ request.operation }}"
+            operator: NotEquals
+            value: DELETE
+      validate:
+        message: >-
+          Any capabilities added other than NET_BIND_SERVICE are disallowed.
+        foreach:
+          - list: request.object.spec.[ephemeralContainers, initContainers, containers][]
+            deny:
+              conditions:
+                all:
+                  - key: "{{ element.securityContext.capabilities.add[] || '' }}"
+                    operator: AnyNotIn
+                    value:
+                      - NET_BIND_SERVICE
+                      - ""

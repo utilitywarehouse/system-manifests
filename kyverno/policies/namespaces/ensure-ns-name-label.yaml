@@ -1,0 +1,26 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: ensure-ns-name-label
+  annotations:
+    policies.kyverno.io/title: Ensure Namespace Name Labels
+    policies.kyverno.io/category: Namespace
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Namespace, Label
+    policies.kyverno.io/description: >-
+      Make sure every namespace has a `name` label that matches the actual
+      namespace name.
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+  - name: ensure-namespace-name-label
+    match:
+      resources:
+        kinds:
+        - Namespace
+    mutate:
+      patchStrategicMerge:
+        metadata:
+          labels:
+            name: "{{request.object.metadata.name}}"

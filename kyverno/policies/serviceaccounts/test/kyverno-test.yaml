@@ -1,0 +1,22 @@
+name: disallow-privileged-containers
+policies:
+  - ../vault-annotation.yaml
+resources:
+  - test-vault-annotation.yaml
+results:
+# Test vault annotation on service accounts
+  - policy: vault-aws-role-arn
+    rule: default
+    resource: test-no-annotation
+    kind: ServiceAccount
+    result: skip
+  - policy: vault-aws-role-arn
+    rule: default
+    resource: test-invalid-annotation
+    kind: ServiceAccount
+    result: fail
+  - policy: vault-aws-role-arn
+    rule: default
+    resource: test-valid-annotation
+    kind: ServiceAccount
+    result: pass
