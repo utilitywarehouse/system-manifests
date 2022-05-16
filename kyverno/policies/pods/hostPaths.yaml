@@ -13,7 +13,7 @@ metadata:
       paths should be disabled by default, except for specific cases
 spec:
   validationFailureAction: enforce
-  background: false
+  background: true
   rules:
     - name: restrict-hostpath-volumes
       match:
