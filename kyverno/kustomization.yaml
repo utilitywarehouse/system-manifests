@@ -7,6 +7,8 @@ resources:
 - policies/
 patchesStrategicMerge:
 - delete-ns.yaml
-- deployment-patch.yaml
+- deployment-filters-patch.yaml
+- deployment-master-schedule-patch.yaml
+- deployment-replicas-patch.yaml
 - kyverno-config-patch.yaml
 - metrics-svc-patch.yaml

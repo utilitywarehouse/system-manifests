@@ -5,16 +5,8 @@ kind: Deployment
 metadata:
   name: kyverno
 spec:
-  replicas: 3 # the recommended replica counts for HA is at least 3: https://kyverno.io/docs/high-availability/
   template:
     spec:
-      # Deploy kyverno on master nodes to avoid being affected by other
-      # workloads. If kyverno is down, admission requests will fail.
-      tolerations:
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
-      nodeSelector:
-        role: master
       containers:
         - args:
             - --filterK8sResources=[Event,*,*][*,kube-public,*][*,kube-node-lease,*][Node,*,*][APIService,*,*][TokenReview,*,*][SubjectAccessReview,*,*][*,kyverno,kyverno*][Binding,*,*][ReplicaSet,*,*][ReportChangeRequest,*,*][ClusterReportChangeRequest,*,*][PolicyReport,*,*][ClusterPolicyReport,*,*]

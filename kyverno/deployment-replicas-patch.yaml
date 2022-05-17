@@ -1,0 +1,6 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyverno
+spec:
+  replicas: 3 # the recommended replica counts for HA is at least 3: https://kyverno.io/docs/high-availability/
