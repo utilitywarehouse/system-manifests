@@ -56,7 +56,7 @@ rules:
     resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
 "tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
 "tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status"]
+"tridentsnapshotinfos/status", "tridentvolumepublications"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]

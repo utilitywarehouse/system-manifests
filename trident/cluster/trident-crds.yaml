@@ -157,7 +157,7 @@ spec:
                   items:
                     type: object
                     properties:
-                      latestSnapshotHandle:
+                      promotedSnapshotHandle:
                         type: string
                       localPVCName:
                         type: string
@@ -361,6 +361,61 @@ spec:
     shortNames:
     - tvol
     - tvolume
+    categories:
+    - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentvolumepublications.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            volumeID:
+              type: string
+            nodeID:
+              type: string
+            readOnly:
+              type: boolean
+            accessMode:
+              type: integer
+              format: int32
+          required:
+              - volumeID
+              - nodeID
+              - readOnly
+      additionalPrinterColumns:
+        - name: Volume
+          type: string
+          description: Volume ID
+          priority: 0
+          jsonPath: .volumeID
+        - name: Node
+          type: string
+          description: Node ID
+          priority: 0
+          jsonPath: .nodeID
+  scope: Namespaced
+  names:
+    plural: tridentvolumepublications
+    singular: tridentvolumepublication
+    kind: TridentVolumePublication
+    shortNames:
+    - tvp
+    - tvpub
+    - tvpublication
+    - tvolpub
+    - tvolumepub
+    - tvolpublication
+    - tvolumepublication
     categories:
     - trident
     - trident-internal
