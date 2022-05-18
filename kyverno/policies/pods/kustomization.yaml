@@ -5,6 +5,7 @@ resources:
 - hostIPC.yaml
 - hostNetwork.yaml
 - hostPaths.yaml
+- hostPID.yaml
 - pod-node-restriction.yaml
 - privileged.yaml
 - privilege-escalation.yaml
