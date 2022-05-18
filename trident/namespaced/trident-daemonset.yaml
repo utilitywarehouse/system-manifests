@@ -4,8 +4,8 @@ kind: DaemonSet
 metadata:
   name: trident-csi
   labels:
-    app: node.csi.trident.netapp.io
     kubectl.kubernetes.io/default-container: trident-main
+    app: node.csi.trident.netapp.io
 spec:
   selector:
     matchLabels:
@@ -20,6 +20,7 @@ spec:
       hostIPC: true
       hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
+      priorityClassName: system-node-critical
       containers:
       - name: trident-main
         securityContext:
@@ -27,7 +28,7 @@ spec:
           capabilities:
             add: ["SYS_ADMIN"]
           allowPrivilegeEscalation: true
-        image: netapp/trident:21.10.1
+        image: netapp/trident:22.04.0
         command:
         - /trident_orchestrator
         args:
@@ -38,6 +39,7 @@ spec:
         - "--csi_role=node"
         - "--log_format=text"
         - "--node_prep=false"
+        - "--http_request_timeout=1m30s"
         - "--https_rest"
         - "--https_port=17546"
         #- -debug
@@ -93,11 +95,12 @@ spec:
           mountPropagation: "Bidirectional"
         - name: trident-tracking-dir
           mountPath: /var/lib/trident/tracking
+          mountPropagation: "Bidirectional"
         - name: certs
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.3.0
+        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.0
         args:
         - "--v=2"
         - "--csi-address=$(ADDRESS)"
@@ -120,10 +123,10 @@ spec:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
       tolerations:
-      - effect: NoExecute
-        operator: Exists
-      - effect: NoSchedule
-        operator: Exists
+      - effect: "NoExecute"
+        operator: "Exists"
+      - effect: "NoSchedule"
+        operator: "Exists"
       volumes:
       - name: plugin-dir
         hostPath:
@@ -158,5 +161,9 @@ spec:
           path: /var/lib/trident/tracking
           type: DirectoryOrCreate
       - name: certs
-        secret:
-          secretName: trident-csi
+        projected:
+          sources:
+          - secret:
+              name: trident-csi
+          - secret:
+              name: trident-encryption-keys

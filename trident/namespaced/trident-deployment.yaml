@@ -4,8 +4,8 @@ kind: Deployment
 metadata:
   name: trident-csi
   labels:
-    app: controller.csi.trident.netapp.io
     kubectl.kubernetes.io/default-container: trident-main
+    app: controller.csi.trident.netapp.io
 spec:
   replicas: 1
   strategy:
@@ -21,7 +21,7 @@ spec:
       serviceAccount: trident-csi
       containers:
       - name: trident-main
-        image: netapp/trident:21.10.1
+        image: netapp/trident:22.04.0
         ports:
         - containerPort: 8443
         - containerPort: 8001
@@ -37,6 +37,7 @@ spec:
         - "--csi_role=controller"
         - "--log_format=text"
         - "--address=127.0.0.1"
+        - "--http_request_timeout=1m30s"
         - "--metrics"
         #- -debug
         livenessProbe:
@@ -67,7 +68,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: trident-autosupport
-        image: netapp/trident-autosupport:21.10
+        image: netapp/trident-autosupport:22.04
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -86,14 +87,14 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: k8s.gcr.io/sig-storage/csi-provisioner:v3.0.0
+        image: k8s.gcr.io/sig-storage/csi-provisioner:v3.1.0
         args:
         - "--v=2"
         - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
         - "--retry-interval-start=8s"
         - "--retry-interval-max=30s"
-        
+        - --feature-gates=Topology=True
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -101,7 +102,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: k8s.gcr.io/sig-storage/csi-attacher:v3.3.0
+        image: k8s.gcr.io/sig-storage/csi-attacher:v3.4.0
         args:
         - "--v=2"
         - "--timeout=60s"
@@ -114,7 +115,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: k8s.gcr.io/sig-storage/csi-resizer:v1.3.0
+        image: k8s.gcr.io/sig-storage/csi-resizer:v1.4.0
         args:
         - "--v=2"
         - "--timeout=300s"
@@ -126,7 +127,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: k8s.gcr.io/sig-storage/csi-snapshotter:v4.2.1
+        image: k8s.gcr.io/sig-storage/csi-snapshotter:v5.0.1
         args:
         - "--v=2"
         - "--timeout=300s"
@@ -140,12 +141,17 @@ spec:
       nodeSelector:
         kubernetes.io/os: linux
         kubernetes.io/arch: amd64
+      tolerations: []
       volumes:
       - name: socket-dir
         emptyDir:
       - name: certs
-        secret:
-          secretName: trident-csi
+        projected:
+          sources:
+          - secret:
+              name: trident-csi
+          - secret:
+              name: trident-encryption-keys
       - name: asup-dir
         emptyDir:
           medium: ""
