@@ -9,33 +9,33 @@ resources:
   - test-privilege-escalation.yaml
 results:
 # Test hostIPC
-  - policy: disallow-host-ipc-containers
+  - policy: disallow-host-ipc-pods
     rule: default
     resource: test-hostIPC-not-set
     kind: Pod
     result: pass
-  - policy: disallow-host-ipc-containers
+  - policy: disallow-host-ipc-pods
     rule: default
     resource: test-hostIPC-set-to-false
     kind: Pod
     result: pass
-  - policy: disallow-host-ipc-containers
+  - policy: disallow-host-ipc-pods
     rule: default
     resource: test-hostIPC-set-to-true
     kind: Pod
     result: fail
 # Test hostNetwork
-  - policy: disallow-host-network-containers
+  - policy: disallow-host-network-pods
     rule: default
     resource: test-hostNetwork-not-set
     kind: Pod
     result: pass
-  - policy: disallow-host-network-containers
+  - policy: disallow-host-network-pods
     rule: default
     resource: test-hostNetwork-set-to-false
     kind: Pod
     result: pass
-  - policy: disallow-host-network-containers
+  - policy: disallow-host-network-pods
     rule: default
     resource: test-hostNetwork-set-to-true
     kind: Pod

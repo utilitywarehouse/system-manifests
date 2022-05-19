@@ -4,11 +4,9 @@ metadata:
   name: test-hostIPC-not-set
   labels:
     app: test-hostIPC-not-set
-  namespace: test
 spec:
   containers:
-  - name: alpine
-    image: alpine
+  - name: test
 ---
 apiVersion: v1
 kind: Pod
@@ -16,12 +14,10 @@ metadata:
   name: test-hostIPC-set-to-false
   labels:
     app: test-hostIPC-set-to-false
-  namespace: test
 spec:
+  hostIPC: false
   containers:
-  - name: alpine
-    image: alpine
-    hostIPC: false
+  - name: test
 ---
 apiVersion: v1
 kind: Pod
@@ -29,9 +25,7 @@ metadata:
   name: test-hostIPC-set-to-true
   labels:
     app: test-hostIPC-set-to-true
-  namespace: test
 spec:
+  hostIPC: true
   containers:
-  - name: alpine
-    image: alpine
-    hostIPC: true
+  - name: test
