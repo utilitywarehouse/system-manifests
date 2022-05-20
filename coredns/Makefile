@@ -1,8 +1,9 @@
 .DEFAULT_GOAL := get-upstream
 .PHONY: get-upstream
 
-# 1.9.0
-COMMIT_REF=cb075b0a3810ccc0cb83339ddbce4b094c8f499b
+# https://github.com/coredns/deployment
+# 1.9.2
+COMMIT_REF=19d203a1c92a80d21fb4e360183a355b9c1da6de
 
 get-upstream:
 	curl -Ls \
