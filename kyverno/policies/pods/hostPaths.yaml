@@ -23,11 +23,9 @@ spec:
                 - Pod
       preconditions:
         all:
-          - key: "{{request.operation}}"
-            operator: In
-            value:
-              - CREATE
-              - UPDATE
+          - key: "{{ request.operation }}"
+            operator: NotEquals
+            value: DELETE
       validate:
         message: HostPath volumes are not allowed.
         deny:
