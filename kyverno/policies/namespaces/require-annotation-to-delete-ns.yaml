@@ -12,7 +12,7 @@ metadata:
       in order to allow deletion.
 spec:
   validationFailureAction: enforce
-  background: true
+  background: false
   rules:
   - name: require-annotation-before-deleting
     match:
