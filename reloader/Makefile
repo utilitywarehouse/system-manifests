@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := get-upstream
 .PHONY: get-upstream
 
-TAG=v0.0.110
+TAG=v0.0.113
 
 get-upstream:
 	curl -sL https://raw.githubusercontent.com/stakater/Reloader/${TAG}/deployments/kubernetes/manifests/deployment.yaml | grep -v namespace > kube-system/deployment.yaml
