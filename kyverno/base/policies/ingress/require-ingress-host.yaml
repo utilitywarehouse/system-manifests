@@ -18,7 +18,7 @@ spec:
     match:
       resources:
         kinds:
-        - ingress
+        - Ingress # Starting with capital letter seems to be significant for policy validation on admission
     validate:
       message: "Ingresses must specify a host"
       pattern:
