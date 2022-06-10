@@ -1,0 +1,42 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-ingressroute-host
+  annotations:
+    policies.kyverno.io/title: Require IngressRoutes Host Specification
+    policies.kyverno.io/category: Traefik
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: IngressRoute
+    policies.kyverno.io/description: >-
+      Every IngressRoute match must contain a specific host with a valid
+      hostname as defined by RFC 1123. By requiring a Host rule, we prevent
+      widespread hijacking by non-specific rules like PathPrefix(`/`).
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    - name: default
+      match:
+        any:
+          - resources:
+              kinds:
+                - IngressRoute
+      preconditions:
+        all:
+          - key: "{{ request.operation }}"
+            operator: NotEquals
+            value: DELETE
+      validate:
+        message: "All route matches must contain a Host rule with valid hostnames as defined by RFC 1123"
+        foreach:
+          - list: request.object.spec.routes
+            deny:
+              conditions:
+                all:
+                  # The regular expression used here was adapted from the validation Kubernetes
+                  # performs on the host field of Ingress rules, which adheres to RFC 1123:
+                  # - https://github.com/kubernetes/kubernetes/blob/18856dace935db46d3ba84374ce23438922e272b/staging/src/k8s.io/apimachinery/pkg/util/validation/validation.go#L198
+                  - key: >-
+                      {{ element.match | regex_match('Host\((`(([a-zA-Z0-9]{1,})|([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\.)+[a-z]{2,})`(, ?)?)+\)', @) }}
+                    operator: Equals
+                    value: false

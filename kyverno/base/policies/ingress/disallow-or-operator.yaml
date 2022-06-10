@@ -1,0 +1,39 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-or-operator
+  annotations:
+    policies.kyverno.io/title: Disallow OR Operator
+    policies.kyverno.io/category: Traefik
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: IngressRoute,IngressRouteTCP
+    policies.kyverno.io/description: >-
+      Using || can allow you to subvert other restrictions and hijack traffic
+      with non-specific rules that match generic paths or headers
+spec:
+  validationFailureAction: enforce
+  background: true
+  rules:
+    - name: default
+      match:
+        any:
+          - resources:
+              kinds:
+                - IngressRoute
+                - IngressRouteTCP
+      preconditions:
+        all:
+          - key: "{{ request.operation }}"
+            operator: NotEquals
+            value: DELETE
+      validate:
+        message: "Route matches must not contain ||"
+        foreach:
+          - list: request.object.spec.routes
+            deny:
+              conditions:
+                all:
+                  - key: >-
+                      {{ element.match | regex_match('\|\|', @) }}
+                    operator: Equals
+                    value: true

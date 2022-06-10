@@ -1,0 +1,31 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: test-require-ingressroute-host-missing
+spec:
+  routes:
+  - match: PathPrefix(`/`)
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: test-require-ingressroute-bad-host
+spec:
+  routes:
+  - match: Host(`example.c`)
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: test-require-ingressroute-host-valid
+spec:
+  routes:
+  - match: Host(`example.com`)
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: test-require-ingressroute-host-valid-with-path
+spec:
+  routes:
+  - match: "Host(`example.com`) && PathPrefix(`/`)"
