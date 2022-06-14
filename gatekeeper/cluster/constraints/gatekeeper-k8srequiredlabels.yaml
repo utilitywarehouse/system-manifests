@@ -14,4 +14,4 @@ spec:
       https://github.com/utilitywarehouse/documentation/tree/master/infra#structure
     labels:
       - key: "uw.systems/owner"
-        allowedRegex: "^(bill|billing|btg-operations|btg-security|cbc|contact-channels|crm|customer|customer-platform|data|digital-support|energy|insurance|partner|payment|system|telecom|unicom)$"
+        allowedRegex: "^(bill|billing|btg-operations|btg-security|cbc|contact-channels|crm|customer|customer-platform|data|dev-enablement|digital-support|energy|insurance|partner|payment|system|telecom|unicom)$"
