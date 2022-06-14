@@ -1,0 +1,78 @@
+name: test-ingress-and-traefik-resources
+policies:
+  - ../disallow-or-operator.yaml
+  - ../disallow-wildcard-hostsni.yaml
+  - ../require-ingressroute-host.yaml
+resources:
+  - test-disallow-or-operator.yaml
+  - test-disallow-wildcard-hostsni.yaml
+  - test-require-ingressroute-host.yaml
+results:
+# Test OR operator
+  - policy: disallow-or-operator
+    rule: default
+    resource: test-or-operator-not-allowed-IngressRouteTCP
+    kind: IngressRouteTCP
+    result: fail
+  - policy: disallow-or-operator
+    rule: default
+    resource: test-or-operator-not-allowed-IngressRoute
+    kind: IngressRoute
+    result: fail
+  - policy: disallow-or-operator
+    rule: default
+    resource: test-or-operator-complex-not-allowed-IngressRoute
+    kind: IngressRoute
+    result: fail
+  - policy: disallow-or-operator
+    rule: default
+    resource: test-or-operator-valid
+    kind: IngressRoute
+    result: pass
+# Test Wildcard HostSNI for ingressRouteTCP resources
+  - policy: disallow-wildcard-hostsni
+    rule: default
+    resource: test-wildcard-hostsni-not-allowed
+    kind: IngressRouteTCP
+    result: fail
+  - policy: disallow-wildcard-hostsni
+    rule: default
+    resource: test-wildcard-subdomain-hostsni-not-allowed
+    kind: IngressRouteTCP
+    result: fail
+  - policy: disallow-wildcard-hostsni
+    rule: default
+    resource: test-wildcard-hostsni-not-allowed-multiple-routes
+    kind: IngressRouteTCP
+    result: fail
+  - policy: disallow-wildcard-hostsni
+    rule: default
+    resource: test-wildcard-hostsni-match-missing
+    kind: IngressRouteTCP
+    result: skip
+  - policy: disallow-wildcard-hostsni
+    rule: default
+    resource: test-valid-hostsni
+    kind: IngressRouteTCP
+    result: pass
+# Test Ingress Route Require Host
+  - policy: require-ingressroute-host
+    rule: default
+    resource: test-require-ingressroute-host-missing
+    kind: IngressRoute
+    result: fail
+  - policy: require-ingressroute-host
+    rule: default
+    resource: test-require-ingressroute-bad-host
+    kind: IngressRoute
+    result: fail
+  - policy: require-ingressroute-host
+    rule: default
+    resource: test-require-ingressroute-host-valid
+    kind: IngressRoute
+    result: pass
+  - policy: require-ingressroute-host
+    rule: default
+    resource: test-require-ingressroute-host-valid-with-path
+    kind: IngressRoute
+    result: pass

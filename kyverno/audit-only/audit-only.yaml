@@ -12,7 +12,28 @@ spec:
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
+  name: disallow-or-operator
+spec:
+  validationFailureAction: audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-wildcard-hostsni
+spec:
+  validationFailureAction: audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
   name: require-ingress-host
+spec:
+  validationFailureAction: audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-ingressroute-host
 spec:
   validationFailureAction: audit
 ---
