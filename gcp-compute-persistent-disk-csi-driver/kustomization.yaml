@@ -6,6 +6,8 @@ kind: Kustomization
 # kube-system to play with the method we apply cluster resources via KA
 namespace: kube-system
 bases:
-  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-1-23?ref=v1.7.2
+  # Use a commit ref instead of tag, as images do not follow tags in the repo
+  #  manifests.
+  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-1-23?ref=0954dbd48d7f3634bfb1133d492a8d1b03bb3dc3 # v1.7.1
 patchesStrategicMerge:
   - csi-gce-pd-controller-patch.yaml
