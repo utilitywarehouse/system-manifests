@@ -44,3 +44,4 @@ spec:
             - --start-time=06:00
             - --end-time=18:00
             - --time-zone=UTC
+            - --period=2m # Check reboot sentinel every 2 minutes
