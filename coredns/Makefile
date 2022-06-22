@@ -2,8 +2,8 @@
 .PHONY: get-upstream
 
 # https://github.com/coredns/deployment
-# 1.9.2
-COMMIT_REF=19d203a1c92a80d21fb4e360183a355b9c1da6de
+# 1.9.3
+COMMIT_REF=6135cc08f48270fc4f0cea141692db621e362c85
 
 get-upstream:
 	curl -Ls \
