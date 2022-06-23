@@ -38,10 +38,35 @@ spec:
                   fieldPath: spec.nodeName
           command:
             - /usr/bin/kured
-            - --ds-namespace=sys-flatcar
-            - --ds-name=kured
-            - --reboot-sentinel=/run/reboot-required
-            - --start-time=06:00
-            - --end-time=18:00
-            - --time-zone=UTC
-            - --period=2m # Check reboot sentinel every 2 minutes
+#            - --force-reboot=false
+#            - --drain-grace-period=-1
+#            - --skip-wait-for-delete-timeout=0
+#            - --drain-timeout=0
+#            - --period=1h
+#            - --ds-namespace=kube-system
+#            - --ds-name=kured
+#            - --lock-annotation=weave.works/kured-node-lock
+#            - --lock-ttl=0
+#            - --prometheus-url=http://prometheus.monitoring.svc.cluster.local
+#            - --alert-filter-regexp=^RebootRequired$
+#            - --alert-firing-only=false
+#            - --reboot-sentinel=/var/run/reboot-required
+#            - --prefer-no-schedule-taint=""
+#            - --reboot-sentinel-command=""
+#            - --slack-hook-url=https://hooks.slack.com/...
+#            - --slack-username=prod
+#            - --slack-channel=alerting
+#            - --notify-url="" # See also shoutrrr url format
+#            - --message-template-drain=Draining node %s
+#            - --message-template-drain=Rebooting node %s
+#            - --blocking-pod-selector=runtime=long,cost=expensive
+#            - --blocking-pod-selector=name=temperamental
+#            - --blocking-pod-selector=...
+#            - --reboot-days=sun,mon,tue,wed,thu,fri,sat
+#            - --reboot-delay=90s
+#            - --start-time=0:00
+#            - --end-time=23:59:59
+#            - --time-zone=UTC
+#            - --annotate-nodes=false
+#            - --lock-release-delay=30m
+#            - --log-format=text
