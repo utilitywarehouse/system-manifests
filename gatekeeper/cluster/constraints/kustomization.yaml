@@ -4,6 +4,21 @@ resources:
   # source-templatename.yaml
   - gatekeeper-k8sexternalips.yaml
   - gatekeeper-k8srequiredlabels.yaml
+  - psp-k8spspallowedusers.yaml
+  - psp-k8spspallowprivilegeescalationcontainer.yaml
+  - psp-k8spspapparmor.yaml
+  - psp-k8spspcapabilities.yaml
+  - psp-k8spspflexvolumes.yaml
+  - psp-k8spspforbiddensysctls.yaml
+  - psp-k8spsphostfilesystem.yaml
+  - psp-k8spsphostnamespace.yaml
+  - psp-k8spsphostnetworkingports.yaml
+  - psp-k8spspprivilegedcontainer.yaml
+  - psp-k8spspprocmount.yaml
+  - psp-k8spspreadonlyrootfilesystem.yaml
+  - psp-k8spspseccomp.yaml
+  - psp-k8spspselinuxv2.yaml
+  - psp-k8spspvolumetypes.yaml
   - semaphore-semaphoremirrornamelength.yaml
   - uw-annotationvalidation.yaml
   - uw-blocknodeport.yaml

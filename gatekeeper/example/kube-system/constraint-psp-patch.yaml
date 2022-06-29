@@ -1,0 +1,16 @@
+# Exceptions to the default constraint for labels that use a more permissive
+# constraint
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPCapabilities
+metadata:
+  name: default
+spec:
+  match:
+    labelSelector:
+      matchExpressions:
+        - key: "uw.systems/capabilities"
+          operator: "NotIn"
+          values: ["sys_ptrace"]
+        - key: "uw.systems/capabilities"
+          operator: "NotIn"
+          values: ["ipc_lock"]
