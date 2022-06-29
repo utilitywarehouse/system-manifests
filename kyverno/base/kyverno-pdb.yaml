@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: kyverno
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: kyverno
