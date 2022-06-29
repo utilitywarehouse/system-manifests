@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: kube-system
 resources:
 - github.com/kyverno/kyverno/config/release?ref=v1.7.0
+- kyverno-pdb.yaml
 
 - policies/
 patchesStrategicMerge:
