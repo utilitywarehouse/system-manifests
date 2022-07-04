@@ -1,15 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ebs-csi-node-psp.yaml
-
   - github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/base?ref=v1.6.0
 patchesStrategicMerge:
   - controller-patch.yaml
-patchesJson6902:
-  - target:
-      group: rbac.authorization.k8s.io
-      version: v1
-      kind: ClusterRole
-      name: ebs-csi-node-role
-    path: clusterrole-csi-node-patch.yaml
