@@ -26,6 +26,4 @@ patchesStrategicMerge:
 resources:
   - upstream/
   - resources/pdb.yaml
-  - resources/psp.yaml
-  - resources/rbac.yaml
   - resources/svc-metrics.yaml
