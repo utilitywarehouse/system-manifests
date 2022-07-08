@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: speaker
-  namespace: metallb-system
+  name: master-speaker
+  namespace: sys-metallb
 spec:
   template:
     spec:
       containers:
         - args:
             - --port=7472
-            - --config=metallb-config
             - --log-level=info
+            - --lb-class=master-speaker
           env:
             - $patch: delete
               name: METALLB_ML_BIND_ADDR
@@ -28,8 +28,10 @@ spec:
               cpu: 100m
               memory: 100Mi
       nodeSelector:
-        role: worker
+        role: master
       tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
         - effect: NoSchedule
           operator: Exists
         - key: CriticalAddonsOnly

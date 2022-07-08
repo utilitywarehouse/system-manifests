@@ -2,14 +2,13 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: controller
-  namespace: metallb-system
+  namespace: sys-metallb
 spec:
   template:
     spec:
       containers:
         - args:
             - --port=7472
-            - --config=metallb-config
             - --log-level=info
           env:
             - $patch: delete
