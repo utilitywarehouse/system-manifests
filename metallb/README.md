@@ -9,11 +9,7 @@
   split in cluster and namespaced resources
 
 ### Notes
-We run MetalLB Speakers on kube masters slightly differently. Because we rely on
-BGP configuration for MetalLB and all nodes have equal weights, we want a
-separate masters deployment to avoid routing all services traffic through master
-nodes. This will happen because BGP multipathing on equal cost peers will prefer
-configuring paths for lower IP addresses, which our masters have compared to
-workers.
-Our Makefile target will try to create a separate manifest for master-speaker,
-which we can later patch.
+Our Makefile fetches upstream resources and follows a list of expected clustered
+and namespaced resources. In case of heavy upstream developmnet we might need to
+verify that the set of resources we keep is up to date and can provide a
+complete metallb setup.
