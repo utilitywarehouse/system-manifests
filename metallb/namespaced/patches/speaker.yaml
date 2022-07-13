@@ -2,14 +2,13 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: speaker
-  namespace: metallb-system
+  namespace: sys-metallb
 spec:
   template:
     spec:
       containers:
         - args:
             - --port=7472
-            - --config=metallb-config
             - --log-level=info
           env:
             - $patch: delete
@@ -27,12 +26,3 @@ spec:
             limits:
               cpu: 100m
               memory: 100Mi
-      nodeSelector:
-        role: worker
-      tolerations:
-        - effect: NoSchedule
-          operator: Exists
-        - key: CriticalAddonsOnly
-          operator: Exists
-        - effect: NoExecute
-          operator: Exists

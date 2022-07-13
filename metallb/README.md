@@ -1,20 +1,15 @@
 # MetalLB
 
 ### Layout
-- __upstream__: the original manifest provided in the [upstream](https://github.com/metallb/metallb) repo.
-- __cluster__: kustomization for cluster resources.
-- __final-cluster__: rendered manifests for cluster resources.
-- __namespaced__: kustomization for namespaced resources.
-- __final-namespaced__: rendered manifests for namespaced resources.
+- __cluster__: base for cluster resources.
+- __namespaced__: base for namespaced resources.
 
 ### Makefile
-- `make get-upstream`: gets the upstream manifest in a single file.
-- `make build`: runs Kustomize builds for all the resources.
-- `make`: get-upstream + build.
-- `make build-cluster`: builds only cluster resources.
-- `make build-namespaced`: builds only namespaced resources.
+- `make get-upstream`: gets the upstream manifest in a single file and tries to
+  split in cluster and namespaced resources
 
 ### Notes
-We run MetalLB Speakers on kube masters slightly differently.
-For that reason we have to add an extra [manifest](namespaced/ds-master-speaker.yaml) file.
-We __must__ follow any changes in the DaemonSet from upstream.
+Our Makefile fetches upstream resources and follows a list of expected clustered
+and namespaced resources. In case of heavy upstream developmnet we might need to
+verify that the set of resources we keep is up to date and can provide a
+complete metallb setup.
