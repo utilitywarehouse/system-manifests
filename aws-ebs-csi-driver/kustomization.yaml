@@ -4,3 +4,4 @@ resources:
   - github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/base?ref=v1.6.0
 patchesStrategicMerge:
   - controller-patch.yaml
+  - daemonset-patch.yaml
