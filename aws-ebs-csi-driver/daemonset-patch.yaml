@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+ name: ebs-csi-node
+spec:
+ template:
+   spec:
+      containers:
+      # We need to patch the arguments to specify the maximum number of volumes
+      # attached to a node, otherwise there is the risk of the scheduler pushing
+      # more volumes than capacity to an instance and result in PVCs stuck at
+      # attaching stage.
+      # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/issues/1163
+      # The aws documentation doesn't clearly mention the max number of vols:
+      # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/volume_limits.html
+      # Comments and testing against our nodes show a limit of 25 vols per node:
+      # https://github.com/kubernetes-sigs/aws-ebs-csi-driver/issues/1163#issuecomment-1047097208
+      - name: ebs-plugin
+        args:
+        - node
+        - --endpoint=$(CSI_ENDPOINT)
+        - --volume-attach-limit=25
+        - --logtostderr
+        - --v=2
+
