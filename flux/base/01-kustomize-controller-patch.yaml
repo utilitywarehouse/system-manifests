@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kustomize-controller
+  namespace: flux-system
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: manager
+          args:
+            - --events-addr=http://notification-controller.$(RUNTIME_NAMESPACE).svc.cluster.local./
+            - --watch-all-namespaces
+            - --log-level=info
+            - --log-encoding=console
+            - --enable-leader-election

@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: sys-flux
+
+bases:
+  - upstream
+
+commonLabels:
+  app.kubernetes.io/instance: sys-flux
+
+patchesStrategicMerge:
+  - 00-remove-objects-patch.yaml
+  - 01-kustomize-controller-patch.yaml
+  - 02-notification-controller-patch.yaml
+  - 03-source-controller-patch.yaml
+  - 04-roleBinding-patch.yaml
