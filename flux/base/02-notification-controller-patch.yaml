@@ -4,7 +4,7 @@ metadata:
   name: notification-controller
   namespace: flux-system
 spec:
-  replicas: 3
+  replicas: 1
   template:
     spec:
       containers:
