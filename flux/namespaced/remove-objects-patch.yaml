@@ -1,0 +1,41 @@
+$patch: delete
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: sys-flux
+  name: helm-controller
+---
+$patch: delete
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: sys-flux
+  name: image-automation-controller
+---
+$patch: delete
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: sys-flux
+  name: image-reflector-controller
+---
+$patch: delete
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: helm-controller
+  namespace: sys-flux
+---
+$patch: delete
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: image-automation-controller
+  namespace: sys-flux
+---
+$patch: delete
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: image-reflector-controller
+  namespace: sys-flux

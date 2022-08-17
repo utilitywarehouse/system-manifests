@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-controller
+  namespace: sys-flux
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: manager
+          args:
+            - --watch-all-namespaces
+            - --log-level=info
+            - --log-encoding=console
+            - --enable-leader-election
