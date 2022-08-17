@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - upstream/service-accounts.yaml
-  - upstream/cluster-role-bindings.yaml
   - upstream/deployments.yaml
   - upstream/services.yaml
   - upstream/network-policies.yaml
@@ -13,4 +12,3 @@ patchesStrategicMerge:
   - kustomize-controller-patch.yaml
   - notification-controller-patch.yaml
   - source-controller-patch.yaml
-  - roleBinding-patch.yaml
