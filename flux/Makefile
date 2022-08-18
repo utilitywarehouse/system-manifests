@@ -7,7 +7,7 @@ VERSION=v0.32.0
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
 
-# This will print type of resources found in upstream but only required once are added
+# This will print the type of resources found in the upstream but only required ones are added
 .PHONY: get-upstream-resource-types
 get-upstream-resource-types:
 	curl -Ls https://github.com/fluxcd/flux2/releases/download/$(VERSION)/install.yaml > /tmp/flux.yaml
