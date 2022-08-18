@@ -20,8 +20,8 @@ get-upstream-resource-types:
 get-upstream:
 	curl -Ls https://github.com/fluxcd/flux2/releases/download/$(VERSION)/install.yaml > /tmp/flux.yaml
 	
-	# replace flux-system with sys-flux (extra "" is needed in MacOS)
-	sed -i "" 's/flux-system/sys-flux/g' /tmp/flux.yaml
+	# replace flux-system with sys-flux
+	sd  flux-system sys-flux /tmp/flux.yaml
 
 	# cluster resources 
 	yq 'select(.kind=="CustomResourceDefinition")' /tmp/flux.yaml > cluster/upstream/crds.yaml
