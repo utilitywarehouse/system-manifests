@@ -6,9 +6,9 @@ resources:
   - upstream/deployments.yaml
   - upstream/services.yaml
   - upstream/network-policies.yaml
+  - git-repository.yaml
 
 patchesStrategicMerge:
-  - git-repository.yaml
   - remove-objects-patch.yaml
   - kustomize-controller-patch.yaml
   - notification-controller-patch.yaml
