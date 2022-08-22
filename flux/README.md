@@ -4,7 +4,9 @@ Open and extensible continuous delivery solution for Kubernetes.
 
 ### Layout
 - __cluster__: base for cluster resources.
-- __namespaced__: base for namespaced resources.
+- __namespaced__: base for namespaced resources. these resources includes controllers,
+ServiceAccounts and services needed to operate flux.
+- __client__: base for client(target namespaces) resources.
 
 ### Makefile
 - `get-upstream-resource-types`: gets list of unique resource types from upstream manifest
