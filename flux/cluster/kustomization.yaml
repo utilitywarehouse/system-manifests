@@ -5,6 +5,7 @@ resources:
   - upstream/crds.yaml
   - upstream/cluster-roles.yaml
   - upstream/cluster-role-bindings.yaml
+  - aggregate-to-admin.yaml
 
 patchesStrategicMerge:
   - roleBinding-patch.yaml
