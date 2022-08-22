@@ -8,6 +8,7 @@ resources:
   - upstream/network-policies.yaml
 
 patchesStrategicMerge:
+  - git-repository.yaml
   - remove-objects-patch.yaml
   - kustomize-controller-patch.yaml
   - notification-controller-patch.yaml
