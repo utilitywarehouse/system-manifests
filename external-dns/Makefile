@@ -1,10 +1,10 @@
 .DEFAULT_GOAL := get-upstream
 .PHONY: get-upstream
 
-# v0.12.0
-COMMIT_REF=bb2606c50d1f602895795e945891c29f5418dd22
+# v0.12.2
+COMMIT_REF=4046257911958c1716f9a63ccf7846e2ee412ae6
 
-#VERSION=v0.12.0
+#VERSION=v0.12.2
 ## Using a later commit instead of the tagged version, because the release did not update the image.
 ## https://github.com/kubernetes-sigs/external-dns/commit/bb2606c50d1f602895795e945891c29f5418dd22
 
