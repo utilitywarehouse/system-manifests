@@ -43,7 +43,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: argocd-redis-ha-proxy-network-policy
+  name: argocd-redis-network-policy
 spec:
   ingress:
     - from:
@@ -56,31 +56,12 @@ spec:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: argocd-application-controller
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: argocd-redis-ha
+      ports:
+        - port: 6379
+          protocol: TCP
   podSelector:
     matchLabels:
-      app.kubernetes.io/name: argocd-redis-ha-haproxy
-  policyTypes:
-    - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: argocd-redis-ha-server-network-policy
-spec:
-  ingress:
-    - from:
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: argocd-redis-ha-haproxy
-        - podSelector:
-            matchLabels:
-              app.kubernetes.io/name: argocd-redis-ha
-  podSelector:
-    matchLabels:
-      app.kubernetes.io/name: argocd-redis-ha
+      app.kubernetes.io/name: argocd-redis
   policyTypes:
     - Ingress
 ---

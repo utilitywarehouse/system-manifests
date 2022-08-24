@@ -8,7 +8,7 @@ VERSION=v2.4.11
 # This will print the type of resources found in the upstream
 .PHONY: get-upstream-info
 get-upstream-info:
-	@curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
+	@curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/install.yaml > /tmp/argo.yaml
 	@echo "count of unique resource types"
 	@cat /tmp/argo.yaml | rg ^kind: | uniq -c
 	@echo
@@ -21,7 +21,7 @@ get-upstream-info:
 # namespaced/ directories based on type of resources. 
 .PHONY: get-upstream
 get-upstream:
-	curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
+	curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/install.yaml > /tmp/argo.yaml
 
 	# replace namespace 
 	sd  "namespace: argocd" "namespace: sys-argocd" /tmp/argo.yaml
