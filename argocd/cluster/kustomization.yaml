@@ -5,6 +5,3 @@ resources:
   - upstream/ClusterRole.yaml
   - upstream/ClusterRoleBinding.yaml
   - upstream/CustomResourceDefinition.yaml
-
-patchesStrategicMerge:
-  - role-binding-patch.yaml
