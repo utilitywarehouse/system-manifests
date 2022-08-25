@@ -7,10 +7,10 @@ Argo CD is a declarative, GitOps continuous delivery tool for Kubernetes.
 - __namespaced__: base for namespaced resources.
 
 ### Makefile
-- `get-upstream-info`: gets list and count of unique resource types from upstream `non-ha` manifest
+- `get-upstream-info`: gets list and count of unique resource types from upstream `ha` manifest
 and names of deployments
 
-- `make get-upstream`: gets the upstream `non-ha` manifest in a single file and splits it 
+- `make get-upstream`: gets the upstream `ha` manifest in a single file and splits it 
 in to cluster and namespaced resources. 
 Following resource types are selected, when updating please manually check for 
 any new resource type added to upstream. 

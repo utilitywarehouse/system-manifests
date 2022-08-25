@@ -8,7 +8,7 @@ VERSION=v2.4.11
 # This will print the type of resources found in the upstream
 .PHONY: get-upstream-info
 get-upstream-info:
-	@curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/install.yaml > /tmp/argo.yaml
+	@curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
 	@echo "count of unique resource types"
 	@cat /tmp/argo.yaml | rg ^kind: | uniq -c
 	@echo
@@ -21,12 +21,12 @@ get-upstream-info:
 # namespaced/ directories based on type of resources. 
 .PHONY: get-upstream
 get-upstream:
-	curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/install.yaml > /tmp/argo.yaml
+	curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
 
-	# replace namespace 
+	# replace namespace
 	sd  "namespace: argocd" "namespace: sys-argocd" /tmp/argo.yaml
 	
-	# cluster resources 
+	# cluster resources
 	yq 'select(.kind=="CustomResourceDefinition")' /tmp/argo.yaml > cluster/upstream/CustomResourceDefinition.yaml
 	yq 'select(.kind=="ClusterRole")' /tmp/argo.yaml > cluster/upstream/ClusterRole.yaml
 	yq 'select(.kind=="ClusterRoleBinding")' /tmp/argo.yaml > cluster/upstream/ClusterRoleBinding.yaml

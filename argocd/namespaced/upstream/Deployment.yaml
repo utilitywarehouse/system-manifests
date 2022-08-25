@@ -203,53 +203,84 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: redis
-    app.kubernetes.io/name: argocd-redis
+    app.kubernetes.io/name: argocd-redis-ha-haproxy
     app.kubernetes.io/part-of: argocd
-  name: argocd-redis
+  name: argocd-redis-ha-haproxy
 spec:
+  replicas: 3
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: argocd-redis
+      app.kubernetes.io/name: argocd-redis-ha-haproxy
+  strategy:
+    type: RollingUpdate
   template:
     metadata:
+      annotations:
+        checksum/config: c55502ce732f78a70658dc77f00c02444cd6b6bede4b270f56d082fdaed1dc5f
       labels:
-        app.kubernetes.io/name: argocd-redis
+        app.kubernetes.io/name: argocd-redis-ha-haproxy
+      name: argocd-redis-ha-haproxy
     spec:
       affinity:
         podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: argocd-redis
-                topologyKey: kubernetes.io/hostname
-              weight: 100
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/part-of: argocd
-                topologyKey: kubernetes.io/hostname
-              weight: 5
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: argocd-redis-ha-haproxy
+              topologyKey: kubernetes.io/hostname
       containers:
-        - args:
-            - --save
-            - ""
-            - --appendonly
-            - "no"
-          image: redis:7.0.4-alpine
-          imagePullPolicy: Always
-          name: redis
+        - image: haproxy:2.0.29-alpine
+          imagePullPolicy: IfNotPresent
+          lifecycle: {}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8888
+            initialDelaySeconds: 5
+            periodSeconds: 3
+          name: haproxy
           ports:
             - containerPort: 6379
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - all
+              name: redis
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8888
+            initialDelaySeconds: 5
+            periodSeconds: 3
+          volumeMounts:
+            - mountPath: /usr/local/etc/haproxy
+              name: data
+            - mountPath: /run/haproxy
+              name: shared-socket
+      initContainers:
+        - args:
+            - /readonly/haproxy_init.sh
+          command:
+            - sh
+          image: haproxy:2.0.29-alpine
+          imagePullPolicy: IfNotPresent
+          name: config-init
+          volumeMounts:
+            - mountPath: /readonly
+              name: config-volume
+              readOnly: true
+            - mountPath: /data
+              name: data
       securityContext:
+        fsGroup: 1000
         runAsNonRoot: true
-        runAsUser: 999
-      serviceAccountName: argocd-redis
+        runAsUser: 1000
+      serviceAccountName: argocd-redis-ha-haproxy
+      volumes:
+        - configMap:
+            name: argocd-redis-ha-configmap
+          name: config-volume
+        - emptyDir: {}
+          name: shared-socket
+        - emptyDir: {}
+          name: data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -260,6 +291,7 @@ metadata:
     app.kubernetes.io/part-of: argocd
   name: argocd-repo-server
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: argocd-repo-server
@@ -275,20 +307,20 @@ spec:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: argocd-repo-server
-                topologyKey: kubernetes.io/hostname
+                topologyKey: failure-domain.beta.kubernetes.io/zone
               weight: 100
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/part-of: argocd
-                topologyKey: kubernetes.io/hostname
-              weight: 5
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: argocd-repo-server
+              topologyKey: kubernetes.io/hostname
       automountServiceAccountToken: false
       containers:
         - command:
-            - sh
-            - -c
-            - entrypoint.sh argocd-repo-server --redis argocd-redis:6379
+            - entrypoint.sh
+            - argocd-repo-server
+            - --redis
+            - argocd-redis-ha-haproxy:6379
           env:
             - name: ARGOCD_RECONCILIATION_TIMEOUT
               valueFrom:
@@ -489,6 +521,7 @@ metadata:
     app.kubernetes.io/part-of: argocd
   name: argocd-server
 spec:
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: argocd-server
@@ -504,18 +537,21 @@ spec:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: argocd-server
-                topologyKey: kubernetes.io/hostname
+                topologyKey: failure-domain.beta.kubernetes.io/zone
               weight: 100
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/part-of: argocd
-                topologyKey: kubernetes.io/hostname
-              weight: 5
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: argocd-server
+              topologyKey: kubernetes.io/hostname
       containers:
         - command:
             - argocd-server
+            - --redis
+            - argocd-redis-ha-haproxy:6379
           env:
+            - name: ARGOCD_API_SERVER_REPLICAS
+              value: "2"
             - name: ARGOCD_SERVER_INSECURE
               valueFrom:
                 configMapKeyRef:
