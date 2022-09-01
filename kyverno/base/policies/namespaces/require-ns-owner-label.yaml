@@ -26,4 +26,4 @@ spec:
       pattern:
         metadata:
           labels:
-            uw.systems/owner: "bill|billing|btg-operations|btg-security|cbc|contact-channels|crm|customer|customer-platform|data|dev-enablement|digital-support|energy|insurance|partner|payment|system|telecom|unicom"
+            uw.systems/owner: "account-platform|bill|billing|btg-operations|btg-security|cbc|contact-channels|crm|customer|customer-platform|data|dev-enablement|digital-support|energy|insurance|partner|payment|system|telecom|unicom"
