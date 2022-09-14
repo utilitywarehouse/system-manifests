@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyverno
+spec:
+  template:
+    spec:
+      containers:
+      # Keep arguments as they come from upstream, lower logs verbosity.
+      - args:
+        - -v=1
+        - --autogenInternals=false
+        name: kyverno
