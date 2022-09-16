@@ -1,6 +1,6 @@
 FROM fedora
 
-ENV TRIDENT_VERSION='22.04.0'
+ENV TRIDENT_VERSION='22.07.0'
 
 RUN \
   curl -L https://github.com/NetApp/trident/releases/download/v${TRIDENT_VERSION}/trident-installer-${TRIDENT_VERSION}.tar.gz -o trident-installer.tar.gz \

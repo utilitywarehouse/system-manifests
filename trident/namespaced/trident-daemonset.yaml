@@ -4,8 +4,8 @@ kind: DaemonSet
 metadata:
   name: trident-csi
   labels:
-    kubectl.kubernetes.io/default-container: trident-main
     app: node.csi.trident.netapp.io
+    kubectl.kubernetes.io/default-container: trident-main
 spec:
   selector:
     matchLabels:
@@ -25,10 +25,8 @@ spec:
       - name: trident-main
         securityContext:
           privileged: true
-          capabilities:
-            add: ["SYS_ADMIN"]
           allowPrivilegeEscalation: true
-        image: netapp/trident:22.04.0
+        image: netapp/trident:22.07.0
         command:
         - /trident_orchestrator
         args:
@@ -38,7 +36,6 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format=text"
-        - "--node_prep=false"
         - "--http_request_timeout=1m30s"
         - "--https_rest"
         - "--https_port=17546"
@@ -100,7 +97,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: k8s.gcr.io/sig-storage/csi-node-driver-registrar:v2.5.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
         args:
         - "--v=2"
         - "--csi-address=$(ADDRESS)"
