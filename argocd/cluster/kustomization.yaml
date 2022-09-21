@@ -5,3 +5,4 @@ resources:
   - upstream/ClusterRole.yaml
   - upstream/ClusterRoleBinding.yaml
   - upstream/CustomResourceDefinition.yaml
+  - strongbox-plugin.yaml
