@@ -4,6 +4,6 @@ resources:
 - disallow-default-tsloptions.yaml
 - disallow-or-operator.yaml
 - disallow-wildcard-hostsni.yaml
-- external-dns-ingress-length.yaml
+- external-dns-domain-label-length.yaml
 - require-ingress-host.yaml
 - require-ingressroute-host.yaml

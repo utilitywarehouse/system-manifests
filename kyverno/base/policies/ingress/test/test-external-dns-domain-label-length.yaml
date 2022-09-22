@@ -7,15 +7,21 @@ metadata:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test-short-name
+  name: test-short-domain-label
   namespace: namespace
   annotations:
     external-dns.alpha.kubernetes.io/target: example.uw.systems
+spec:
+  rules:
+    - host: "example.test.uw.systems"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test-very-very-very-looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong-name
+  name: test-long-domain-label
   namespace: namespace
   annotations:
     external-dns.alpha.kubernetes.io/target: example.uw.systems
+spec:
+  rules:
+    - host: "long-enough-label-for-txt-created-record-to-exceed-63-chars.test.uw.systems"

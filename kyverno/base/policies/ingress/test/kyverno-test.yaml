@@ -2,12 +2,12 @@ name: test-ingress-and-traefik-resources
 policies:
   - ../disallow-or-operator.yaml
   - ../disallow-wildcard-hostsni.yaml
-  - ../external-dns-ingress-length.yaml
+  - ../external-dns-domain-label-length.yaml
   - ../require-ingressroute-host.yaml
 resources:
   - test-disallow-or-operator.yaml
   - test-disallow-wildcard-hostsni.yaml
-  - test-external-dns-ingress-length.yaml
+  - test-external-dns-domain-label-length.yaml
   - test-require-ingressroute-host.yaml
 results:
 # Test OR operator
@@ -79,18 +79,18 @@ results:
     kind: IngressRoute
     result: pass
 # Test External DNS naming constraints
-  - policy: external-dns-ingress-length
-    rule: external-dns-txt-labels-limit
+  - policy: external-dns-domain-label-length
+    rule: domain-label-limit
     resource: no-external-dns-anno
     kind: Ingress
     result: skip
-  - policy: external-dns-ingress-length
-    rule: external-dns-txt-labels-limit
-    resource: test-short-name
+  - policy: external-dns-domain-label-length
+    rule: domain-label-limit
+    resource: test-short-domain-label
     kind: Ingress
     result: pass
-  - policy: external-dns-ingress-length
-    rule: external-dns-txt-labels-limit
-    resource: test-very-very-very-looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong-name
+  - policy: external-dns-domain-label-length
+    rule: domain-label-limit
+    resource: test-long-domain-label
     kind: Ingress
     result: fail
