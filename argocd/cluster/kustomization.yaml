@@ -6,3 +6,11 @@ resources:
   - upstream/ClusterRoleBinding.yaml
   - upstream/CustomResourceDefinition.yaml
   - strongbox-plugin.yaml
+
+patchesJson6902:
+  - target:
+      group: rbac.authorization.k8s.io
+      version: v1
+      kind: ClusterRole
+      name: argocd-server
+    path: clusterRole-path.yaml
