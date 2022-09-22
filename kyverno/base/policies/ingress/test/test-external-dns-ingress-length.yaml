@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: no-external-dns-anno
+  namespace: namespace
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-short-name
+  namespace: namespace
+  annotations:
+    external-dns.alpha.kubernetes.io/target: example.uw.systems
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-very-very-very-looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong-name
+  namespace: namespace
+  annotations:
+    external-dns.alpha.kubernetes.io/target: example.uw.systems

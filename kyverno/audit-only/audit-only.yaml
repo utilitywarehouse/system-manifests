@@ -26,6 +26,13 @@ spec:
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
+  name: external-dns-ingress-length
+spec:
+  validationFailureAction: audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
   name: require-ingress-host
 spec:
   validationFailureAction: audit
