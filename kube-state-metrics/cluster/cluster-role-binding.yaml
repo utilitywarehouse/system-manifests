@@ -4,15 +4,13 @@ metadata:
   labels:
     app.kubernetes.io/component: exporter
     app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/version: 2.4.2
+    app.kubernetes.io/version: 2.6.0
   name: kube-state-metrics
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: kube-state-metrics
 subjects:
-  - kind: ServiceAccount
-    name: kube-state-metrics
-    # Placeholder, patch with the namespace value where Deployment/ServiceAccount
-    # resources live
-    namespace: example
+- kind: ServiceAccount
+  name: kube-state-metrics
+  namespace: kube-system
