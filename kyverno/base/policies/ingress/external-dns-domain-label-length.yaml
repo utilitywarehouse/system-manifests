@@ -37,12 +37,12 @@ spec:
             operator: NotEquals
             value: DELETE
       validate:
-        message: "External-DNS TXT record domain label must be less than 63 chars"
+        message: "External-DNS TXT record domain label must be <= 63 chars"
         foreach:
           - list: request.object.spec.rules
             deny:
               conditions:
                 - key: >-
                     {{ join('-', [prefix, 'cname', element.host.split(@, '.')[0]]) | length(@) }}
-                  operator: GreaterThanOrEquals
+                  operator: GreaterThan
                   value: 63
