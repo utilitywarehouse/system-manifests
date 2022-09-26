@@ -16,6 +16,7 @@ metadata:
       a Pod.
 spec:
   validationFailureAction: enforce
+  failurePolicy: Ignore
   background: true
   rules:
     - name: check-sysctls

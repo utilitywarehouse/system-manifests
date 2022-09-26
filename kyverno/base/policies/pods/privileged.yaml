@@ -13,6 +13,7 @@ metadata:
       ensures Pods do not call for privileged mode.
 spec:
   validationFailureAction: enforce
+  failurePolicy: Ignore
   background: true
   rules:
     - name: default

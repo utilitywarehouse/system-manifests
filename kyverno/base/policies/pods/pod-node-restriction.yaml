@@ -13,6 +13,7 @@ metadata:
       with the taint key `node-role.kubernetes.io/master`.
 spec:
   validationFailureAction: enforce
+  failurePolicy: Ignore
   background: true
   rules:
   - name: restrict-scheduling-to-master
