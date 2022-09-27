@@ -12,6 +12,7 @@ metadata:
       arn
 spec:
   validationFailureAction: enforce
+  failurePolicy: Ignore
   background: false # Disable due to warning events noise.
   rules:
     - name: default

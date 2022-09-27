@@ -14,6 +14,7 @@ metadata:
       https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted
 spec:
   validationFailureAction: enforce
+  failurePolicy: Ignore
   background: true
   rules:
     - name: default

@@ -15,6 +15,7 @@ metadata:
       specify any other AppArmor profiles than `runtime/default` or `localhost/*`.
 spec:
   validationFailureAction: enforce
+  failurePolicy: Ignore
   background: true
   rules:
     - name: app-armor

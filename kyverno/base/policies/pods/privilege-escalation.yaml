@@ -13,6 +13,7 @@ metadata:
       This policy ensures the `allowPrivilegeEscalation` field is set to `false`.
 spec:
   validationFailureAction: enforce
+  failurePolicy: Ignore
   background: true
   rules:
     - name: default
