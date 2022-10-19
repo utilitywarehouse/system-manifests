@@ -17,11 +17,11 @@ data:
           - argocd-voodoobox-plugin
           - decrypt
         args:
-          - "--secret-allowed-namespaces-annotation=kube-applier.io/allowed-namespaces"
+          - "--secret-allowed-namespaces-annotation=argocd.voodoobox.plugin.io/allowed-namespaces"
       generate:
         command:
           - argocd-voodoobox-plugin
           - generate
         args:
-          - "--secret-allowed-namespaces-annotation=kube-applier.io/allowed-namespaces"
+          - "--secret-allowed-namespaces-annotation=argocd.voodoobox.plugin.io/allowed-namespaces"
       lockRepo: false
