@@ -15,9 +15,10 @@ resources:
   - upstream/StatefulSet.yaml
 
 patchesStrategicMerge:
+  - applicationset-patch.yaml
   - argocd-cm.yaml
   - argocd-cmd-params-cm.yaml
   - argocd-rbac-cm.yaml
   - argocd-repo-server-patch.yaml
-  - delete-patch.yaml
+  - dex-patch.yaml
   - resources-patch.yaml
