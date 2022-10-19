@@ -19,7 +19,7 @@ any new resource type added to upstream.
 * [Declarative Setup] (https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/)
 
 ### Note
-current `get-upstream-info` output
+current `get-upstream-info` output `v2.5.0-rc3`
 ```
 count of unique resource types
    3 kind: CustomResourceDefinition
@@ -33,7 +33,7 @@ count of unique resource types
   12 kind: Service
    6 kind: Deployment
    2 kind: StatefulSet
-   6 kind: NetworkPolicy
+   8 kind: NetworkPolicy
 
 Deployment/StatefulSet Names
 argocd-applicationset-controller
