@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-repo-server
+spec:
+  template:
+    spec:
+      automountServiceAccountToken: true
+      volumes:
+        - configMap:
+            name: argocd-voodoobox-plugin
+          name: argocd-voodoobox-plugin
+      containers:
+        - name: voodoobox
+          command: [/var/run/argocd/argocd-cmp-server]
+          image: quay.io/utilitywarehouse/argocd-voodoobox-plugin:master
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /tmp
+              name: tmp
+            # Register plugins into sidecar
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: avp.yaml
+              name: argocd-voodoobox-plugin
+          resources:
+            requests:
+              memory: 250Mi
+              cpu: 0.1
+            limits:
+              cpu: 1
+              memory: 1000Mi
+        - name: argocd-repo-server
+          resources:
+            requests:
+              memory: 250Mi
+              cpu: 0.1
+            limits:
+              cpu: 1
+              memory: 1000Mi

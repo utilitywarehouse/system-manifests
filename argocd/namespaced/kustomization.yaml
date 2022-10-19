@@ -2,6 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - argocd-voodoobox-plugin.yaml
+
   - upstream/ConfigMap.yaml
   - upstream/Deployment.yaml
   - upstream/NetworkPolicy.yaml
@@ -11,3 +13,11 @@ resources:
   - upstream/Service.yaml
   - upstream/ServiceAccount.yaml
   - upstream/StatefulSet.yaml
+
+patchesStrategicMerge:
+  - argocd-cm.yaml
+  - argocd-cmd-params-cm.yaml
+  - argocd-rbac-cm.yaml
+  - argocd-repo-server-patch.yaml
+  - delete-patch.yaml
+  - resources-patch.yaml
