@@ -21,4 +21,5 @@ patchesStrategicMerge:
   - argocd-rbac-cm.yaml
   - argocd-repo-server-patch.yaml
   - dex-patch.yaml
+  - prometheus-patch.yaml
   - resources-patch.yaml
