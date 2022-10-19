@@ -4,7 +4,8 @@ metadata:
   name: argocd-metrics
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "metrics"
+    prometheus.io/port: "8082"
+    prometheus.io/path: /metrics
 ---
 apiVersion: v1
 kind: Service
@@ -12,7 +13,8 @@ metadata:
   name: argocd-notifications-controller-metrics
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "metrics"
+    prometheus.io/port: "9001"
+    prometheus.io/path: /metrics
 ---
 apiVersion: v1
 kind: Service
@@ -20,7 +22,8 @@ metadata:
   name: argocd-repo-server
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "metrics"
+    prometheus.io/port: "8084"
+    prometheus.io/path: /metrics
 ---
 apiVersion: v1
 kind: Service
@@ -28,4 +31,5 @@ metadata:
   name: argocd-server-metrics
   annotations:
     prometheus.io/scrape: "true"
-    prometheus.io/port: "metrics"
+    prometheus.io/port: "8083"
+    prometheus.io/path: /metrics
