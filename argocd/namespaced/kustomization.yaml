@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - argocd-voodoobox-plugin.yaml
+  - egress-network-policies.yaml
 
   - upstream/ConfigMap.yaml
   - upstream/Deployment.yaml
