@@ -7,5 +7,5 @@ spec:
     spec:
       containers:
         - name: argocd-notifications-controller
-          arg:
+          args:
             - "--loglevel=warn"
