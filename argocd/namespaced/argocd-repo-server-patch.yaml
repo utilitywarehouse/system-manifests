@@ -13,6 +13,8 @@ spec:
       containers:
         - name: voodoobox
           command: [/var/run/argocd/argocd-cmp-server]
+          arg:
+            - "--loglevel=warn"
           image: quay.io/utilitywarehouse/argocd-voodoobox-plugin:master
           imagePullPolicy: Always
           securityContext:
