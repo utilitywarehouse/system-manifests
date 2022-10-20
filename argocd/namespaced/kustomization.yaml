@@ -19,6 +19,7 @@ patchesStrategicMerge:
   - applicationset-patch.yaml
   - argocd-cm.yaml
   - argocd-cmd-params-cm.yaml
+  - argocd-notifications-server-patch.yaml
   - argocd-rbac-cm.yaml
   - argocd-repo-server-patch.yaml
   - dex-patch.yaml
