@@ -6,6 +6,9 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["secrets"]
+    resourceNames:
+      - argocd-strongbox-keyring
+      - argocd-voodoobox-git-ssh
     verbs: ["get"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
