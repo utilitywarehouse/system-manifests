@@ -35,10 +35,6 @@ spec:
       containers:
         - command:
             - argocd-application-controller
-            - --status-processors
-            - "20"
-            - --operation-processors
-            - "10"
             - --redis
             - argocd-redis-ha-haproxy:6379
           env:
@@ -116,6 +112,12 @@ spec:
                   key: controller.repo.server.strict.tls
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_PERSIST_RESOURCE_HEALTH
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.resource.health.persist
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_APP_STATE_CACHE_EXPIRATION
               valueFrom:
                 configMapKeyRef:
@@ -126,6 +128,12 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: redis.server
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: REDIS_COMPRESSION
+              valueFrom:
+                configMapKeyRef:
+                  key: redis.compression
                   name: argocd-cmd-params-cm
                   optional: true
             - name: REDISDB
@@ -146,14 +154,14 @@ spec:
                   key: otlp.address
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.4.11
+            - name: ARGOCD_APPLICATION_NAMESPACES
+              valueFrom:
+                configMapKeyRef:
+                  key: application.namespaces
+                  name: argocd-cmd-params-cm
+                  optional: true
+          image: quay.io/argoproj/argocd:v2.5.0-rc3
           imagePullPolicy: Always
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 8082
-            initialDelaySeconds: 5
-            periodSeconds: 10
           name: argocd-application-controller
           ports:
             - containerPort: 8082
@@ -167,9 +175,11 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop:
-                - all
+                - ALL
             readOnlyRootFilesystem: true
             runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
           volumeMounts:
             - mountPath: /app/config/controller/tls
               name: argocd-repo-server-tls
@@ -210,7 +220,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: 7128bfbb51eafaffe3c33b1b463e15f0cf6514cec570f9d9c4f2396f28c724ac
+        checksum/init-config: 226aec192d2f29b5355769c9f1fbf093bf36c3a1e15b574b71fb8fe73fd37c05
       labels:
         app.kubernetes.io/name: argocd-redis-ha
     spec:
@@ -227,9 +237,14 @@ spec:
             - /data/conf/redis.conf
           command:
             - redis-server
-          image: redis:7.0.4-alpine
+          image: redis:7.0.5-alpine
           imagePullPolicy: IfNotPresent
-          lifecycle: {}
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - /readonly-config/trigger-failover-if-master.sh
           livenessProbe:
             exec:
               command:
@@ -256,7 +271,17 @@ spec:
             periodSeconds: 15
             successThreshold: 1
             timeoutSeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           volumeMounts:
+            - mountPath: /readonly-config
+              name: config
+              readOnly: true
             - mountPath: /data
               name: data
             - mountPath: /health
@@ -265,7 +290,7 @@ spec:
             - /data/conf/sentinel.conf
           command:
             - redis-sentinel
-          image: redis:7.0.4-alpine
+          image: redis:7.0.5-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
@@ -294,11 +319,39 @@ spec:
             periodSeconds: 15
             successThreshold: 3
             timeoutSeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           volumeMounts:
             - mountPath: /data
               name: data
             - mountPath: /health
               name: health
+        - args:
+            - /readonly-config/fix-split-brain.sh
+          command:
+            - sh
+          env:
+            - name: SENTINEL_ID_0
+              value: 3c0d9c0320bb34888c2df5757c718ce6ca992ce6
+            - name: SENTINEL_ID_1
+              value: 40000915ab58c3fa8fd888fb8b24711944e6cbb4
+            - name: SENTINEL_ID_2
+              value: 2bbec7894d954a8af3bb54d13eaec53cb024e2ca
+          image: redis:7.0.5-alpine
+          imagePullPolicy: IfNotPresent
+          name: split-brain-fix
+          resources: {}
+          volumeMounts:
+            - mountPath: /readonly-config
+              name: config
+              readOnly: true
+            - mountPath: /data
+              name: data
       initContainers:
         - args:
             - /readonly-config/init.sh
@@ -311,9 +364,16 @@ spec:
               value: 40000915ab58c3fa8fd888fb8b24711944e6cbb4
             - name: SENTINEL_ID_2
               value: 2bbec7894d954a8af3bb54d13eaec53cb024e2ca
-          image: redis:7.0.4-alpine
+          image: redis:7.0.5-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           volumeMounts:
             - mountPath: /readonly-config
               name: config

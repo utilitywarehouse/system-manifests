@@ -1,0 +1,26 @@
+# allow argocd-repo-server to get ssh & strongbox keyring secrets from all namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argocd-voodoobox-plugin
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames:
+      - argocd-voodoobox-strongbox-keyring
+      - argocd-voodoobox-git-ssh
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+  name: argocd-voodoobox-plugin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argocd-voodoobox-plugin
+subjects:
+  - kind: ServiceAccount
+    name: argocd-repo-server
+    namespace: sys-argocd

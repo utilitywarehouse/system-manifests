@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := get-upstream
 
 # https://github.com/argoproj/argo-cd
-VERSION=v2.4.11
+VERSION=v2.5.0-rc3
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
@@ -23,10 +23,10 @@ get-upstream-info:
 get-upstream:
 	curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
 
-	# replace namespace 
+	# replace namespace
 	sd  "namespace: argocd" "namespace: sys-argocd" /tmp/argo.yaml
 	
-	# cluster resources 
+	# cluster resources
 	yq 'select(.kind=="CustomResourceDefinition")' /tmp/argo.yaml > cluster/upstream/CustomResourceDefinition.yaml
 	yq 'select(.kind=="ClusterRole")' /tmp/argo.yaml > cluster/upstream/ClusterRole.yaml
 	yq 'select(.kind=="ClusterRoleBinding")' /tmp/argo.yaml > cluster/upstream/ClusterRoleBinding.yaml
