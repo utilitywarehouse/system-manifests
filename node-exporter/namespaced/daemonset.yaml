@@ -5,7 +5,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: node-exporter
+      app.kubernetes.io/name: node-exporter
   updateStrategy:
     rollingUpdate:
       maxUnavailable: 100%
@@ -13,23 +13,22 @@ spec:
   template:
     metadata:
       labels:
-        app: node-exporter
+        app.kubernetes.io/name: node-exporter
       name: node-exporter
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/path: "/metrics"
-        prometheus.io/port: "9100"
     spec:
       serviceAccountName: node-exporter
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
       containers:
-        - image: quay.io/prometheus/node-exporter:v1.3.1
+        - image: quay.io/prometheus/node-exporter:v1.4.0
           name: node-exporter
           args:
             - "--collector.textfile.directory=/text-collectors"
             - "--no-collector.ipvs"
+            # We disable exporter's own application metrics since we don't use
+            # them and they have different label needs than the node metrics
+            - "--web.disable-exporter-metrics"
           resources:
             requests:
               cpu: 0m
