@@ -7,7 +7,7 @@ rules:
   - apiGroups: [""]
     resources: ["secrets"]
     resourceNames:
-      - argocd-strongbox-keyring
+      - argocd-voodoobox-strongbox-keyring
       - argocd-voodoobox-git-ssh
     verbs: ["get"]
 ---
