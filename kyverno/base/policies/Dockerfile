@@ -1,10 +1,11 @@
-FROM golang:alpine
+FROM alpine:latest
 
-RUN \
-  apk add --no-cache gcc git make musl-dev \
-  && git clone https://github.com/kyverno/kyverno \
-  && cd kyverno \
-  && make cli \
-  && mv ./cmd/cli/kubectl-kyverno/kyverno /usr/local/bin/kyverno
+RUN apk --no-cache add curl tar
+
+ENV VERSION=v1.7.5
+
+RUN curl -LO https://github.com/kyverno/kyverno/releases/download/${VERSION}/kyverno-cli_${VERSION}_linux_x86_64.tar.gz && \
+    tar -xvf kyverno-cli_${VERSION}_linux_x86_64.tar.gz && \
+    cp kyverno /usr/local/bin/
 
 CMD [ "/usr/local/bin/kyverno" ]
