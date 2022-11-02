@@ -18,7 +18,7 @@ metadata:
       destination.name or destination.server should be specified but never both.
       destination namespace should not be empty.
 spec:
-  validationFailureAction: audit
+  validationFailureAction: enforce
   background: true
   rules:
     - name: empty-project
