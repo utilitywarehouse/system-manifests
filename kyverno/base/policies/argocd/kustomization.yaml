@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
   - application-prevent-default-project.yaml
+  - application-field-validation.yaml
