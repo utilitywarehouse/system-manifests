@@ -2,7 +2,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: application-prevent-default-project
+  name: argocd-application-prevent-default-project
   annotations:
     policies.kyverno.io/title: Prevent Use of Default Project
     policies.kyverno.io/category: Argo

@@ -7,48 +7,48 @@ resources:
   - test-application-field-validation.yaml
 results:
   # Test default-project
-  - policy: application-prevent-default-project
+  - policy: argocd-application-prevent-default-project
     rule: default-project
     kind: Application
     resource: test-custom-project
     result: pass
-  - policy: application-prevent-default-project
+  - policy: argocd-application-prevent-default-project
     rule: default-project
     kind: Application
     resource: test-default-project
     result: fail
-  - policy: application-prevent-default-project
+  - policy: argocd-application-prevent-default-project
     rule: default-project
     kind: Application
     resource: test-missing-project-name
     result: fail
   # Test Application Fields validation
-  - policy: application-field-validation
+  - policy: argocd-application-field-validation
     rule: empty-project
     kind: Application
     resource: test-missing-project-name
     result: fail
-  - policy: application-field-validation
+  - policy: argocd-application-field-validation
     rule: empty-source-path
     kind: Application
     resource: test-missing-source-path
     result: fail
-  - policy: application-field-validation
+  - policy: argocd-application-field-validation
     rule: empty-source-path
     kind: Application
     resource: test-source-path-specified
     result: pass
-  - policy: application-field-validation
+  - policy: argocd-application-field-validation
     rule: chart-should-not-be-used
     kind: Application
     resource: test-source-path-chart-specified
     result: fail
-  - policy: application-field-validation
+  - policy: argocd-application-field-validation
     rule: destination-server-name
     kind: Application
     resource: test-missing-destination-server
     result: fail
-  - policy: application-field-validation
+  - policy: argocd-application-field-validation
     rule: empty-destination-namespace
     kind: Application
     resource: test-missing-destination-namespace

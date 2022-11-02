@@ -2,7 +2,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: application-field-validation
+  name: argocd-application-field-validation
   annotations:
     policies.kyverno.io/title: Application Field Validation
     policies.kyverno.io/category: Argo
