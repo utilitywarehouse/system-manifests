@@ -16,7 +16,7 @@ metadata:
       project name should not be empty.
       source.path should be specified and not the helm chart.
       destination.name or destination.server should be specified but never both.
-      destination.namespace should match own namespace
+      destination namespace should not be empty.
 spec:
   validationFailureAction: audit
   background: true
@@ -31,9 +31,9 @@ spec:
         message: >-
           `spec.project` should not be empty.
         pattern:
-          - spec:
-              project: "?*"
-    - name: source-path-chart
+          spec:
+            project: "?*"
+    - name: empty-source-path
       match:
         any:
           - resources:
@@ -41,12 +41,24 @@ spec:
                 - Application
       validate:
         message: >-
-          `spec.source.path` should be specified and not the helm chart.
-        anyPattern:
-          - spec:
-              source:
-                path: "?*"
-                X(chart):
+          `spec.source.path` should be specified
+        Pattern:
+          spec:
+            source:
+              path: "?*"
+    - name: chart-should-not-be-used
+      match:
+        any:
+          - resources:
+              kinds:
+                - Application
+      validate:
+        message: >-
+          `spec.source.chart` should not use helm chart.
+        Pattern:
+          spec:
+            source:
+              X(chart):
     - name: destination-server-name
       match:
         any:
@@ -65,7 +77,7 @@ spec:
               destination:
                 X(server):
                 name: "?*"
-    - name: destination-namespace
+    - name: empty-destination-namespace
       match:
         any:
           - resources:
@@ -73,8 +85,8 @@ spec:
                 - Application
       validate:
         message: >-
-          `spec.destination.namespace`should match application's own namespace.
+          `spec.destination.namespace` should not be empty.
         pattern:
           spec:
             destination:
-              namespace: "{{request.object.namespace}}"
+              namespace: "?*"
