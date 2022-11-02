@@ -42,7 +42,7 @@ spec:
       validate:
         message: >-
           `spec.source.path` should be specified
-        Pattern:
+        pattern:
           spec:
             source:
               path: "?*"
@@ -55,7 +55,7 @@ spec:
       validate:
         message: >-
           `spec.source.chart` should not use helm chart.
-        Pattern:
+        pattern:
           spec:
             source:
               X(chart):
