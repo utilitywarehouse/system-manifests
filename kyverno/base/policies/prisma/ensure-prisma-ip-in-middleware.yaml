@@ -13,8 +13,7 @@ spec:
                 - Middleware
               selector:
                 matchLabels:
-                  kubernetes.io/ingress.class: traefik-public-v2-argo
-                  policy.prisma.uw.io/ip.whitelist: "true"
+                  mutate.uw.io/prisma: ensure-ip-whitelist
       mutate:
         patchStrategicMerge:
           spec:

@@ -3,16 +3,14 @@ kind: Middleware
 metadata:
   name: test-should-add
   labels:
-    kubernetes.io/ingress.class: traefik-public-v2-argo
-    policy.prisma.uw.io/ip.whitelist: "true"
+    mutate.uw.io/prisma: ensure-ip-whitelist
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: test-should-override
   labels:
-    kubernetes.io/ingress.class: traefik-public-v2-argo
-    policy.prisma.uw.io/ip.whitelist: "true"
+    mutate.uw.io/prisma: ensure-ip-whitelist
 spec:
   ipWhiteList:
     ipStrategy:
@@ -27,22 +25,9 @@ spec:
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: test-should-skip1
+  name: test-should-skip
   labels:
     kubernetes.io/ingress.class: traefik-public-v2-argo
-spec:
-  ipWhiteList:
-    ipStrategy:
-      depth: 1
-    sourceRange:
-      - 1.1.1.1
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: Middleware
-metadata:
-  name: test-should-skip2
-  labels:
-    policy.prisma.uw.io/ip.whitelist: "true"
 spec:
   ipWhiteList:
     ipStrategy:

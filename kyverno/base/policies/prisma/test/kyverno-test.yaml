@@ -18,11 +18,6 @@ results:
     result: pass
   - policy: ensure-prisma-ip-in-middleware
     rule: default
-    resource: test-should-skip1
-    kind: Middleware
-    result: skip
-  - policy: ensure-prisma-ip-in-middleware
-    rule: default
-    resource: test-should-skip2
+    resource: test-should-skip
     kind: Middleware
     result: skip

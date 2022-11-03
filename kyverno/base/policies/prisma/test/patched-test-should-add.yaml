@@ -2,8 +2,7 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   labels:
-    kubernetes.io/ingress.class: traefik-public-v2-argo
-    policy.prisma.uw.io/ip.whitelist: "true"
+    mutate.uw.io/prisma: ensure-ip-whitelist
   name: test-should-add
 spec:
   ipWhiteList:
