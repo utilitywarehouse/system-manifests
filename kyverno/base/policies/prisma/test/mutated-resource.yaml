@@ -3,7 +3,6 @@ kind: Middleware
 metadata:
   labels:
     mutate.uw.io/prisma: ensure-ip-whitelist
-  name: test-should-add
 spec:
   ipWhiteList:
     ipStrategy:

@@ -7,13 +7,13 @@ results:
   - policy: ensure-prisma-ip-in-middleware
     rule: default
     resource: test-should-add
-    patchedResource: patched-test-should-add.yaml
+    patchedResource: mutated-resource.yaml
     kind: Middleware
     result: pass
   - policy: ensure-prisma-ip-in-middleware
     rule: default
     resource: test-should-override
-    patchedResource: patched-test-should-override.yaml
+    patchedResource: mutated-resource.yaml
     kind: Middleware
     result: pass
   - policy: ensure-prisma-ip-in-middleware
