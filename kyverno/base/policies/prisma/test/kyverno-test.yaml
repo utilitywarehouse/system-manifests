@@ -1,0 +1,28 @@
+name: test-ingress-and-traefik-resources
+policies:
+  - ../ensure-prisma-ip-in-middleware.yaml
+resources:
+  - test-ensure-prisma-ip.yaml
+results:
+  - policy: ensure-prisma-ip-in-middleware
+    rule: default
+    resource: test-should-add
+    patchedResource: patched-test-should-add.yaml
+    kind: Middleware
+    result: pass
+  - policy: ensure-prisma-ip-in-middleware
+    rule: default
+    resource: test-should-override
+    patchedResource: patched-test-should-override.yaml
+    kind: Middleware
+    result: pass
+  - policy: ensure-prisma-ip-in-middleware
+    rule: default
+    resource: test-should-skip1
+    kind: Middleware
+    result: skip
+  - policy: ensure-prisma-ip-in-middleware
+    rule: default
+    resource: test-should-skip2
+    kind: Middleware
+    result: skip
