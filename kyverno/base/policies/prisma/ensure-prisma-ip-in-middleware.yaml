@@ -13,7 +13,7 @@ spec:
                 - Middleware
               selector:
                 matchLabels:
-                  mutate.uw.io/prisma: ensure-ip-whitelist
+                  mutate.uw.systems/prisma: ensure-ip-whitelist
       mutate:
         patchStrategicMerge:
           spec:
