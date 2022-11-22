@@ -34,15 +34,15 @@ spec:
           resources:
             requests:
               memory: 250Mi
-              cpu: 0.1
+              cpu: 0.5
             limits:
               cpu: 1
               memory: 1000Mi
         - name: argocd-repo-server
           resources:
             requests:
-              memory: 250Mi
-              cpu: 0.1
-            limits:
+              memory: 500Mi
               cpu: 1
+            limits:
+              cpu: 2
               memory: 1000Mi
