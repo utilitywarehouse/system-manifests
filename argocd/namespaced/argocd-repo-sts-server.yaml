@@ -56,7 +56,7 @@ spec:
           resources:
             requests:
               memory: 500Mi
-              cpu: 1
+              cpu: 0.5
             limits:
               cpu: 2
               memory: 1000Mi
@@ -217,9 +217,9 @@ spec:
           resources:
             requests:
               memory: 500Mi
-              cpu: 2
+              cpu: 0.5
             limits:
-              cpu: 3
+              cpu: 2
               memory: 1000Mi
           volumeMounts:
             - mountPath: /app/config/ssh
