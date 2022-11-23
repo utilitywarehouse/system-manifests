@@ -16,6 +16,7 @@ resources:
   - upstream/StatefulSet.yaml
 
 patchesStrategicMerge:
+  - application-controller-patch.yaml
   - applicationset-patch.yaml
   - argocd-cm.yaml
   - argocd-cmd-params-cm.yaml
