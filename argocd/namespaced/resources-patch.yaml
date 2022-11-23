@@ -1,22 +1,4 @@
 apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: argocd-application-controller
-spec:
-  replicas: 1
-  template:
-    spec:
-      containers:
-        - name: argocd-application-controller
-          resources:
-            requests:
-              memory: 500Mi
-              cpu: 0.1
-            limits:
-              cpu: 1
-              memory: 1000Mi
----
-apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: argocd-server

@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - argocd-repo-sts-server.yaml
   - argocd-voodoobox-plugin.yaml
   - egress-network-policies.yaml
 
@@ -16,6 +17,7 @@ resources:
   - upstream/StatefulSet.yaml
 
 patchesStrategicMerge:
+  - application-controller-patch.yaml
   - applicationset-patch.yaml
   - argocd-cm.yaml
   - argocd-cmd-params-cm.yaml
