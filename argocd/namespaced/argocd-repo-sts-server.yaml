@@ -11,6 +11,7 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: argocd-repo-server
+  serviceName: argocd-repo-server
   template:
     metadata:
       labels:
