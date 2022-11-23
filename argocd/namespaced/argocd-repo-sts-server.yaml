@@ -293,10 +293,10 @@ spec:
           name: plugins
         - name: tmp
           persistentVolumeClaim:
-            claimName: argocd-repo-server-tmp
+            claimName: tmp
   volumeClaimTemplates:
     - metadata:
-        name: argocd-repo-server-tmp
+        name: tmp
       spec:
         accessModes:
           - "ReadWriteOnce"
