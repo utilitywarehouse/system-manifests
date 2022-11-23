@@ -291,9 +291,6 @@ spec:
           name: var-files
         - emptyDir: {}
           name: plugins
-        - name: tmp
-          persistentVolumeClaim:
-            claimName: tmp
   volumeClaimTemplates:
     - metadata:
         name: tmp
