@@ -259,6 +259,9 @@ spec:
             - mountPath: /var/run/argocd
               name: var-files
       serviceAccountName: argocd-repo-server
+      securityContext:
+        # https://github.com/argoproj/argo-cd/blob/master/Dockerfile#L41
+        fsGroup: 999
       volumes:
         - configMap:
             name: argocd-ssh-known-hosts-cm
