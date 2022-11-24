@@ -19,7 +19,7 @@ data:
   # Number of application operation processors (default 10)
   controller.operation.processors: "20"
   # Cache expiration for app state (default 1h0m0s)
-  controller.app.state.cache.expiration: "1h0m0s"
+  controller.app.state.cache.expiration: "1h"
 
   ## Repo-server properties
   # Set the logging level. One of: debug|info|warn|error (default "info")
@@ -29,4 +29,4 @@ data:
   # Cache expiration for repo state, incl. app lists, app details, manifest generation, revision meta-data (default 24h0m0s)
   # Argo CD assumes by default that manifests only change when the repo changes, so it caches generated manifests (for 24h by default).
   # With Kustomize remote bases, the manifests can change even though the repo has not changed.
-  reposerver.repo.cache.expiration: "1h0m0s"
+  reposerver.repo.cache.expiration: "1h"
