@@ -9,7 +9,6 @@ data:
     metadata:
       name: argocd-voodoobox-plugin
     spec:
-      allowConcurrency: true
       discover:
         fileName: "*"
       init:
@@ -24,4 +23,4 @@ data:
           - generate
         args:
           - "--secret-allowed-namespaces-annotation=argocd.voodoobox.plugin.io/allowed-namespaces"
-      lockRepo: false
+      lockRepo: true
