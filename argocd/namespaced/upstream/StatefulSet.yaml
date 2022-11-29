@@ -160,7 +160,7 @@ spec:
                   key: application.namespaces
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.5.3
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
@@ -220,7 +220,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: 226aec192d2f29b5355769c9f1fbf093bf36c3a1e15b574b71fb8fe73fd37c05
+        checksum/init-config: 84ccf6a9b8a7fa3ae5b62a8f17d6c65a5197e9605da9b2761179bf942828eefe
       labels:
         app.kubernetes.io/name: argocd-redis-ha
     spec:
@@ -346,6 +346,13 @@ spec:
           imagePullPolicy: IfNotPresent
           name: split-brain-fix
           resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           volumeMounts:
             - mountPath: /readonly-config
               name: config
