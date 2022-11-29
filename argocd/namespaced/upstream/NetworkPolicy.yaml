@@ -96,8 +96,6 @@ spec:
           protocol: UDP
         - port: 53
           protocol: TCP
-      to:
-        - namespaceSelector: {}
   ingress:
     - from:
         - podSelector:
@@ -141,8 +139,6 @@ spec:
           protocol: UDP
         - port: 53
           protocol: TCP
-      to:
-        - namespaceSelector: {}
   ingress:
     - from:
         - podSelector:
