@@ -48,3 +48,20 @@ spec:
             limits:
               cpu: 1
               memory: 500Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: argocd-redis-ha-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: redis
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 0
+            limits:
+              cpu: 1
+              memory: 500Mi
