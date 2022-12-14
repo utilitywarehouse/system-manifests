@@ -1,5 +1,65 @@
-$patch: delete
+# this patch prepares this deployment to be converted in to StatefulSet
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: argocd-repo-server
+spec:
+  replicas: 3
+  serviceName: argocd-repo-server # for StatefulSet specs
+  template:
+    spec:
+      automountServiceAccountToken: true # for required for voodoobox plugin
+      containers:
+        - name: voodoobox
+          command: [/var/run/argocd/argocd-cmp-server]
+          args:
+            - "--loglevel=warn"
+          image: quay.io/utilitywarehouse/argocd-voodoobox-plugin:master
+          imagePullPolicy: Always
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          volumeMounts:
+            - mountPath: /var/run/argocd
+              name: var-files
+            - mountPath: /home/argocd/cmp-server/plugins
+              name: plugins
+            - mountPath: /tmp
+              name: tmp
+            # Register plugins into sidecar
+            - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: avp.yaml
+              name: argocd-voodoobox-plugin
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 0.5
+            limits:
+              cpu: 2
+              memory: 1000Mi
+        - name: argocd-repo-server
+          resources:
+            requests:
+              memory: 500Mi
+              cpu: 0.5
+            limits:
+              cpu: 2
+              memory: 1000Mi
+      securityContext:
+        # https://github.com/argoproj/argo-cd/blob/master/Dockerfile#L41
+        fsGroup: 999
+      volumes:
+        - configMap:
+            name: argocd-voodoobox-plugin
+          name: argocd-voodoobox-plugin
+        - $patch: delete
+          name: tmp
+  volumeClaimTemplates:
+    - metadata:
+        name: tmp
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi

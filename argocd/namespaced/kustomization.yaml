@@ -2,7 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - argocd-repo-sts-server.yaml
   - argocd-voodoobox-plugin.yaml
   - egress-network-policies.yaml
 
@@ -27,3 +26,14 @@ patchesStrategicMerge:
   - dex-patch.yaml
   - prometheus-patch.yaml
   - resources-patch.yaml
+
+patchesJson6902:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: argocd-repo-server
+    patch: |-
+      - op: replace
+        path: /kind
+        value: StatefulSet
