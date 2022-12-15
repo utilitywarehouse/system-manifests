@@ -3,6 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: ensure-prisma-ip-in-middleware
 spec:
+  validationFailureAction: enforce
   mutateExistingOnPolicyUpdate: true
   rules:
     - name: default

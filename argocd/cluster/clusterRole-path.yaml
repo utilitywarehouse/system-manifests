@@ -1,5 +1,15 @@
 # add update permission to argocd-server cluster role
 - op: replace
+  path: /rules/1
+  value:
+    apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - list
+- op: replace
   path: /rules/3
   value:
     apiGroups:

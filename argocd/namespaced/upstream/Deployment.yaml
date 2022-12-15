@@ -24,7 +24,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.5.4
           imagePullPolicy: Always
           name: argocd-applicationset-controller
           ports:
@@ -105,7 +105,7 @@ spec:
                   key: dexserver.disable.tls
                   name: argocd-cmd-params-cm
                   optional: true
-          image: ghcr.io/dexidp/dex:v2.35.3-distroless
+          image: ghcr.io/dexidp/dex:v2.35.3
           imagePullPolicy: Always
           name: dex
           ports:
@@ -134,7 +134,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /shared/argocd-dex
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.5.4
           imagePullPolicy: Always
           name: copyutil
           securityContext:
@@ -187,7 +187,7 @@ spec:
       containers:
         - command:
             - argocd-notifications
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.5.4
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -245,7 +245,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 33967cee643b636d6e9a66e82b7f85814ceb8c55fba7a1d8af439ef056934e5c
+        checksum/config: 1f7a9ffcacb3871ceb9b0741c0714e3f7fa656d426a398c1f727fffb01073f35
       labels:
         app.kubernetes.io/name: argocd-redis-ha-haproxy
       name: argocd-redis-ha-haproxy
@@ -311,9 +311,9 @@ spec:
             - mountPath: /data
               name: data
       securityContext:
-        fsGroup: 1000
+        fsGroup: 99
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 99
       serviceAccountName: argocd-redis-ha-haproxy
       volumes:
         - configMap:
@@ -484,7 +484,7 @@ spec:
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.5.4
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -535,7 +535,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.5.4
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -808,7 +808,7 @@ spec:
                   key: application.namespaces
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.5.4
           imagePullPolicy: Always
           livenessProbe:
             httpGet:

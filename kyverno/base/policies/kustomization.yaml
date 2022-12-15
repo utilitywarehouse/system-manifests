@@ -4,5 +4,6 @@ resources:
   - ingress/
   - namespaces/
   - pods/
+  - prisma/
   - serviceaccounts/
   - services/
