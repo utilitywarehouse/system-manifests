@@ -8,6 +8,12 @@ namespace: kube-system
 bases:
   # Use a commit ref instead of tag, as images do not follow tags in the repo
   #  manifests.
-  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-1-23?ref=0954dbd48d7f3634bfb1133d492a8d1b03bb3dc3 # v1.7.1
+  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-1-24?ref=0954dbd48d7f3634bfb1133d492a8d1b03bb3dc3
 patchesStrategicMerge:
   - csi-gce-pd-controller-patch.yaml
+
+# Seems like they stopped patching images in the Kubernetes deployment manifests
+# provided from upstream. Lets do it here:
+images:
+  - name: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver
+    newTag: v1.18.1
