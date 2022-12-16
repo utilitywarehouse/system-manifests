@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := get-upstream
 .PHONY: get-upstream
 
-# v0.12.2
-COMMIT_REF=4046257911958c1716f9a63ccf7846e2ee412ae6
+# v0.13.1
+COMMIT_REF=de3474436fd84b825dfcac9eb2f0d1f14804a5d3
 
 #VERSION=v0.12.2
 ## Using a later commit instead of the tagged version, because the release did not update the image.
