@@ -16,4 +16,4 @@ patchesStrategicMerge:
 # provided from upstream. Lets do it here:
 images:
   - name: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver
-    newTag: v1.18.1
+    newTag: v1.8.0
