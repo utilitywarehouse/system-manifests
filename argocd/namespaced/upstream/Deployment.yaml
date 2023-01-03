@@ -24,7 +24,61 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: quay.io/argoproj/argocd:v2.5.4
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_ENABLE_LEADER_ELECTION
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.leader.election
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.namespace
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_REPO_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  key: repo.server
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_POLICY
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.policy
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.debug
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_LOGFORMAT
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.log.format
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_LOGLEVEL
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.log.level
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATIONSET_CONTROLLER_DRY_RUN
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.dryrun
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_GIT_MODULES_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  key: applicationsetcontroller.enable.git.submodule
+                  name: argocd-cmd-params-cm
+                  optional: true
+          image: quay.io/argoproj/argocd:v2.6.0-rc1
           imagePullPolicy: Always
           name: argocd-applicationset-controller
           ports:
@@ -134,7 +188,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /shared/argocd-dex
-          image: quay.io/argoproj/argocd:v2.5.4
+          image: quay.io/argoproj/argocd:v2.6.0-rc1
           imagePullPolicy: Always
           name: copyutil
           securityContext:
@@ -187,7 +241,7 @@ spec:
       containers:
         - command:
             - argocd-notifications
-          image: quay.io/argoproj/argocd:v2.5.4
+          image: quay.io/argoproj/argocd:v2.6.0-rc1
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -478,13 +532,19 @@ spec:
                   key: reposerver.streamed.manifest.max.extracted.size
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_GIT_MODULES_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  key: reposerver.enable.git.submodule
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: HELM_CACHE_HOME
               value: /helm-working-dir
             - name: HELM_CONFIG_HOME
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v2.5.4
+          image: quay.io/argoproj/argocd:v2.6.0-rc1
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -492,7 +552,8 @@ spec:
               path: /healthz?full=true
               port: 8084
             initialDelaySeconds: 30
-            periodSeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
           name: argocd-repo-server
           ports:
             - containerPort: 8081
@@ -535,7 +596,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v2.5.4
+          image: quay.io/argoproj/argocd:v2.6.0-rc1
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -808,7 +869,13 @@ spec:
                   key: application.namespaces
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.5.4
+            - name: ARGOCD_SERVER_ENABLE_PROXY_EXTENSION
+              valueFrom:
+                configMapKeyRef:
+                  key: server.enable.proxy.extension
+                  name: argocd-cmd-params-cm
+                  optional: true
+          image: quay.io/argoproj/argocd:v2.6.0-rc1
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
@@ -816,6 +883,7 @@ spec:
               port: 8080
             initialDelaySeconds: 3
             periodSeconds: 30
+            timeoutSeconds: 5
           name: argocd-server
           ports:
             - containerPort: 8080
