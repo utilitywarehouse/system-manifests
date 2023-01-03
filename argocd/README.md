@@ -29,7 +29,7 @@ any new resource type added to upstream.
    * Dex Server - as we are using oidc for authentication
 
 ### Note
-current `get-upstream-info` output `v2.5.4`
+current `get-upstream-info` output `v2.6.0-rc1`
 ```
 count of unique resource types
    3 kind: CustomResourceDefinition
