@@ -1,4 +1,4 @@
-v=v2.6.0
+v=v2.7.0
 
 pull-upstream:
 	curl https://raw.githubusercontent.com/kubernetes/kube-state-metrics/$(v)/examples/standard/cluster-role-binding.yaml > cluster/cluster-role-binding.yaml
@@ -8,4 +8,4 @@ pull-upstream:
 	curl https://raw.githubusercontent.com/kubernetes/kube-state-metrics/$(v)/examples/standard/service.yaml > namespaced/service.yaml
 
 clean-ns-attr:
-	sd '^\s+namespace:.+\n' '' $(rg '^\s+namespace:' namespaced/ -l)
+	sd '^\s+namespace:.+\n' '' $$(rg '^\s+namespace:' namespaced/ -l)
