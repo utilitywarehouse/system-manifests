@@ -15,7 +15,9 @@ mv setup/trident-service.yaml namespaced/
 mv setup/trident-clusterrolebinding.yaml cluster/
 mv setup/trident-clusterrole.yaml cluster/
 mv setup/trident-crds.yaml cluster/
-mv setup/trident-podsecuritypolicy.yaml cluster/
+# Remove PodSecurityPolicies manually until trident updates
+# https://github.com/NetApp/trident/issues/794
+rm setup/trident-podsecuritypolicy.yaml
 
 # clean up
 sed -E -i 's/^current-context: .+/current-context: '${cc}'/' /root/.kube/config
