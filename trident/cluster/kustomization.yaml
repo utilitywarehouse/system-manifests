@@ -4,4 +4,3 @@ resources:
   - trident-clusterrolebinding.yaml
   - trident-clusterrole.yaml
   - trident-crds.yaml
-  - trident-podsecuritypolicy.yaml
