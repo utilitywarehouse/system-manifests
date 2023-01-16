@@ -84,7 +84,7 @@ spec:
                   key: applicationsetcontroller.enable.progressive.rollouts
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.6.0-rc2
+          image: quay.io/argoproj/argocd:v2.6.0-rc3
           imagePullPolicy: Always
           name: argocd-applicationset-controller
           ports:
@@ -194,7 +194,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /shared/argocd-dex
-          image: quay.io/argoproj/argocd:v2.6.0-rc2
+          image: quay.io/argoproj/argocd:v2.6.0-rc3
           imagePullPolicy: Always
           name: copyutil
           securityContext:
@@ -247,7 +247,7 @@ spec:
       containers:
         - command:
             - argocd-notifications
-          image: quay.io/argoproj/argocd:v2.6.0-rc2
+          image: quay.io/argoproj/argocd:v2.6.0-rc3
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -305,7 +305,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 1f7a9ffcacb3871ceb9b0741c0714e3f7fa656d426a398c1f727fffb01073f35
+        checksum/config: 718bbb277da8610063a7c0fd810984577c2e8ab215815a71211dfa6e20f67321
       labels:
         app.kubernetes.io/name: argocd-redis-ha-haproxy
       name: argocd-redis-ha-haproxy
@@ -550,7 +550,7 @@ spec:
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v2.6.0-rc2
+          image: quay.io/argoproj/argocd:v2.6.0-rc3
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -602,7 +602,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v2.6.0-rc2
+          image: quay.io/argoproj/argocd:v2.6.0-rc3
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -881,7 +881,7 @@ spec:
                   key: server.enable.proxy.extension
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.6.0-rc2
+          image: quay.io/argoproj/argocd:v2.6.0-rc3
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
