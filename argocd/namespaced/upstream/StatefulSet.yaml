@@ -160,7 +160,7 @@ spec:
                   key: application.namespaces
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.6.0-rc2
+          image: quay.io/argoproj/argocd:v2.6.0-rc3
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
@@ -220,7 +220,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: 84ccf6a9b8a7fa3ae5b62a8f17d6c65a5197e9605da9b2761179bf942828eefe
+        checksum/init-config: 69130412bda04eacad3530cb7bcf26cf121401e725e15d0959dd71a7380afe75
       labels:
         app.kubernetes.io/name: argocd-redis-ha
     spec:
@@ -237,7 +237,7 @@ spec:
             - /data/conf/redis.conf
           command:
             - redis-server
-          image: redis:7.0.5-alpine
+          image: redis:7.0.7-alpine
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -290,7 +290,7 @@ spec:
             - /data/conf/sentinel.conf
           command:
             - redis-sentinel
-          image: redis:7.0.5-alpine
+          image: redis:7.0.7-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
@@ -342,7 +342,7 @@ spec:
               value: 40000915ab58c3fa8fd888fb8b24711944e6cbb4
             - name: SENTINEL_ID_2
               value: 2bbec7894d954a8af3bb54d13eaec53cb024e2ca
-          image: redis:7.0.5-alpine
+          image: redis:7.0.7-alpine
           imagePullPolicy: IfNotPresent
           name: split-brain-fix
           resources: {}
@@ -371,7 +371,7 @@ spec:
               value: 40000915ab58c3fa8fd888fb8b24711944e6cbb4
             - name: SENTINEL_ID_2
               value: 2bbec7894d954a8af3bb54d13eaec53cb024e2ca
-          image: redis:7.0.5-alpine
+          image: redis:7.0.7-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
