@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tf-leader-election-rolebinding
+  namespace: sys-flux
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: tf-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: tf-controller
+    namespace: sys-flux

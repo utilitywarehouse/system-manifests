@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/component: notification-controller
     app.kubernetes.io/instance: sys-flux
     app.kubernetes.io/part-of: flux
     control-plane: controller
@@ -21,6 +22,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/component: source-controller
     app.kubernetes.io/instance: sys-flux
     app.kubernetes.io/part-of: flux
     control-plane: controller
@@ -40,6 +42,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/component: notification-controller
     app.kubernetes.io/instance: sys-flux
     app.kubernetes.io/part-of: flux
     control-plane: controller
