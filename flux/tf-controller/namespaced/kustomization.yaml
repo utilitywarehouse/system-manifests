@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - deployment.yaml
-  - role-bindings.yaml
-  - role.yaml
-  - services.yaml
+  - upstream/deployment.yaml
+  - upstream/role-bindings.yaml
+  - upstream/role.yaml
+  - upstream/sa.yaml
