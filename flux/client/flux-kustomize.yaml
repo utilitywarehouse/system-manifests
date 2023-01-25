@@ -15,6 +15,6 @@ spec:
   force: true # recreate resources on immutable fields changes
   serviceAccountName: flux-delegate
   sourceRef:
-    namespace: sys-flux
+    namespace: sys-fluxcd
     kind: GitRepository
     name: main
