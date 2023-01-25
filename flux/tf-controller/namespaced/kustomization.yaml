@@ -6,3 +6,6 @@ resources:
   - upstream/role-bindings.yaml
   - upstream/role.yaml
   - upstream/sa.yaml
+
+patchesStrategicMerge:
+  - remove-tf-runner-sa.yaml

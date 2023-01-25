@@ -5,3 +5,6 @@ resources:
   - upstream/cluster-role-bindings.yaml
   - upstream/cluster-roles.yaml
   - upstream/crds.yaml
+
+patchesStrategicMerge:
+  - remove-tf-runner-role.yaml
