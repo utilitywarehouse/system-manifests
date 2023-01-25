@@ -41,19 +41,19 @@ get-upstream:
 
 .PHONY: get-tf-controller
 get-tf-controller:
-	curl -Ls https://github.com/weaveworks/tf-controller/releases/download/${TF_CON_VER}/tf-controller.crds.yaml > tf-controller/cluster/crds.yaml
-	curl -Ls https://github.com/weaveworks/tf-controller/releases/download/${TF_CON_VER}/tf-controller.deployment.yaml > tf-controller/namespaced/deployment.yaml
+	curl -Ls https://github.com/weaveworks/tf-controller/releases/download/${TF_CON_VER}/tf-controller.crds.yaml > tf-controller/cluster/upstream/crds.yaml
+	curl -Ls https://github.com/weaveworks/tf-controller/releases/download/${TF_CON_VER}/tf-controller.deployment.yaml > tf-controller/namespaced/upstream/deployment.yaml
 	curl -Ls https://github.com/weaveworks/tf-controller/releases/download/${TF_CON_VER}/tf-controller.rbac.yaml > /tmp/tf-controller.rbac.yaml
 
 	# replace flux-system with sys-flux
 	sd flux-system sys-flux /tmp/tf-controller.rbac.yaml
 
 	# cluster resources
-	yq 'select(.kind=="ClusterRole")' /tmp/tf-controller.rbac.yaml > tf-controller/cluster/cluster-roles.yaml
-	yq 'select(.kind=="ClusterRoleBinding")' /tmp/tf-controller.rbac.yaml > tf-controller/cluster/cluster-role-bindings.yaml
+	yq 'select(.kind=="ClusterRole")' /tmp/tf-controller.rbac.yaml > tf-controller/cluster/upstream/cluster-roles.yaml
+	yq 'select(.kind=="ClusterRoleBinding")' /tmp/tf-controller.rbac.yaml > tf-controller/cluster/upstream/cluster-role-bindings.yaml
 
 
 	# namespace resources
-	yq 'select(.kind=="ServiceAccount")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/services.yaml
-	yq 'select(.kind=="Role")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/role.yaml
-	yq 'select(.kind=="RoleBinding")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/role-bindings.yaml
+	yq 'select(.kind=="ServiceAccount")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/upstream/sa.yaml
+	yq 'select(.kind=="Role")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/upstream/role.yaml
+	yq 'select(.kind=="RoleBinding")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/upstream/role-bindings.yaml
