@@ -3,11 +3,11 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: helm-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: helm-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -83,11 +83,11 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: image-automation-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: image-automation-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -103,7 +103,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -163,11 +163,11 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: image-reflector-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: image-reflector-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -183,7 +183,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -247,11 +247,11 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: kustomize-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: kustomize-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -267,7 +267,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -327,11 +327,11 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: notification-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: notification-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -412,11 +412,11 @@ kind: Deployment
 metadata:
   labels:
     app.kubernetes.io/component: source-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: source-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -434,7 +434,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json

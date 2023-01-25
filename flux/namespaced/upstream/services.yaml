@@ -3,11 +3,11 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: notification-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: notification-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   ports:
     - name: http
@@ -23,11 +23,11 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: source-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: source-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   ports:
     - name: http
@@ -43,11 +43,11 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/component: notification-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: webhook-receiver
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   ports:
     - name: http
