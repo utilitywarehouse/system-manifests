@@ -6,7 +6,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: notification-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: alerts.notification.toolkit.fluxcd.io
 spec:
@@ -350,7 +350,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: source-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: buckets.source.toolkit.fluxcd.io
 spec:
@@ -756,7 +756,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: source-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: gitrepositories.source.toolkit.fluxcd.io
 spec:
@@ -1360,7 +1360,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: source-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: helmcharts.source.toolkit.fluxcd.io
 spec:
@@ -1820,7 +1820,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: helm-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: helmreleases.helm.toolkit.fluxcd.io
 spec:
@@ -2451,7 +2451,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: source-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: helmrepositories.source.toolkit.fluxcd.io
 spec:
@@ -2834,7 +2834,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: image-reflector-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: imagepolicies.image.toolkit.fluxcd.io
 spec:
@@ -3002,7 +3002,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: image-reflector-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: imagerepositories.image.toolkit.fluxcd.io
 spec:
@@ -3187,7 +3187,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: image-automation-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: imageupdateautomations.image.toolkit.fluxcd.io
 spec:
@@ -3426,7 +3426,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: kustomize-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: kustomizations.kustomize.toolkit.fluxcd.io
 spec:
@@ -4289,7 +4289,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: source-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: ocirepositories.source.toolkit.fluxcd.io
 spec:
@@ -4566,7 +4566,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: notification-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: providers.notification.toolkit.fluxcd.io
 spec:
@@ -4908,7 +4908,7 @@ metadata:
   creationTimestamp: null
   labels:
     app.kubernetes.io/component: notification-controller
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: receivers.notification.toolkit.fluxcd.io
 spec:

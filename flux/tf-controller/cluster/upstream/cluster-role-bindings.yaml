@@ -9,7 +9,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tf-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -22,7 +22,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tf-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -35,4 +35,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: tf-runner
-    namespace: sys-flux
+    namespace: sys-fluxcd

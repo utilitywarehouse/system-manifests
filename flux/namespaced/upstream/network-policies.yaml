@@ -2,10 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: allow-egress
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   egress:
     - {}
@@ -21,10 +21,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: allow-scraping
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   ingress:
     - from:
@@ -40,10 +40,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: allow-webhooks
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   ingress:
     - from:
