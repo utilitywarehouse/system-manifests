@@ -7,17 +7,18 @@ kubectl config use-context dev-merit
 ln -s /root/.kube/certs .
 tridentctl install -n sys-trident --generate-custom-yaml
 
+mv setup/trident-controller-serviceaccount.yaml namespaced/
+mv setup/trident-controller-role.yaml namespaced/
+mv setup/trident-controller-rolebinding.yaml namespaced/
 mv setup/trident-daemonset.yaml namespaced/
 mv setup/trident-deployment.yaml namespaced/
-mv setup/trident-serviceaccount.yaml namespaced/
+mv setup/trident-node-linux-serviceaccount.yaml namespaced/
+mv setup/trident-resourcequota.yaml namespaced/
 mv setup/trident-service.yaml namespaced/
 
-mv setup/trident-clusterrolebinding.yaml cluster/
-mv setup/trident-clusterrole.yaml cluster/
+mv setup/trident-controller-clusterrole.yaml cluster/
+mv setup/trident-controller-clusterrolebinding.yaml cluster/
 mv setup/trident-crds.yaml cluster/
-# Remove PodSecurityPolicies manually until trident updates
-# https://github.com/NetApp/trident/issues/794
-rm setup/trident-podsecuritypolicy.yaml
 
 # clean up
 sed -E -i 's/^current-context: .+/current-context: '${cc}'/' /root/.kube/config

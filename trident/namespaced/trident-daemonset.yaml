@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: trident-csi
+  name: trident-node-linux
   labels:
     app: node.csi.trident.netapp.io
     kubectl.kubernetes.io/default-container: trident-main
@@ -15,7 +15,7 @@ spec:
       labels:
         app: node.csi.trident.netapp.io
     spec:
-      serviceAccount: trident-csi
+      serviceAccount: trident-node-linux
       hostNetwork: true
       hostIPC: true
       hostPID: true
@@ -26,19 +26,23 @@ spec:
         securityContext:
           privileged: true
           allowPrivilegeEscalation: true
-        image: netapp/trident:22.07.0
+        image: netapp/trident:23.01.0
+        imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
         args:
         - "--no_persistence"
+        - "--k8s_pod"
         - "--rest=false"
         - "--csi_node_name=$(KUBE_NODE_NAME)"
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format=text"
+        - "--disable_audit_log=true"
         - "--http_request_timeout=1m30s"
         - "--https_rest"
         - "--https_port=17546"
+        - "--enable_force_detach=false"
         #- -debug
         startupProbe:
           httpGet:
@@ -70,6 +74,8 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
+        - name: KUBELET_DIR
+          value: /var/lib/kubelet
         - name: CSI_ENDPOINT
           value: unix://plugin/csi.sock
         - name: PATH
@@ -97,7 +103,8 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.5.1
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.7.0
+        imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
         - "--csi-address=$(ADDRESS)"
