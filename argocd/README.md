@@ -34,7 +34,7 @@ Argo CD is a declarative, GitOps continuous delivery tool for Kubernetes.
 
 ### Note
 
-current `get-upstream-info` output `v2.6.0-rc3`
+current `get-upstream-info` output `v2.6.2`
 
 ```
 count of unique resource types
