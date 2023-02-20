@@ -9,6 +9,13 @@ spec:
   template:
     spec:
       automountServiceAccountToken: true # for required for voodoobox plugin
+      initContainers:
+      - name: init-temp-cleamup
+        image: busybox:latest
+        command: ['sh', '-c', "rm -rf /tmp/*"] # clean up tmp pvc on re-start
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp
       containers:
         - name: voodoobox
           command: [/var/run/argocd/argocd-cmp-server]
