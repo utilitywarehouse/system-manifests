@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: trident-csi
+  name: trident-node-linux
   annotations:
     secret.reloader.stakater.com/reload: "server-tls,client-tls,trident-ca"
 spec:

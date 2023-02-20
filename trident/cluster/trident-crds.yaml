@@ -396,6 +396,10 @@ spec:
             accessMode:
               type: integer
               format: int32
+            notSafeToAttach:
+              type: boolean
+            unpublished:
+              type: boolean
           required:
               - volumeID
               - nodeID
@@ -509,4 +513,42 @@ spec:
     - tsnapshot
     categories:
     - trident
+    - trident-internal
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tridentvolumereferences.trident.netapp.io
+spec:
+  group: trident.netapp.io
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                pvcName:
+                  type: string
+                pvcNamespace:
+                  type: string
+              required:
+              - pvcName
+              - pvcNamespace
+      additionalPrinterColumns:
+  scope: Namespaced
+  names:
+    plural: tridentvolumereferences
+    singular: tridentvolumereference
+    kind: TridentVolumeReference
+    shortNames:
+    - tvr
+    - tvref
+    categories:
+    - trident
+    - trident-external
     - trident-internal

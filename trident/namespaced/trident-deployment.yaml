@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trident-csi
+  name: trident-controller
   labels:
     app: controller.csi.trident.netapp.io
     kubectl.kubernetes.io/default-container: trident-main
@@ -18,10 +18,11 @@ spec:
       labels:
         app: controller.csi.trident.netapp.io
     spec:
-      serviceAccount: trident-csi
+      serviceAccount: trident-controller
       containers:
       - name: trident-main
-        image: netapp/trident:22.07.0
+        image: netapp/trident:23.01.0
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8443
         - containerPort: 8001
@@ -36,6 +37,7 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
         - "--log_format=text"
+        - "--disable_audit_log=true"
         - "--address=127.0.0.1"
         - "--http_request_timeout=1m30s"
         - "--metrics"
@@ -68,7 +70,8 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: trident-autosupport
-        image: docker.io/netapp/trident-autosupport:22.07
+        image: docker.io/netapp/trident-autosupport:23.01
+        imagePullPolicy: IfNotPresent
         command:
         - /usr/local/bin/trident-autosupport
         args:
@@ -87,7 +90,8 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: registry.k8s.io/sig-storage/csi-provisioner:v3.2.1
+        image: registry.k8s.io/sig-storage/csi-provisioner:v3.4.0
+        imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
         - "--timeout=600s"
@@ -102,7 +106,8 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: registry.k8s.io/sig-storage/csi-attacher:v3.5.0
+        image: registry.k8s.io/sig-storage/csi-attacher:v4.1.0
+        imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
         - "--timeout=60s"
@@ -115,7 +120,8 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: registry.k8s.io/sig-storage/csi-resizer:v1.5.0
+        image: registry.k8s.io/sig-storage/csi-resizer:v1.7.0
+        imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
         - "--timeout=300s"
@@ -128,6 +134,7 @@ spec:
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
         image: registry.k8s.io/sig-storage/csi-snapshotter:v3.0.3
+        imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
         - "--timeout=300s"

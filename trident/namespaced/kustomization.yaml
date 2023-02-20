@@ -1,12 +1,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - aes-hack.yaml
-  - certificates.yaml
-  - trident-daemonset.yaml
-  - trident-deployment.yaml
-  - trident-serviceaccount.yaml
-  - trident-service.yaml
-patchesStrategicMerge:
-  - trident-daemonset-patch.yaml
-  - trident-deployment-patch.yaml
+- aes-hack.yaml
+- certificates.yaml
+- trident-controller-rolebinding.yaml
+- trident-controller-role.yaml
+- trident-controller-serviceaccount.yaml
+- trident-daemonset.yaml
+- trident-deployment.yaml
+- trident-node-linux-serviceaccount.yaml
+- trident-resourcequota.yaml
+- trident-service.yaml
+patches:
+- path: trident-daemonset-patch.yaml
+- path: trident-deployment-patch.yaml
