@@ -15,7 +15,7 @@ metadata:
       only a cluster-admin can create the `default` TLSOption resource.
 spec:
   validationFailureAction: enforce
-  background: true
+  background: false
   rules:
   - name: disallow-default-tlsoptions
     match:
