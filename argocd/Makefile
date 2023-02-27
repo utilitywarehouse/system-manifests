@@ -5,18 +5,6 @@ VERSION=v2.6.2
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
-# This will print the type of resources found in the upstream
-.PHONY: get-upstream-info
-get-upstream-info:
-	@curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
-	@echo "count of unique resource types"
-	@cat /tmp/argo.yaml | rg ^kind: | uniq -c
-	@echo
-	@echo "Deployment/StatefulSet Names"
-	@yq 'select(.kind=="Deployment")' /tmp/argo.yaml | yq '.metadata.name'
-	@yq 'select(.kind=="StatefulSet")' /tmp/argo.yaml | yq '.metadata.name'
-	@rm  /tmp/argo.yaml
-
 # This fetches manifests from upstream and splits resources into cluster/ and
 # namespaced/ directories based on type of resources. 
 .PHONY: get-upstream
