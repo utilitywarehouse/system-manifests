@@ -1,18 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: argocd-notifications-controller
+  name: argocd-server
 spec:
   template:
     spec:
       containers:
-        - name: argocd-notifications-controller
-          args:
-            - "--loglevel=warn"
+        - name: argocd-server
           resources:
             requests:
               memory: 100Mi
               cpu: 0.1
             limits:
               cpu: 1
-              memory: 500Mi
+              memory: 1000Mi
