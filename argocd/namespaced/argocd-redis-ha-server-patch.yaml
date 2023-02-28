@@ -1,18 +1,16 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: argocd-notifications-controller
+  name: argocd-redis-ha-server
 spec:
   template:
     spec:
       containers:
-        - name: argocd-notifications-controller
-          args:
-            - "--loglevel=warn"
+        - name: redis
           resources:
             requests:
               memory: 100Mi
-              cpu: 0.1
+              cpu: 0
             limits:
               cpu: 1
               memory: 500Mi
