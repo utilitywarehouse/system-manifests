@@ -34,5 +34,4 @@ get-upstream:
 	yq 'select(.kind=="NetworkPolicy")' /tmp/argo_filtered.yaml > namespaced/upstream/NetworkPolicy.yaml
 
 	# remove temp file
-	rm  /tmp/argo.yaml
-	rm /tmp/argo_filtered.yaml
+	rm  /tmp/argo.yaml /tmp/argo_filtered.yaml
