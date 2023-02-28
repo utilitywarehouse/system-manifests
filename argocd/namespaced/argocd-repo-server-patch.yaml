@@ -10,12 +10,12 @@ spec:
     spec:
       automountServiceAccountToken: true # for required for voodoobox plugin
       initContainers:
-      - name: init-temp-cleamup
-        image: busybox:latest
-        command: ['sh', '-c', "rm -rf /tmp/*"] # clean up tmp pvc on re-start
-        volumeMounts:
-        - mountPath: /tmp
-          name: tmp
+        - name: init-temp-cleamup
+          image: busybox:latest
+          command: ["sh", "-c", "rm -rf /tmp/*"] # clean up tmp pvc on re-start
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
       containers:
         - name: voodoobox
           command: [/var/run/argocd/argocd-cmp-server]
@@ -32,7 +32,7 @@ spec:
             - mountPath: /home/argocd/cmp-server/plugins
               name: plugins
             - mountPath: /tmp
-              name: tmp
+              name: cmp-tmp
             # Register plugins into sidecar
             - mountPath: /home/argocd/cmp-server/config/plugin.yaml
               subPath: avp.yaml
@@ -59,6 +59,8 @@ spec:
         - configMap:
             name: argocd-voodoobox-plugin
           name: argocd-voodoobox-plugin
+        - name: cmp-tmp
+          emptyDir: {}
         - $patch: delete
           name: tmp
   volumeClaimTemplates:
