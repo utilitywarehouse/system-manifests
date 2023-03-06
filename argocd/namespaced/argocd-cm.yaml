@@ -16,10 +16,8 @@ data:
   jsonnet.enabled: "false"
   helm.enabled: "false"
 
-  # The metadata.label key name where Argo CD injects the app name as a tracking label (optional).
-  # Tracking labels are used to determine which resources need to be deleted when pruning.
-  # If omitted, Argo CD injects the app name into the label: 'app.kubernetes.io/instance'
-  application.instanceLabelKey: argocd.argoproj.io/instance
+  # Uses an annotation with additional metadata for tracking instead of the label
+  # Argo CD uses the 'argocd.argoproj.io/tracking-id' annotation to track application resources.
   application.resourceTrackingMethod: annotation
 
   # Application reconciliation timeout is the max amount of time required to discover if a new manifests version got
