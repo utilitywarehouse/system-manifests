@@ -102,7 +102,7 @@ spec:
               path: /
               port: 5000
         - name: docker-registry-auth
-          image: cesanta/docker_auth:1.9.0
+          image: cesanta/docker_auth:1.11.0
           args:
             - /config/auth_config.yml
             - -logtostderr=true
