@@ -3,13 +3,6 @@
 # -v=0 lowers logging verbisity as Kyverno tends to get chatty during background
 # operations and logs were dropper by the forwarders
 #
-# --autogenInternals=false comes from upstream since v1.8. It means that Kyverno
-# will not try to patch policies and add rules for controller objects. For
-# example a policy for a Pod will not be patched to filter admission of
-# Deployments, ReplicaSets... Kyverno will still stop admission of Pods which
-# violate a policy, which is equivalent to how PodSecurityPolicies used to
-# operate.
-#
 # --autoUpdateWebhooks=false will configure Kyverno to create the default
 # webhook configurations that forwards admission requests for all resources
 # and with FailurePolicy set to Ignore:
@@ -38,7 +31,6 @@ spec:
       containers:
       - args:
         - -v=0
-        - --autogenInternals=false
         - --autoUpdateWebhooks=false
         - --admissionReports=false
         - --backgroundScan=false
