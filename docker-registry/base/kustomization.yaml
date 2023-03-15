@@ -4,7 +4,7 @@ resources:
   - registry-cert-reloader.yaml
   - registry.yaml
 
-  - https://github.com/utilitywarehouse/registry-browser//manifests/base?ref=v0.1.2
+  - https://github.com/utilitywarehouse/registry-browser//manifests/base?ref=v0.1.3
 configMapGenerator:
   - files:
       - resources/cert-reloader.sh
