@@ -1,12 +1,16 @@
 # kyverno
-Deploys kyverno from upstream [base](github.com/kyverno/kyverno/config/release)
-and a list of policies.
+Deploys kyverno from upstream and a list of policies.
 
 ## Overview
+There is a `make` target to fetches install.yaml from Kyverno release artifacts
+and place it under [remote dir](./remote) to act as the remote base for
+deploying.
 
+The following kustomize bases are available:
+* audit-only: Deploys the above base with policies configured to only audit.
 * base: Deploys kyverno under `kube-system` namespace and a set of policies in
   `enforce` mode.
-* audit-only: Deploys the above base with policies configured to only audit.
+* remote: The fetched upstream manifests wrapped in a kustomize base.
 
 ## Policies
 Deployed policies include but are not limited to the Pod Security Standards
