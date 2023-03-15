@@ -4,5 +4,5 @@ resources:
   - deployment.yaml
   - service-account.yaml
   - service.yaml
-patchesStrategicMerge:
-  - patch.yaml
+patches:
+  - path: patch.yaml
