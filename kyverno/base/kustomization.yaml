@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: kube-system
 
 resources:
-  - github.com/kyverno/kyverno/config?ref=v1.8.4
+  - ../remote/
   - kyverno-pdb.yaml
   - policies/
 

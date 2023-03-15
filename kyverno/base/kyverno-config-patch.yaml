@@ -6,6 +6,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kyverno
+  namespace: kube-system
 data:
   excludeGroupRole: system:nodes,system:kube-scheduler
   resourceFilters: "[Event,*,*][*,kube-public,*][*,kube-node-lease,*][Node,*,*][APIService,*,*][TokenReview,*,*][SubjectAccessReview,*,*][SelfSubjectAccessReview,*,*][*,kyverno,kyverno*][Binding,*,*][ReplicaSet,*,*][ReportChangeRequest,*,*][ClusterReportChangeRequest,*,*][PolicyReport,*,*][ClusterPolicyReport,*,*]"
