@@ -3,14 +3,14 @@ kind: Middleware
 metadata:
   name: test-should-add
   labels:
-    mutate.uw.systems/prisma: ensure-ip-whitelist
+    mutate.uw.systems/middleware: ensure-prisma-and-onprem-vpn-ip-whitelist
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: test-should-override
   labels:
-    mutate.uw.systems/prisma: ensure-ip-whitelist
+    mutate.uw.systems/middleware: ensure-prisma-and-onprem-vpn-ip-whitelist
 spec:
   ipWhiteList:
     ipStrategy:
