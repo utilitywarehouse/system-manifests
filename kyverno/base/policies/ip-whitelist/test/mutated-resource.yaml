@@ -2,12 +2,23 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   labels:
-    mutate.uw.systems/prisma: ensure-ip-whitelist
+    mutate.uw.systems/middleware: ensure-prisma-and-onprem-vpn-ip-whitelist
 spec:
   ipWhiteList:
     ipStrategy:
       depth: 1
     sourceRange:
+      # on prem VPN
+      - 85.91.49.0/24
+      - 91.217.237.0/24
+      # GS2
+      - 85.91.51.0/24
+      # prisma IPs
+      - 13.244.79.27
+      - 13.244.228.251
+      - 13.245.99.92
+      - 13.245.99.214
+      - 13.246.113.125
       - 34.96.70.57
       - 34.117.238.171
       - 34.120.72.104
@@ -77,6 +88,12 @@ spec:
       - 165.1.154.223
       - 165.1.167.0
       - 165.1.167.98
+      - 165.1.167.221
+      - 165.1.167.222
+      - 165.1.167.227
+      - 165.1.167.228
+      - 165.1.167.252
+      - 165.1.167.253
       - 208.127.46.96
       - 208.127.46.214
       - 208.127.49.85
