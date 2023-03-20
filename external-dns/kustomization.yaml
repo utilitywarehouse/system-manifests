@@ -1,15 +1,14 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+resources:
+  - https://github.com/kubernetes-sigs/external-dns/kustomize?ref=v0.13.3
+
+# Latest remote base change to image v0.13.2. Since there do not seem to be
+# manifest changes on the latest version (v0.13.3) let's patch it here.
 images:
   - name: registry.k8s.io/external-dns/external-dns
-    newTag: v0.13.1
+    newTag: v0.13.3
 
 patchesStrategicMerge:
   - patches/deploy.yaml
-
-resources:
-  - upstream/external-dns-serviceaccount.yaml
-  - upstream/external-dns-clusterrole.yaml
-  - upstream/external-dns-clusterrolebinding.yaml
-  - upstream/external-dns-deployment.yaml

@@ -1,9 +1,12 @@
 # external-dns
 
 ### Update procedure
-- Update `Makefile` with the new target commit reference.
-- Check [upstream](https://github.com/kubernetes-sigs/external-dns/tree/master/kustomize) in case the are new resources defined.
-    - Versioning / tagging on this repo might be unreliable, commit references are preferred.
-    - For this reason, `kustomize.yaml` is __not__ used as is, plus a [patch](patches/deploy.yaml) is added.
-- Run `make` to fetch the updated upstream manifests.
-- Update [kustomization.yaml](./kustomization.yaml) with the new image tag.
+Update kustomize remote base reference in [kustomization.yaml](./kustomization.yaml)
+with the new version.
+
+Note: the remote base might lack an image version, so we may have to patch image
+if we want to deploy latest.
+
+Note: remote `ClusterRoleBinding` binds to external-dns SA under default
+namespace. We leave that as is here, since we suffix names and patch downstream
+per environment.
