@@ -5,15 +5,11 @@ kind: Kustomization
 # base. Add an additional overlay to hack the ns and put everything under
 # kube-system to play with the method we apply cluster resources via KA
 namespace: kube-system
-bases:
-  # Use a commit ref instead of tag, as images do not follow tags in the repo
-  #  manifests.
-  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-master?ref=68b9ee52b156623b82434e6e5079acefb43700a2
-patchesStrategicMerge:
-  - csi-gce-pd-controller-patch.yaml
 
-# Seems like they stopped patching images in the Kubernetes deployment manifests
-# provided from upstream. Lets do it here:
-images:
-  - name: k8s.gcr.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver
-    newTag: v1.8.0
+# Use a commit ref instead of tag, as images do not follow tags in the repo
+#  manifests.
+resources:
+  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-master?ref=49b50909fb76b0599c2f3a2338998fca84e6402b # v1.9.2
+
+patches:
+  - path: csi-gce-pd-controller-patch.yaml
