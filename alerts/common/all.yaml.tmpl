@@ -1,0 +1,667 @@
+# PROMETHEUS RULES
+# DO NOT REMOVE line above, used in `pre-commit` hook
+
+groups:
+  - name: infra
+    rules:
+      - alert: KubeletCadvisorNotResponding
+        expr: up{job="kubernetes-nodes"} != 1
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description:
+            "{{ $labels.instance }} ({{ $labels.role }}) has been down for
+            more than 10 minutes."
+          summary: Kubernetes node is down
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/VAE0wIcik/kubernetes-pod-resources?orgId=1&refresh=1m&var-instance={{ $labels.instance }}&var-namespace=All&var-app=All&var-app_kubernetes_io_name=All"
+      - alert: KubernetesApiDown
+        expr: up{service="kubernetes"} != 1
+        for: 1m
+        labels:
+          team: infra
+        annotations:
+          description: The kubernetes API is down within the cluster.
+          summary: Kubernetes API server is down
+      - alert: KubernetesSchedulerDown
+        expr: up{service="kube-scheduler"} != 1
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.pod }} scheduler has been down for several minutes."
+          summary: Kubernetes scheduler {{ $labels.pod }} is down
+      - alert: KubeStateMetricsAbsent
+        expr: absent(kube_state_metrics_build_info)
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          description: "A number of our critical alerts depend on the metrics $ENVIRONMENT.$PROVIDERuced by kube-state-metrics."
+          summary: Metrics from kube-state-metrics are absent
+      - alert: NodeNotReady
+        expr:
+          count(kube_node_info) - count(kube_node_status_condition{condition="Ready", status="true"})
+          != 0
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          description:
+            One or more of the worker nodes in the cluster is marked as Not
+            Ready.
+          summary: Kubernetes node is Not Ready
+      - alert: NodeUnschedulable
+        expr: count(kube_node_spec_unschedulable == 1) > 0
+        for: 1h
+        labels:
+          team: infra
+        annotations:
+          description: One or more of the nodes in the cluster is marked as unschedulable.
+          summary: Kubernetes cluster has unschedulable node(s)
+      - alert: NodeNoDiskSpace
+        expr: kube_node_status_condition{condition="OutOfDisk", status="true"} != 0
+        for: 2m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.node }} is reporting that it is out of disk space."
+          summary: node {{ $labels.node }} has no disk space
+#      - alert: KubernetesHighNodeMemory
+#        expr: ((sum by (instance, kubernetes_cluster) (node_memory_MemTotal_bytes{job="node-exporter"}) - ((sum by (instance, kubernetes_cluster) (node_memory_MemAvailable_bytes{job="node-exporter"})))) / sum by (instance, kubernetes_cluster) (node_memory_MemTotal_bytes{job="node-exporter"}) * 100 ) > 95
+#        for: 5m
+#        labels:
+#          team: infra
+#        annotations:
+#          description:
+#            "{{ $labels.kubernetes_cluster }} / {{ $labels.instance }} is reporting mem usage higer than 95%"
+#          summary: Kubernetes node high memory
+#          value: "{{ $value }}"
+#      - alert: KubernetesHighNodeCPU
+#        expr: (( sum by (instance, kubernetes_cluster)(rate(node_cpu_seconds_total{mode!='idle',job="node-exporter"}[10m])) / sum by (instance, kubernetes_cluster)(rate(node_cpu_seconds_total{job="node-exporter"}[10m]))) * 100 ) > 95
+#        for: 5m
+#        labels:
+#          team: infra
+#        annotations:
+#          description:
+#            "{{ $labels.kubernetes_cluster }} / {{ $labels.instance }} is reporting cpu usage higher than 95%"
+#          summary: Kubernetes node high cpu
+#          value: "{{ $value }}"
+      - alert: SystemDaemonsetMissingReplicas
+        expr: kube_daemonset_status_number_ready{namespace=~"kube-system|sys-.*", daemonset!="calico-node"} != kube_daemonset_status_desired_number_scheduled{namespace=~"kube-system|sys-.*", daemonset!="calico-node"}
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.daemonset }} daemonset in {{ $labels.namespace }} namespace has missing replicas for 15m"
+      # We need ~40mins to roll calico, so let's have a special alert for that.
+      - alert: CalicoDaemonsetMissingReplicas
+        expr: kube_daemonset_status_number_ready{daemonset="calico-node"} != kube_daemonset_status_desired_number_scheduled{daemonset="calico-node"}
+        for: 40m
+        labels:
+          team: infra
+        annotations:
+          summary: "calico-node daemonset in {{ $labels.namespace }} namespace has missing replicas for 40m"
+      - alert: SystemDeploymentMissingReplicas
+        expr: kube_deployment_status_replicas_available{namespace=~"kube-system|sys-.*"} != kube_deployment_status_replicas{namespace=~"kube-system|sys-.*"}
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.deployment }} deployment in {{ $labels.namespace }} namespace has missing replicas for 15m"
+      - alert: SystemStatefulsetMissingReplicas
+        expr: kube_statefulset_status_replicas_ready{namespace=~"kube-system|sys-.*"} != kube_statefulset_status_replicas{namespace=~"kube-system|sys-.*"}
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.statefulset }} statefulset in {{ $labels.namespace }} namespace has missing replicas for 15m"
+      # exclude "forwarder" Pods temporarily. They are memory hungry and we
+      # need to limit them, so they do end up triggering often. Pending being
+      # replaced by another agent
+      - alert: SystemPodOOMing
+        expr: rate(kube_pod_container_status_terminated_reason{reason="OOMKilled",namespace=~"kube-system|sys-.*",pod!~"forwarder-.+"}[15m]) != 0
+        labels:
+          team: infra
+        annotations:
+          summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has OOMed in last 15 minutes."
+          impact: "{{$labels.pod}} service might not be working as expected."
+          action: "Investigate memory consumption and adjust pods resources."
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/VAE0wIcik/kubernetes-pod-resources?orgId=1&refresh=1m&from=now-12h&to=now&var-instance=All&var-namespace={{ $labels.namespace }}"
+      - alert: SystemPodRestartingOften
+        expr: increase(kube_pod_container_status_restarts_total{namespace=~"kube-system|sys-.*"}[10m]) > 3
+        labels:
+          team: infra
+        annotations:
+          summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has restarted more than 3 times in the last 10m"
+          impact: "{{$labels.pod}} may not be working as expected."
+          action: "Check the pod logs to figure out the issue"
+      # https://github.com/kubernetes-monitoring/kubernetes-mixin/issues/108#issuecomment-432796867
+      - alert: PodContainerCpuThrottled
+        expr: sum(increase(container_cpu_cfs_throttled_periods_total{namespace=~"kube-system|sys-.*"}[5m])) by (container, pod, namespace) / sum(increase(container_cpu_cfs_periods_total{namespace=~"kube-system|sys-.*"}[5m])) by (container, pod, namespace) > 0.95
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} is being CPU throttled."
+          impact: "{{ $labels.namespace }}/{{ $labels.pod }} might take longer than normal to respond to requests."
+          action: "Investigate CPU consumption and adjust pods resources if needed."
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/VAE0wIcik/kubernetes-pod-resources?orgId=1&refresh=1m&from=now-12h&to=now&var-instance=All&var-namespace={{ $labels.namespace }}"
+      - alert: ReadOnlyRootFilesystem
+        expr: ro_rootfs != 0
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.instance }} instance has a read only root filesystem for 5m"
+      - alert: CfsslDown
+        expr: probe_success{job="cfssl-probe"} == 0 or absent(probe_success{job="cfssl-probe"})
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.instance }} reports down more than 5 minutes."
+      - alert: VolumeDiskUsage
+        expr: kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes * on(namespace) group_left kube_namespace_labels{label_uw_systems_owner="system"} > 0.9
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          summary: "Volume {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} has less than 10% available capacity"
+          impact: "Exhausting available disk space will most likely result in service disruption"
+          action: "Investigate disk usage and adjust volume size if necessary."
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/919b92a8e8041bd567af9edab12c840c/kubernetes-persistent-volumes?orgId=1&refresh=10s&var-datasource=default&var-cluster=&var-namespace={{ $labels.namespace }}&var-volume={{ $labels.persistentvolumeclaim }}"
+      - alert: CertExpireK8SSidecarInjector
+        expr: (probe_ssl_earliest_cert_expiry{job="k8s-sidecar-injector-tls-probe"} - time()) / 60 / 60 / 24 < 7 # Less then a week
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          summary: "The k8s-sidecar-injector-webhook certificate will expire in < 7 days"
+          impact: "APIServer will not be able to talk to k8s-sidecar-injector and applications will not have sidecars injected"
+          action: "Short term: restart k8s-sidecar-injector Deployment. Long term: Make sure k8s-sidecar-injector reloads certificate/key when they change on disk"
+          dashboard: "https://thanos-query-sys-prom.$ENVIRONMENT.$PROVIDER.uw.systems/graph?g0.expr=(probe_ssl_earliest_cert_expiry%7Bjob%3D%22k8s-sidecar-injector-tls-probe%22%7D%20-%20time())%20%2F%2060%20%2F%2060%20%2F%2024&g0.tab=0&g0.stacked=0&g0.range_input=1d&g0.max_source_resolution=0s&g0.deduplicate=1&g0.partial_response=0&g0.store_matches=%5B%5D"
+      # kube-state-metrics are the metrics used in alerts keeping track on
+      # deployment/sts missing replicas, so prometheus-ksm needs to be checked
+      # explicitly. The other prometheus would be covered by the missing
+      # replica alerts of prometheus-ksm
+      - alert: PrometheusKsmIsDown
+        expr: up{job="prometheus-ksm"} == 0 or absent(up{job="prometheus-ksm"})
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: prometheus-ksm job is down
+          impact: "All alerts that require kubernetes metadata are not working"
+          action: "Check sys-prom and figure out why prometheus-ksm is not healthy"
+  - name: kube-applier
+    rules:
+      - alert: KubeApplierGitSyncError
+        expr: time() - kube_applier_git_last_sync_timestamp{kubernetes_namespace="sys-kube-applier"} > 3600
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "kube-applier has not been able to sync the git repository in the last hour"
+          impact: Recent changes have not been applied.
+      - alert: KubeApplierErrors
+        expr: kube_applier_last_run_success * on(namespace) group_left kube_namespace_labels{label_uw_systems_owner="system"} != 1
+        for: 1h10m
+        labels:
+          team: infra
+        annotations:
+          summary: "kube-applier encountered errors while applying {{ $labels.namespace }}"
+          impact: Some manifest won't be automatically deployed.
+      - alert: KubeApplierKubectlKilled
+        expr:
+          sum(rate(kube_applier_kubectl_exit_code_count{exit_code="-1"}[5m]))
+          * on(namespace) group_left kube_namespace_labels{label_uw_systems_owner="system"} > 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: kubectl is returning an exit code of -1 which indicates it was killed, probably by the OOM killer
+          summary: "kube-applier: kubectl is being killed in {{ $labels.namespace }}"
+          impact: namespaces may fail to apply
+      - alert: KubeApplierAutoApplyIsDisabled
+        expr: kube_applier_waybill_spec_auto_apply
+          * on(namespace) group_left kube_namespace_labels{label_uw_systems_owner="system"} == 0
+        for: 1h
+        labels:
+          team: infra
+        annotations:
+          description: "to check status: `kubectl -n {{ $labels.namespace }} describe waybill`"
+          summary: "kube-applier disabled in {{ $labels.namespace }} for 1 hr"
+      - alert: KubeApplierRunningInDryRun
+        # Trigger only if both auto_apply and dry_run are set to true
+        expr:
+          (kube_applier_waybill_spec_auto_apply + kube_applier_waybill_spec_dry_run)
+          * on(namespace) group_left kube_namespace_labels{label_uw_systems_owner="system"} == 2
+        for: 1h
+        labels:
+          team: infra
+        annotations:
+          description: "to check status: `kubectl -n {{ $labels.namespace }} describe waybill`"
+          summary: "kube-applier running in dry run mode in {{ $labels.namespace }} for 1 hr"
+      - alert: KubeApplierRunIsLate
+        expr: kube_applier_waybill_spec_auto_apply *
+          time() - kube_applier_last_run_timestamp_seconds - 2*kube_applier_waybill_spec_run_interval
+          * on(namespace) group_left kube_namespace_labels{label_uw_systems_owner="system"} > 0
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          description: |
+            The last full run of kube-applier finished over an hour ago. A new
+            run should finish roughly every hour, so this may indicate that kube-applier
+            is hung, hasn't initiated a new run or is taking much longer than expected to finish.
+          summary: "kube-applier: last run in {{ $labels.namespace }} is too old"
+          impact: Some of the latest changes may not have been applied
+  - name: kyverno
+    rules:
+      - alert: KyvernoBackgroundCheckRuleFailure
+        expr: increase(kyverno_policy_results_total{rule_execution_cause="background_scan", rule_result="fail"}[1h]) > 0
+        labels:
+          team: infra
+        annotations:
+          summary: "Kyverno policy: {{ $labels.policy_name }} rule: {{ $labels.rule_name }} is failing in {{ $labels.resource_namespace }} namespace."
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/Rg8lWBG7k/kyverno
+          description: |
+            Background checks for rule: {{ $labels.rule_name }} of policy: {{ $labels.policy_name }}
+            report failures under {{ $labels.resource_namespace }} namespace.
+
+            To get more info about the issue check the namespace events with the following command:
+            `kubectl --context={{ $labels.kubernetes_cluster }} -n {{ $labels.resource_namespace }} get events`
+  - name: thanos
+    rules:
+      - alert: ThanosCompactHalted
+        expr: thanos_compactor_halted{app="thanos-compact",kubernetes_namespace=~"sys-.*"} == 1
+        labels:
+          team: infra
+        annotations:
+          summary: Thanos compaction has failed to run and now is halted
+          impact: Long term storage queries will be slower
+          action: Check {{ $labels.kubernetes_pod_name }} pod logs in {{ $labels.kubernetes_namespace}} namespace
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/s48S7j4ik/thanos-compaction?refresh=30s&orgId=1&var-interval=1m&var-namespace={{$labels.kubernetes_namespace}}&var-labelselector=app&var-labelvalue=thanos-compact
+      - alert: ThanosCompactCompactionsFailed
+        expr: rate(prometheus_tsdb_compactions_failed_total{app="thanos-compact",kubernetes_namespace=~"sys-.*"}[5m]) > 0
+        labels:
+          team: infra
+        annotations:
+          summary: Thanos Compact is failing compaction
+          impact: Long term storage queries will be slower
+          action: Check {{ $labels.kubernetes_pod_name }} pod logs in {{ $labels.kubernetes_namespace}} namespace
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/s48S7j4ik/thanos-compaction?refresh=30s&orgId=1&var-interval=1m&var-namespace={{$labels.kubernetes_namespace}}&var-labelselector=app&var-labelvalue=thanos-compact
+      - alert: ThanosSidecarPrometheusDown
+        expr: thanos_sidecar_prometheus_up{name="prometheus",kubernetes_namespace=~"sys-.*"} == 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: Thanos Sidecar cannot connect to Prometheus
+          impact: Prometheus configuration is not being refreshed
+          action: Check {{ $labels.kubernetes_pod_name }} pod logs in {{ $labels.kubernetes_namespace}} namespace
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/IOteEKHik/thanos-sidecar?refresh=30s&orgId=1&var-interval=1m&var-labelvalue=prometheus&var-namespace={{$labels.kubernetes_namespace}}&var-labelselector=name
+      - alert: ThanosRuleBadConfig
+        expr: min(thanos_rule_config_last_reload_successful{app="thanos-rule",kubernetes_namespace=~"sys-.*"}) == 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: Thanos Rule failed to load alert config
+          impact: On Thanos Rule restart alerts wont be loaded.
+          action: Ask in slack for any alert changes and check {{ $labels.kubernetes_pod_name }} pod logs in {{ $labels.kubernetes_namespace}} namespace
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/rjUCNfHmz/thanos-rule?refresh=30s&orgId=1&var-interval=1m&var-namespace={{ $labels.kubernetes_namespace}}&var-labelselector=app&var-labelvalue=thanos-rule
+  - name: external-dns
+    rules:
+      - alert: ExternalDnsRegistryErrors
+        expr: rate(registry_errors_total{app="external-dns"}[5m]) > 0
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.kubernetes_pod_name }} errors while talking to dns registry"
+          summary: external-dns registry errors
+      - alert: ExternalDnsSourceErrors
+        expr: rate(source_errors_total{app="external-dns"}[5m]) > 0
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.kubernetes_pod_name }} errors while talking to kube api"
+          summary: external-dns source errors
+  - name: etcd
+    rules:
+      - alert: KubernetesEtcdNodeDown
+        expr: up{job="etcd"} != 1
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.instance }} has been down for more than 10 minutes."
+          summary: Kubernetes etcd node is down
+          impact: "etcd cluster has limited node redundancy."
+          action: "Check etcd service status on {{$labels.instance}}."
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/mYdnw3aik/kubernetes-etcd
+      - alert: KubernetesEtcdNoLeader
+        expr: etcd_server_has_leader{job="etcd"} == 0
+        for: 1m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{$labels.instance}} has no leader."
+          impact: "etcd cluster {{$labels.instance}} is not available."
+          action: "Check etcd service status on {{$labels.instance}}."
+
+      ## https://github.com/etcd-io/etcd/issues/10289
+      ## Commented out, pending resolution of the issue above
+      ##
+      ## Currently tagged in "v3.5.0-alpha.0"
+      #- alert: KubernetesEtcdHighNumberOfFailedGRPCRequests
+      #  expr: 100 * sum(rate(grpc_server_handled_total{grpc_code!="OK",job="etcd"}[5m])) by ( instance, grpc_service,grpc_method) /  sum(rate(grpc_server_handled_total{job="etcd"}[5m])) by (instance, grpc_service, grpc_method) > 1
+      #  for: 10m
+      #  labels:
+      #    team: infra
+      #  annotations:
+      #    summary: "{{$labels.instance}} etcd has many requests failed last 10min"
+      #    impact: "{{$labels.instance}} etcd is returning errors."
+      #    action: "Check RPC failed rate on dashboard and {{$labels.instance}} etcd service logs."
+      #    dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/mYdnw3aik/kubernetes-etcd
+
+      ## https://github.com/etcd-io/etcd/issues/11100#issuecomment-613776203
+      ## > It looks to me like the RAFT_MESSAGE round-tripper is not very
+      ## > relevant to performance delivered to clients.
+      ##
+      ## https://github.com/etcd-io/etcd/issues/10292
+      #- alert: KubernetesEtcdMemberCommunicationSlow
+      #  expr: histogram_quantile(0.99, rate(etcd_network_peer_round_trip_time_seconds_bucket{job="etcd"}[5m])) > 0.2048
+      #  for: 10m
+      #  labels:
+      #    team: infra
+      #  annotations:
+      #    summary: "{{$labels.instance}} member communication is slow"
+      #    impact: "{{$labels.instance}} is responding slowly."
+      #    action: "Check {{$labels.instance}} etcd service logs."
+      #    dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/mYdnw3aik/kubernetes-etcd
+      - alert: KubernetesEtcdHighNumberOfFailedProposals
+        expr: rate(etcd_server_proposals_failed_total{job="etcd"}[5m]) > 0
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{$labels.instance}} etcd member has a high number of raft proposals failing."
+          impact: "{{$labels.instance}} etcd might not be working."
+          action: "Check Raft proposals dashboard and {{$labels.instance}} etcd service logs."
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/mYdnw3aik/kubernetes-etcd
+      - alert: KubernetesEtcdHighDiskSyncDurations
+        expr: histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket{job="etcd"}[5m])) > 0.5
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{$labels.instance}} etcd fsync durations are high"
+          impact: "{{$labels.instance}} etcd is responding slowly."
+          action: "Check Disk Sync Duration and resources for {{$labels.instance}}."
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/mYdnw3aik/kubernetes-etcd
+      - alert: KubernetesEtcdHighCommitDurations
+        expr: histogram_quantile(0.99, rate(etcd_disk_backend_commit_duration_seconds_bucket{job="etcd"}[5m])) > 0.25
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{$labels.instance}} etcd commit durations are high"
+          impact: "{{$labels.instance}} etcd is responding slowly."
+          action: "Check {{$labels.instance}} resources."
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/mYdnw3aik/kubernetes-etcd
+      - alert: EtcdBackupJobFailed
+        expr: time() - max(kube_job_status_completion_time{namespace="kube-system",job_name=~"etcd-backup-.*"}) > 108000
+        labels:
+          team: infra
+        annotations:
+          summary: "Etcd backup jobs have not completed in the last 30h"
+          action: "Check cronjob status and job logs "
+  - name: tls-probe-traefik
+    rules:
+      - alert: TLSProbeTargetDown
+        expr: up{job=~"^tls-cert-check.*$"} != 1
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.instance }} tls probe job reports down more than 5 minutes."
+          summary: Traefik instance tcp probe job down
+      - alert: TLSProbeFailed
+        expr: probe_success{job=~"^tls-cert-check.*$"} == 0
+        for: 2m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.instance }} probe fails, check blackbox exporter probes for details (blackbox pods port :9115)"
+          summary: Traefik tls probe failed
+      - alert: TLSCertExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry{job=~"^tls-cert-check.*$"} - time() < 86400 * 28
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.instance }} certificate expires in less than 28 days"
+          summary: SSL Certificate is due to expire in less than 28 days
+  - name: vault
+    # Recommendations from https://s3-us-west-2.amazonaws.com/hashicorp-education/whitepapers/Vault/Vault-Consul-Monitoring-Guide.pdf
+    rules:
+      - alert: VaultHighGCDuration
+        expr: increase(vault_runtime_total_gc_pause_ns{kubernetes_namespace="sys-vault"}[1m])/ 1000 > 2000
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.kubernetes_pod_name }} spent more than 2sec/min running GC"
+          summary: "{{ $labels.kubernetes_pod_name }} is taking too long to GC"
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/1ysHZE2Wz/vault
+      - alert: VaultScarceLeaderContacts
+        expr: vault_raft_leader_lastContact{quantile="0.99",kubernetes_namespace="sys-vault"} > 200
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.kubernetes_pod_name }} leader is taking more than 200ms to contact"
+          summary: "{{ $labels.kubernetes_pod_name }} contact with leader degraded"
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/1ysHZE2Wz/vault
+      # Adapted from https://github.com/giantswarm/vault-exporter/blob/master/vault-mixin/alerts.libsonnet
+      - alert: VaultUninitialized
+        expr: vault_initialized{kubernetes_namespace="sys-vault"} != 1
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: "This may indicate an issue with the 'initializer' sidecar"
+          summary: "{{ $labels.kubernetes_pod_name }} is uninitialized"
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/1ysHZE2Wz/vault
+      - alert: VaultSealed
+        expr: vault_sealed{kubernetes_namespace="sys-vault"} != 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: "This may indicate an issue with the 'unsealer' sidecar"
+          summary: "{{ $labels.kubernetes_pod_name }} is sealed"
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/1ysHZE2Wz/vault
+      - alert: VaultActiveCount
+        expr: count(vault_standby{kubernetes_namespace="sys-vault"} == 0) != 1
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: |
+            More or less than 1 active instance typically indicates a problem with leader election.
+          summary: "There are {{ $value }} active Vault instance(s)"
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/1ysHZE2Wz/vault
+      - alert: VaultUp
+        expr: vault_up{kubernetes_namespace="sys-vault"} != 1
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: |
+            The exporter runs as a sidecar and should be able to connect to port 8200 on localhost.
+          summary: "Vault exporter for '{{ $labels.kubernetes_pod_name }}' cannot talk to Vault."
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/1ysHZE2Wz/vault
+      - alert: VaultServerUnreachable
+        expr: probe_success{job="vault-server"} == 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.instance }} has been down for more than 5 minutes."
+          summary: Vault server is not reachable.
+      - alert: VaultServerBlackboxTargetDown
+        expr: up{job="vault-server"} != 1
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.instance }} http probe job reports down more than 5 minutes."
+          summary: Vault server http probe job down
+      - alert: VaultSidecarCredentialsExpired
+        expr: time() - vkcc_sidecar_expiry_timestamp_seconds{kubernetes_namespace=~"kube-system|sys-.*"} > 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: |
+            The credentials served by the vault credentials agent sidecar have expired and have not
+            been renewed. This may cause issues for the other containers in the pod.
+          summary: "The credentials for '{{ $labels.kubernetes_pod_name }}' have expired"
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/U61wpstMk/vault-credentials-sidecars
+      - alert: VaultSidecarDown
+        expr: up{job="vault-credentials-agents",kubernetes_namespace=~"kube-system|sys-.*"} == 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: |
+            The vault credentials agent sidecar is down. This may cause issues for the other containers
+            in the pod.
+          summary: "The vault credentials agent for '{{ $labels.kubernetes_pod_name }}' is down"
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/U61wpstMk/vault-credentials-sidecars
+      - alert: VaultSidecarMissing
+        expr: (kube_pod_annotations{annotation_injector_tumblr_com_request=~"vault-sidecar-.+"} and on (pod,namespace) kube_pod_status_scheduled{condition="true"} == 1) unless on (pod,namespace) kube_pod_container_info{container=~"vault-credentials-agent.*"}
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          description: |
+            The pod is annotated with `{{ $labels.key }}={{ $labels.value }}` but does not have a
+            container matching the name `vault-credentials-agent.*`. This indicates an issue with
+            the sidecar injection. Check the `kube-system/k8s-sidecar-injector` deployment for problems.
+          summary: "Vault sidecar is missing from {{ $labels.namespace }}/{{ $labels.pod }}"
+          dashboard: https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/U61wpstMk/vault-credentials-sidecars
+  - name: wiresteward
+    rules:
+      - alert: WirestewardNodeDown
+        expr: up{job="node-exporter", instance=~"..private-wiresteward.*"} != 1 or absent(up{job="node-exporter", instance=~"..private-wiresteward.*"})
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          description: "{{ $labels.instance }} reports down more than 5 minutes."
+          summary: Wiresteward node exporter job down
+  - name: semaphore
+    rules:
+      - alert: SemaphorePolicyCalicoClientErrors
+        expr: increase(semaphore_policy_calico_client_request_total{success="0"}[5m]) > 0
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.kubernetes_pod_name }} calico client encountered errors on requests for more than 5 minutes"
+          description: GlobalNetworkSets and cross cluster policies may be out of sync due to calico client request failures.
+      # According to https://www.wireguard.com/protocol/ handshakes may occur based on `REKEY_AFTER_TIME` and `REJECT_AFTER_TIME` values.
+      # Checking on the defaults: https://github.com/WireGuard/wireguard-monolithic-historical/blob/master/src/messages.h seems like
+      # the worst case scenario is 5mins between 2 handshakes. Lets allow double that and alert if we see that handshaking between peers
+      # takes more than 10 minutes. Also, allowing a 5 minute time window before firing to cover for the satrup delay, where the first peer
+      # handshake hasn't happened yet and semaphore_wg_peer_last_handshake_seconds is 0.
+      - alert: SemaphoreWGPeerLastHandshakeTooFar
+        expr: time() - semaphore_wg_peer_last_handshake_seconds > 600
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          summary: "wg latest handshake with peer on {{ $labels.device }} device happened more than 10 minutes ago"
+          description: "Instance: {{ $labels.instance }} wg latest handshake with peer {{ $labels.public_key }} on {{ $labels.device }} device happened more than 10 minutes ago."
+      - alert: SemaphoreWireguardFailedToSyncPeers
+        expr: increase(semaphore_wg_sync_peers_total{success="0"}[5m]) > 0
+        for: 5m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.instance }} wg client encountered errors on set peers requests for more than 5 minutes"
+          description: WG peers list might be out of sync due to wg client failures.
+      - alert: SemaphoreWireguardNodeWatcherErrors
+        expr: rate(semaphore_wg_node_watcher_failures_total[5m]) > 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.kubernetes_pod_name }} node watcher to {{ $labels.cluster }} is encountered errors on {{ $labels.verb }} actions for more than 10 minutes"
+          description: "Semaphore Wireguard controller fails to {{ $labels.verb }} on cluster {{ $labels.cluster }} node resource."
+      - alert: SemaphoreServiceMirrorMismatch
+        expr: semaphore_service_mirror_kube_watcher_objects{watcher=~".*-mirror.*"} - ignoring(watcher) semaphore_service_mirror_kube_watcher_objects{watcher!~".*-mirror.*"} != 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.app }}: the number of mirrored {{ $labels.kind }} objects is different to the remote count"
+          description: The number of local mirrored objects should match the number of remote objects.
+      - alert: SemaphoreServiceMirrorRequeued
+        expr: semaphore_service_mirror_queue_requeued_items > 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.app }} has been requeuing {{ $labels.name }} objects for 10 minutes"
+          description: |
+            Items are requeued when an error is encountered during reconcilliation.
+
+            If requeued items are not being processed promptly then this indicates a persistent issue. The mirror services are likely to be in an incorrect state.
+      - alert: SemaphoreServiceMirrorKubeClientErrors
+        expr: increase(semaphore_service_mirror_kube_http_request_total{code!="200"}[5m]) > 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.app }} kubernetes client reports errors speaking to apiserver at {{ $labels.host }} for more than 10 minutes"
+          description: |
+            Kubernetes client requests returning code different than 200 for longer than 10 minutes. Check the pods logs for further information.
+      - alert: SemaphoreXDSRequeued
+        expr: semaphore_xds_queue_requeued_items > 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: '{{ $labels.app }} has been requeuing {{ $labels.name }} objects for 10 minutes'
+          description: |
+            Items are requeued when an error is encountered during reconcilliation.
+
+            If requeued items are not being processed promptly then this indicates a persistent issue. The xDS configuration served to clients is likely to be in an incorrect state.
+      - alert: SemaphoreXDSKubeClientErrors
+        expr: increase(semaphore_xds_kube_http_request_total{code!="200"}[5m]) > 0
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: '{{ $labels.app }} kubernetes client reports errors speaking to apiserver at {{ $labels.host }} for more than 10 minutes'
+          description: Kubernetes client requests returning code different than 200 for longer than 10 minutes. Check the pods logs for further information.
+  - name: terraform-applier
+    rules:
+      - alert: TerraformApplierErrors
+        expr: terraform_applier_module_apply_success{kubernetes_namespace=~"kube-system|sys-.+"} == 0
+        for: 1h10m
+        labels:
+          team: infra
+        annotations:
+          summary: "terraform-applier in {{ $labels.kubernetes_namespace }} encountered errors while applying {{ $labels.module }}"
+          description: |
+            Some resources may not have been applied.
+
+            If the state is locked you can remove the lock with the following command:
+            `kubectl --context={{ $labels.kubernetes_cluster }} -n {{ $labels.kubernetes_namespace }} patch lease lock-tfstate-default-{{ $labels.module }} --type=json -p='[{"op": "remove", "path": "/spec/holderIdentity"}]'`

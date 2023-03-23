@@ -1,0 +1,87 @@
+# PROMETHEUS RULES
+# DO NOT REMOVE line above, used in `pre-commit` hook
+
+groups:
+  - name: logging
+    rules:
+      - alert: LogForwarderIsDown(external)
+        expr: up{job="log-forwarder"} < 1
+        for: 30m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.instance }} log forwarder is not exposing metrics for 30m"
+          action: "ssh into {{ $labels.instance }} and make sure `log-forwarder.service` is running"
+      - alert: LogForwarderFailingToInput(kube)
+        expr: rate(fluentd_input_status_num_records_total{job="kubernetes-pods",kubernetes_pod_name=~"forwarder-.*"}[5m]) == 0
+        for: 2h
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.kubernetes_pod_name }} can't ingest logs from {{ $labels.input }} for 2h"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/bk2muXYMz/log-forwarder?var-forwarder_pod={{ $labels.kubernetes_pod_name }}"
+      - alert: LogForwarderFailingToInput(external)
+        expr: rate(fluentd_input_status_num_records_total{job="log-forwarder"}[5m]) == 0
+        for: 2h
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.instance }} can't ingest logs from {{ $labels.input }} for 2h"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/bk2muXYMz/log-forwarder?var-instance={{ $labels.instance }}"
+      - alert: LogForwarderFailingToOutput(kube)
+        expr: rate(fluentd_output_status_retry_count{job="kubernetes-pods",kubernetes_pod_name=~"forwarder-.*"}[5m]) > 0
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.kubernetes_pod_name }} can't forward logs for 15m"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/bk2muXYMz/log-forwarder?var-forwarder_pod={{ $labels.kubernetes_pod_name }}"
+      - alert: LogForwarderFailingToOutput(external)
+        expr: rate(fluentd_output_status_retry_count{job="log-forwarder"}[5m]) > 0
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.instance }} can't forward logs for 15m"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/bk2muXYMz/log-forwarder?var-instance={{ $labels.instance }}"
+      - alert: LogForwarderBufferFillingUp(kube)
+        expr: fluentd_output_status_buffer_available_space_ratio{job="kubernetes-pods",kubernetes_pod_name=~"forwarder-.*"} < 95
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "Forwarder buffer is over 5%"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/bk2muXYMz/log-forwarder?var-forwarder_pod={{ $labels.kubernetes_pod_name }}"
+      - alert: LogForwarderBufferFillingUp(external)
+        expr: fluentd_output_status_buffer_available_space_ratio{job="log-forwarder"} < 95
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "Forwarder buffer is over 5%"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/bk2muXYMz/log-forwarder?var-instance={{ $labels.instance }}"
+      - alert: LogForwarderDroppingSystemLogs
+        expr: rate(log_forwarder_messages_total{log_kube_namespace=~"kube-system|sys-*", log_kube_app!="apiserver", log_kube_app!="kube-controller"}[5m]) > 10
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.log_kube_namespace }}/{{ $labels.log_kube_app }} is being noisy and dropping logs"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/bk2muXYMz/log-forwarder?var-forwarder_pod={{ $labels.kubernetes_pod_name }}"
+        # Logs drop at 4000logs/60s at each aggregator, but since our scrape_interval is 1m, alerting on a more reliable 5m range
+      - alert: LogAggregatorDroppingSystemLogs
+        expr: sum(rate(log_aggregator_messages_total{log_kube_namespace=~"kube-system|sys-*"}[5m])) by (log_kube_namespace, kubernetes_pod_name) > 60
+        for: 10m
+        labels:
+          team: infra
+        annotations:
+          summary: "{{ $labels.log_kube_namespace }} is being noisy and dropping logs on aggregator {{ $labels.kubernetes_pod_name }}"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/vcsXDH2mz/fluentd-aggregators?var-kube_namespace_name={{ $labels.log_kube_namespace }}&&viewPanel=22"
+      - alert: LogAggregatorBufferFillingUp(kube)
+        expr: fluentd_output_status_buffer_available_space_ratio{job="kubernetes-pods",kubernetes_pod_name=~"fluentd-.*"} < 50
+        for: 15m
+        labels:
+          team: infra
+        annotations:
+          summary: "Log aggregator buffer is over 50%"
+          dashboard: "https://grafana.$ENVIRONMENT.$PROVIDER.uw.systems/d/vcsXDH2mz/fluentd-aggregators?orgId=1&refresh=5m"
