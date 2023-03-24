@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drl-exporter
+spec:
+  template:
+    spec:
+      containers:
+        - name: drl-exporter
+          env:
+            - name: DOCKERHUB_USER
+              valueFrom:
+                $patch: replace
+                $path: /valueFrom
+                secretKeyRef:
+                  name: dockerhub-key
+                  key: username
+            - name: DOCKERHUB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                 name: dockerhub-key
+                 key: password
+            - name: ENABLE_USER_AUTH
+              value: true
+              valueFrom:
+                $patch: delete
+            - name: EXPORTER_PORT
+              value: 2121
+              valueFrom:
+                $patch: delete
+            - name: ENABLE_FILE_AUTH
+              value: false
+              valueFrom:
+                $patch: delete
+            - name: FILE_AUTH_DIR
+              value: ''
+              valueFrom:
+                $patch: delete
