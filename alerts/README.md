@@ -25,9 +25,8 @@ resources:
   - github.com/utilitywarehouse/system-manifests/alerts/kube-applier?ref=master
 ```
 
-Then for each of the above resources mount a volume under
-/var/thanos/rule-templates/ dir. Templates configMaps should be expected to
-follow the patter `alert-templates-<base-name>`.
+Then mount everything under /var/thanos/rule-templates/ dir. Templates
+configMaps should be expected to follow the patter `alert-templates-<base-name>.
 Run the following initContainer to render all alerts under the same emptyDir,
 which will be shared with thanos-rule container:
 
@@ -45,33 +44,26 @@ which will be shared with thanos-rule container:
             - -c
             - |
               apk add --no-cache gettext;
-              for file in $(ls /var/thanos/rule-templates/*/*.tmpl); do
+              for file in $(ls /var/thanos/rule-templates/*.tmpl); do
                 f=$(basename $file);
                 envsubst '${ENVIRONMENT},${PROVIDER}' < $file > /var/thanos/rules/${f%.*};
               done;
           volumeMounts:
             - name: rules-rendered
               mountPath: /var/thanos/rules
-            - name: rule-templates-common
-              mountPath: /var/thanos/rule-templates/common/
-            - name: rule-templates-cis-aws
-              mountPath: /var/thanos/rule-templates/cis-aws/
-            - name: rule-templates-kube-applier
-              mountPath: /var/thanos/rule-templates/kube-applier/
+            - name: rule-templates
+              mountPath: /var/thanos/rule-templates
       volumes:
         - name: rules-rendered
           value:
             emptyDir: {}
-        - name: rule-templates-common
-          configMap:
-            defaultMode: 420
-            name: alert-templates-common
-        - name: rule-templates-cis-aws
-          configMap:
-            defaultMode: 420
-            name: alert-templates-cis-aws
-        - name: rule-templates-kube-applier
-          configMap:
-            defaultMode: 420
-            name: alert-templates-kube-applier
+        - name: rule-templates
+          projected:
+            sources:
+            - configMap:
+                name: alert-templates-common
+            - configMap:
+                name: alert-templates-cis-aws
+            - configMap:
+                name: alert-templates-kube-applier
 ```
