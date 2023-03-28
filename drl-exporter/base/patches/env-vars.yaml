@@ -25,7 +25,7 @@ spec:
               valueFrom:
                 $patch: delete
             - name: EXPORTER_PORT
-              value: 2121
+              value: "2121"
               valueFrom:
                 $patch: delete
             - name: ENABLE_FILE_AUTH
