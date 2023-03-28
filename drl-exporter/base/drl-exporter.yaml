@@ -1,0 +1,118 @@
+---
+# Source: drl-exporter/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drl-exporter-configmap
+  labels:
+    helm.sh/chart: drl-exporter-1.1.0
+    app.kubernetes.io/name: drl-exporter
+    app.kubernetes.io/instance: drl-exporter
+    app.kubernetes.io/version: "2.1.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  exporter-port: "2121"
+  enable-user-auth: "false"
+  dockerhub-username: ""
+  enable-file-auth: "false"
+  file-auth-dir: "/config"
+---
+# Source: drl-exporter/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: drl-exporter
+  labels:
+    helm.sh/chart: drl-exporter-1.1.0
+    app.kubernetes.io/name: drl-exporter
+    app.kubernetes.io/instance: drl-exporter
+    app.kubernetes.io/version: "2.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 2121
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: drl-exporter
+    app.kubernetes.io/instance: drl-exporter
+---
+# Source: drl-exporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drl-exporter
+  labels:
+    helm.sh/chart: drl-exporter-1.1.0
+    app.kubernetes.io/name: drl-exporter
+    app.kubernetes.io/instance: drl-exporter
+    app.kubernetes.io/version: "2.1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: drl-exporter
+      app.kubernetes.io/instance: drl-exporter
+  template:
+    metadata:
+      annotations:
+        checksum/config: 3aaeaec72aa9b6ef1784a0523982864329b791f0e67a4e13bfc44e10a5e7baae
+        checksum/secret: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+      labels:
+        app.kubernetes.io/name: drl-exporter
+        app.kubernetes.io/instance: drl-exporter
+    spec:
+      serviceAccountName: default
+      securityContext:
+        {}
+      containers:
+        - name: drl-exporter
+          securityContext:
+            {}
+          image: "khaliq/drl-exporter:v2.1.0"
+          imagePullPolicy: 
+          ports:
+            - name: http
+              containerPort: 2121
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: http
+            timeoutSeconds: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          env:
+            - name: DOCKERHUB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: drl-exporter-configmap
+                  key: dockerhub-username
+            - name: ENABLE_USER_AUTH
+              valueFrom:
+                configMapKeyRef:
+                  name: drl-exporter-configmap
+                  key: enable-user-auth
+            - name: EXPORTER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: drl-exporter-configmap
+                  key: exporter-port
+            - name: ENABLE_FILE_AUTH
+              valueFrom:
+                configMapKeyRef:
+                  name: drl-exporter-configmap
+                  key: enable-file-auth
