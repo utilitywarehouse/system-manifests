@@ -21,18 +21,18 @@ spec:
                  name: dockerhub-key
                  key: password
             - name: ENABLE_USER_AUTH
-              value: true
+              value: "true"
               valueFrom:
                 $patch: delete
             - name: EXPORTER_PORT
-              value: 2121
+              value: "2121"
               valueFrom:
                 $patch: delete
             - name: ENABLE_FILE_AUTH
-              value: false
+              value: "false"
               valueFrom:
                 $patch: delete
             - name: FILE_AUTH_DIR
-              value: ''
+              value: ""
               valueFrom:
                 $patch: delete
