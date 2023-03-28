@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+configMapGenerator:
+  - files:
+      - cis-aws.yaml.tmpl=cis-aws.yaml.tmpl
+    name: alert-templates-cis-aws

@@ -5,4 +5,4 @@ configMapGenerator:
   - files:
       - all.yaml.tmpl=all.yaml.tmpl
       - logging.yaml.tmpl=logging.yaml.tmpl
-    name: alerts
+    name: alert-templates-common
