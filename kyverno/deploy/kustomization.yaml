@@ -3,9 +3,8 @@ kind: Kustomization
 namespace: kube-system
 
 resources:
-  - ../remote/
+  - ../upstream/
   - kyverno-pdb.yaml
-  - policies/
 
 patches:
   - path: delete-ns.yaml
