@@ -8,6 +8,7 @@ spec:
       containers:
         - name: argocd-notifications-controller
           args:
+            - /usr/local/bin/argocd-notifications
             - "--loglevel=warn"
           resources:
             requests:
