@@ -1,6 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app.kubernetes.io/component: notifications-controller
+    app.kubernetes.io/name: argocd-notifications-controller
+    app.kubernetes.io/part-of: argocd
   name: argocd-notifications-controller
 spec:
   selector:
@@ -14,9 +18,9 @@ spec:
         app.kubernetes.io/name: argocd-notifications-controller
     spec:
       containers:
-        - command:
-            - argocd-notifications
-          image: quay.io/argoproj/argocd:v2.6.2
+        - args:
+            - /usr/local/bin/argocd-notifications
+          image: quay.io/argoproj/argocd:v2.7.0
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -87,7 +91,7 @@ spec:
                   app.kubernetes.io/name: argocd-redis-ha-haproxy
               topologyKey: kubernetes.io/hostname
       containers:
-        - image: haproxy:2.6.2-alpine
+        - image: haproxy:2.6.12-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
@@ -123,7 +127,7 @@ spec:
             - /readonly/haproxy_init.sh
           command:
             - sh
-          image: haproxy:2.6.2-alpine
+          image: haproxy:2.6.12-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
@@ -178,7 +182,7 @@ spec:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: argocd-repo-server
-                topologyKey: failure-domain.beta.kubernetes.io/zone
+                topologyKey: topology.kubernetes.io/zone
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
@@ -187,9 +191,8 @@ spec:
               topologyKey: kubernetes.io/hostname
       automountServiceAccountToken: false
       containers:
-        - command:
-            - entrypoint.sh
-            - argocd-repo-server
+        - args:
+            - /usr/local/bin/argocd-repo-server
             - --redis
             - argocd-redis-ha-haproxy:6379
           env:
@@ -319,7 +322,7 @@ spec:
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v2.6.2
+          image: quay.io/argoproj/argocd:v2.7.0
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -367,11 +370,11 @@ spec:
               name: plugins
       initContainers:
         - command:
-            - cp
+            - /bin/cp
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v2.6.2
+          image: quay.io/argoproj/argocd:v2.7.0
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -443,7 +446,7 @@ spec:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: argocd-server
-                topologyKey: failure-domain.beta.kubernetes.io/zone
+                topologyKey: topology.kubernetes.io/zone
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
@@ -451,8 +454,8 @@ spec:
                   app.kubernetes.io/name: argocd-server
               topologyKey: kubernetes.io/hostname
       containers:
-        - command:
-            - argocd-server
+        - args:
+            - /usr/local/bin/argocd-server
             - --redis
             - argocd-redis-ha-haproxy:6379
           env:
@@ -650,7 +653,7 @@ spec:
                   key: server.enable.proxy.extension
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.6.2
+          image: quay.io/argoproj/argocd:v2.7.0
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
