@@ -45,6 +45,7 @@ spec:
                 |insurance
                 |partner
                 |payment
+                |pubsub
                 |system
                 |telecom
                 |unicom
