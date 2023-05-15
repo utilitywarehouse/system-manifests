@@ -13,8 +13,7 @@ metadata:
       maps Kubernetes restricted pod security standard
       https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted
 spec:
-  validationFailureAction: enforce
-  failurePolicy: Ignore
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: default

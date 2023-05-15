@@ -16,7 +16,7 @@ metadata:
       let's only check the one edited via external-DNS since the rest should be
       problematic regardless. 
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: domain-label-limit

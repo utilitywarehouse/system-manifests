@@ -11,8 +11,7 @@ metadata:
       SELinux options can be used to escalate privileges and should not be allowed. This policy
       ensures that the `seLinuxOptions` field is undefined.
 spec:
-  validationFailureAction: enforce
-  failurePolicy: Ignore
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: selinux-type

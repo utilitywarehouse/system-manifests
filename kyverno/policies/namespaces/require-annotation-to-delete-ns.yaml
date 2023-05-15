@@ -11,7 +11,7 @@ metadata:
       Require namespaces to be annotated with 'uw.systems/delete-allowed: "true"'
       in order to allow deletion.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: false
   rules:
   - name: require-annotation-before-deleting

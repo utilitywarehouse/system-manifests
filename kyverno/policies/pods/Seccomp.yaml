@@ -12,8 +12,7 @@ metadata:
       requiring Kubernetes v1.19 or later, ensures that seccomp is unset or 
       set to `RuntimeDefault` or `Localhost`.
 spec:
-  validationFailureAction: enforce
-  failurePolicy: Ignore
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: check-seccomp

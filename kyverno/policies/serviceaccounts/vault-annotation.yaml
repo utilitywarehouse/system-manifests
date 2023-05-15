@@ -11,8 +11,7 @@ metadata:
       Verify that `vault.uw.systems/aws-role` annotation contains a valid role
       arn
 spec:
-  validationFailureAction: enforce
-  failurePolicy: Ignore
+  validationFailureAction: Enforce
   background: false # Disable due to warning events noise.
   rules:
     - name: default
