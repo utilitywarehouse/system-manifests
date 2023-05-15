@@ -10,7 +10,7 @@ metadata:
     policies.kyverno.io/description: >-
       Require all namespaces to mark ownership via uw.systems/owner label.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: check-for-namespace-owner-label

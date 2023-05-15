@@ -11,7 +11,7 @@ metadata:
       Prevent IngressRouteTCP from hijacking all traffic by preventing wildcard
       HostSNIs.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: default

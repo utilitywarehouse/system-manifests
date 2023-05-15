@@ -13,7 +13,7 @@ metadata:
       addresses, in order to avoid someone hijacking an external service IP
       from their service.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: default

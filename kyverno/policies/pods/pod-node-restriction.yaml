@@ -12,8 +12,7 @@ metadata:
       in a Pod spec which allows running on control plane nodes
       with the taint key `node-role.kubernetes.io/master`.
 spec:
-  validationFailureAction: enforce
-  failurePolicy: Ignore
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: restrict-scheduling-to-master

@@ -12,7 +12,7 @@ metadata:
       vulnerabilities in some Ingress controllers. This policy audits Services of type ExternalName
       if the externalName field refers to localhost.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: false # Disable due to warning events noise: https://github.com/kyverno/kyverno/issues/4093
   rules:
     - name: default

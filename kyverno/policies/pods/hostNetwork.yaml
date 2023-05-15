@@ -10,8 +10,7 @@ metadata:
     policies.kyverno.io/description: >-
       This policy ensures Pods do not use the host's network interfaces.
 spec:
-  validationFailureAction: enforce
-  failurePolicy: Ignore
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: default

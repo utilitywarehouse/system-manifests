@@ -12,7 +12,7 @@ metadata:
       hostname as defined by RFC 1123. By requiring a Host rule, we prevent
       widespread hijacking by non-specific rules like PathPrefix(`/`).
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: default

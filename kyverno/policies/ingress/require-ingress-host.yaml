@@ -11,7 +11,7 @@ metadata:
       prevent ingresses from hijacking the default traefik route by requiring an
       explicit host value
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: require-ingress-host

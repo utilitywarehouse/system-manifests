@@ -11,7 +11,7 @@ metadata:
       Make sure every namespace has a `name` label that matches the actual
       namespace name.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: ensure-namespace-name-label

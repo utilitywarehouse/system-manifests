@@ -12,8 +12,7 @@ metadata:
       hostPath volumes consume the underlying node's file system. Mounting host
       paths should be disabled by default, except for specific cases
 spec:
-  validationFailureAction: enforce
-  failurePolicy: Ignore
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: restrict-hostpath-volumes

@@ -12,7 +12,7 @@ metadata:
       generate the mirrored service names, respecting the char limit of 63 for
       service names.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: default
