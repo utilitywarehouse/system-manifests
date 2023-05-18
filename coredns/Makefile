@@ -1,11 +1,11 @@
 .DEFAULT_GOAL := get-upstream
 .PHONY: get-upstream
 
-# https://github.com/coredns/deployment
-# 1.9.4
-COMMIT_REF=128be7d6cea78fe335898fcaf87ffe85f1f2dc1c
+# https://github.com/kubernetes/kubernetes
+# 1.10.1
+COMMIT_REF=39e52449f9f40aa34037b81396a602803baf4991
 
 get-upstream:
 	curl -Ls \
-	 https://raw.githubusercontent.com/coredns/deployment/$(COMMIT_REF)/kubernetes/coredns.yaml.sed \
+	 https://raw.githubusercontent.com/kubernetes/kubernetes/$(COMMIT_REF)/cluster/addons/dns/coredns/coredns.yaml.sed \
 	 > upstream/coredns.yaml
