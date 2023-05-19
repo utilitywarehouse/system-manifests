@@ -22,9 +22,7 @@ patches:
     target:
       kind: Service
       name: kube-dns
-
-patchesStrategicMerge:
-  - patches/ignore.yaml
+  - path: patches/ignore.yaml
 
 resources:
   - upstream/
