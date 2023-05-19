@@ -13,8 +13,8 @@ spec:
               value: "3"
           resources:
             requests:
-              memory: 500Mi
-              cpu: 0.1
+              memory: 0Mi
+              cpu: 0
             limits:
               cpu: 1
               memory: 1000Mi
