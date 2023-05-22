@@ -57,3 +57,8 @@ results:
     resource: test-very-very-very-very-very-very-very-very-long-name-svc
     kind: Service
     result: fail
+  - policy: mirror-name-length
+    rule: default
+    resource: broadband-product-availability-app
+    kind: Service
+    result: fail
