@@ -4,8 +4,8 @@ kind: Deployment
 metadata:
   name: trident-controller
   labels:
-    app: controller.csi.trident.netapp.io
     kubectl.kubernetes.io/default-container: trident-main
+    app: controller.csi.trident.netapp.io
 spec:
   replicas: 1
   strategy:
@@ -21,7 +21,7 @@ spec:
       serviceAccount: trident-controller
       containers:
       - name: trident-main
-        image: netapp/trident:23.01.0
+        image: netapp/trident:23.04.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8443
@@ -37,9 +37,13 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=controller"
         - "--log_format=text"
+        - "--log_level=info"
+        - "--log_workflows="
+        - "--log_layers="
         - "--disable_audit_log=true"
         - "--address=127.0.0.1"
         - "--http_request_timeout=1m30s"
+        - "--enable_force_detach=false"
         - "--metrics"
         #- -debug
         livenessProbe:
@@ -70,7 +74,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: trident-autosupport
-        image: docker.io/netapp/trident-autosupport:23.01
+        image: docker.io/netapp/trident-autosupport:23.04
         imagePullPolicy: IfNotPresent
         command:
         - /usr/local/bin/trident-autosupport
@@ -90,7 +94,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: registry.k8s.io/sig-storage/csi-provisioner:v3.4.0
+        image: registry.k8s.io/sig-storage/csi-provisioner:v3.4.1
         imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
@@ -106,7 +110,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: registry.k8s.io/sig-storage/csi-attacher:v4.1.0
+        image: registry.k8s.io/sig-storage/csi-attacher:v4.2.0
         imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
@@ -145,9 +149,20 @@ spec:
         volumeMounts:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
       tolerations: []
       volumes:
       - name: socket-dir
