@@ -26,7 +26,7 @@ spec:
         securityContext:
           privileged: true
           allowPrivilegeEscalation: true
-        image: netapp/trident:23.01.0
+        image: netapp/trident:23.04.0
         imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
@@ -38,6 +38,9 @@ spec:
         - "--csi_endpoint=$(CSI_ENDPOINT)"
         - "--csi_role=node"
         - "--log_format=text"
+        - "--log_level=info"
+        - "--log_workflows="
+        - "--log_layers="
         - "--disable_audit_log=true"
         - "--http_request_timeout=1m30s"
         - "--https_rest"
@@ -123,9 +126,20 @@ spec:
           mountPath: /plugin
         - name: registration-dir
           mountPath: /registration
-      nodeSelector:
-        kubernetes.io/os: linux
-        kubernetes.io/arch: amd64
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                    - arm64
+                    - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                    - linux
       tolerations:
       - effect: "NoExecute"
         operator: "Exists"
