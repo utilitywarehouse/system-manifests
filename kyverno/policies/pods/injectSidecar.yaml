@@ -1,0 +1,249 @@
+# https://kyverno.io/policies/other/inject-sidecar-deployment/inject-sidecar-deployment/
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: inject-sidecar
+  annotations:
+    policies.kyverno.io/title: Inject Sidecar
+    policies.kyverno.io/category: Sample
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      This policy injects sidecars into Pods that have a matching annotation.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: inject-vault-credentials-agent-aws
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                injector.tumblr.com/request: "vault-sidecar-aws"
+              kinds:
+                - Pod
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws"
+              kinds:
+                - Pod
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              injector.tumblr.com/status: "injected"
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            containers:
+              - name: vault-credentials-agent
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                lifecycle:
+                  postStart:
+                    exec:
+                      command:
+                        - /bin/sh
+                        - -c
+                        - |
+                          while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                args:
+                  - sidecar
+                  - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                env:
+                  - name: VAULT_CACERT
+                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+                volumeMounts:
+                  - name: vault-tls
+                    mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                    value: "http://127.0.0.1:8098/credentials"
+            volumes:
+              - name: vault-tls
+                configMap:
+                  name: vault-tls
+    - name: inject-vault-credentials-agent-gcp
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                injector.tumblr.com/request: "vault-sidecar-gcp"
+              kinds:
+                - Pod
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp"
+              kinds:
+                - Pod
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              injector.tumblr.com/status: "injected"
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            containers:
+              - name: vault-credentials-agent
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                lifecycle:
+                  postStart:
+                    exec:
+                      command:
+                        - /bin/sh
+                        - -c
+                        - |
+                          while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                args:
+                  - sidecar
+                  - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
+                  - name: VAULT_CACERT
+                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+                volumeMounts:
+                  - name: vault-tls
+                    mountPath: /etc/tls
+            volumes:
+              - name: vault-tls
+                configMap:
+                  name: vault-tls
+    - name: inject-vault-init-container-aws
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                injector.tumblr.com/request: "vault-init-container-aws"
+              kinds:
+                - Pod
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-init-container-aws"
+              kinds:
+                - Pod
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              injector.tumblr.com/status: "injected"
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            initContainers:
+              - name: vault-credentials
+                image: vault:1.8.4
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo '
+                    exit_after_auth = true
+                    auto_auth {
+                            method "kubernetes" {
+                                mount_path = "auth/kubernetes"
+                                config = {
+                                    role = "{{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}"
+                                }
+                            }
+
+                            sink "file" {
+                                config = {
+                                    path = "/home/vault/.vault-token"
+                                }
+                            }
+                    }
+                    template {
+                        destination = "/etc/aws/credentials"
+                        contents = <<EOT
+                    \{{ with secret "aws/sts/{{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}" -}}
+                    [default]
+                    aws_access_key_id=\{{ .Data.access_key }}
+                    aws_secret_access_key=\{{ .Data.secret_key }}
+                    aws_session_token=\{{ .Data.security_token }}
+
+                    ; debug info
+                    ; request_id=\{{ .RequestID }}
+                    ; lease_id=\{{ .LeaseID }}
+                    ; renewable=\{{ .Renewable }}
+                    ; lease_duration=\{{ .LeaseDuration }}
+                    ; arn=\{{ .Data.arn }}
+                    ; warnings=\{{ .Warnings }}
+
+                    \{{ end -}}
+                    EOT
+                    }
+                    ' > config.hcl
+                    /usr/bin/dumb-init -- vault agent -config=config.hcl
+                env:
+                  - name: AWS_SHARED_CREDENTIALS_FILE
+                    value: "/etc/aws/credentials"
+                  - name: VAULT_CACERT
+                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                volumeMounts:
+                  - name: vault-aws-credentials
+                    mountPath: /etc/aws
+                  - name: vault-tls
+                    mountPath: /etc/tls
+            containers:
+              - name: "etcd-bucket-push"
+                env:
+                  - name: AWS_SHARED_CREDENTIALS_FILE
+                    value: "/etc/aws/credentials"
+                volumeMounts:
+                  - name: vault-aws-credentials
+                    mountPath: /etc/aws
+            volumes:
+              - name: vault-aws-credentials
+                emptyDir: {}
+              - name: vault-tls
+                configMap:
+                  name: vault-tls
