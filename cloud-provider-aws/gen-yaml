@@ -1,0 +1,4 @@
+#!/bin/sh
+
+helm repo add aws-cloud-controller-manager https://kubernetes.github.io/cloud-provider-aws
+helm template aws-cloud-controller-manager aws-cloud-controller-manager/aws-cloud-controller-manager > upstream.yaml
