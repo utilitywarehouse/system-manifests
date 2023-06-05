@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: aws-cloud-controller-manager
+          args:
+            - --allocate-node-cidrs=false
+            - --cloud-provider=aws
+            - --cluster-cidr=10.2.0.0/16
+            - --configure-cloud-routes=false
+            - --v=2
