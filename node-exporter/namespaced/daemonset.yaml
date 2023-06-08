@@ -20,6 +20,8 @@ spec:
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
       containers:
         - image: quay.io/prometheus/node-exporter:v1.6.0
           name: node-exporter
