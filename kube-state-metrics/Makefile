@@ -1,4 +1,4 @@
-v=v2.8.1
+v=v2.9.2
 
 pull-upstream:
 	curl https://raw.githubusercontent.com/kubernetes/kube-state-metrics/$(v)/examples/standard/cluster-role-binding.yaml > cluster/cluster-role-binding.yaml
