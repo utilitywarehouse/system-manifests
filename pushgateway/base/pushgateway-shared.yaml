@@ -1,0 +1,54 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: prometheus-pushgateway
+  namespace: sys-mon
+  labels:
+    app: prometheus-pushgateway
+  annotations:
+    uw.health.aggregator.enable: "false"
+spec:
+  clusterIP: None
+  ports:
+    - port: 9091
+      protocol: TCP
+  selector:
+    app: prometheus-pushgateway
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: &app prometheus-pushgateway-shared
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-pushgateway
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9091"
+      labels:
+        app: prometheus-pushgateway
+    spec:
+      containers:
+        - name: prometheus-pushgateway
+          image: prom/pushgateway:v1.4.0
+          livenessProbe:
+            httpGet:
+              path: /#/status
+              port: 9091
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /#/status
+              port: 9091
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+          ports:
+            - containerPort: 9091
+              name: metrics
+
