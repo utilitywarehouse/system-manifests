@@ -2,18 +2,16 @@ kind: Service
 apiVersion: v1
 metadata:
   name: prometheus-pushgateway
-  namespace: sys-mon
   labels:
-    app: prometheus-pushgateway
-  annotations:
-    uw.health.aggregator.enable: "false"
+    app.kubernetes.io/name: prometheus-pushgateway
+    app.kubernetes.io/version: v1.4.0
 spec:
   clusterIP: None
   ports:
     - port: 9091
       protocol: TCP
   selector:
-    app: prometheus-pushgateway
+    app.kubernetes.io/name: prometheus-pushgateway
 ---
 kind: Deployment
 apiVersion: apps/v1
@@ -23,7 +21,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: prometheus-pushgateway
+      app.kubernetes.io/name: prometheus-pushgateway
   template:
     metadata:
       annotations:
@@ -31,7 +29,7 @@ spec:
         prometheus.io/path: "/metrics"
         prometheus.io/port: "9091"
       labels:
-        app: prometheus-pushgateway
+        app.kubernetes.io/name: prometheus-pushgateway
     spec:
       containers:
         - name: prometheus-pushgateway
@@ -51,4 +49,3 @@ spec:
           ports:
             - containerPort: 9091
               name: metrics
-
