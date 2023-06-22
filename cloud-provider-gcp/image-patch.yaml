@@ -1,0 +1,13 @@
+# Generic patch for the image. Version is updated via sed after running
+# make update via configuration in kustomization.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: cloud-controller-manager
+          image: cloud-controller-manager
