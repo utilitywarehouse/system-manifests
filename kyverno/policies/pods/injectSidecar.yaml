@@ -233,6 +233,13 @@ spec:
                     mountPath: /etc/aws
                   - name: vault-tls
                     mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: AWS_SHARED_CREDENTIALS_FILE
+                    value: "/etc/aws/credentials"
+                volumeMounts:
+                  - name: vault-aws-credentials
+                    mountPath: /etc/aws
             containers:
               - (name): "*"
                 env:
