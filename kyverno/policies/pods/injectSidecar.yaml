@@ -145,6 +145,12 @@ spec:
                 volumeMounts:
                   - name: vault-tls
                     mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
             volumes:
               - name: vault-tls
                 configMap:
