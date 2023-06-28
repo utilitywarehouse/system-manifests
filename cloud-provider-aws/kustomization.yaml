@@ -5,4 +5,5 @@ resources:
   - upstream.yaml
 
 patches:
+  - path: affinity-patch.yaml
   - path: args-patch.yaml
