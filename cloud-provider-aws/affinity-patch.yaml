@@ -1,0 +1,19 @@
+# To help when migrating from kube-controller-manager. Shall be removed after
+# migration is completed in all envs
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kube-controller-manager-mode
+                operator: NotIn
+                values:
+                  - "enable-leader-migration"
