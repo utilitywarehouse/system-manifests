@@ -81,6 +81,116 @@ spec:
               - name: vault-tls
                 configMap:
                   name: vault-tls
+    - name: inject-vault-credentials-agent-aws-gcp
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                injector.tumblr.com/request: "vault-sidecar-aws-gcp"
+              kinds:
+                - Pod
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp"
+              kinds:
+                - Pod
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              injector.tumblr.com/status: "injected"
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            containers:
+              - name: vault-credentials-agent-aws
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                lifecycle:
+                  postStart:
+                    exec:
+                      command:
+                        - /bin/sh
+                        - -c
+                        - |
+                          while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                args:
+                  - sidecar
+                  - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                env:
+                  - name: VAULT_CACERT
+                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+                volumeMounts:
+                  - name: vault-tls
+                    mountPath: /etc/tls
+              - name: vault-credentials-agent-gcp
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                lifecycle:
+                  postStart:
+                    exec:
+                      command:
+                        - /bin/sh
+                        - -c
+                        - |
+                          while ! nc -w 1 127.0.0.1 8198; do sleep 1; done
+                args:
+                  - sidecar
+                  - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                  - -listen-address=127.0.0.1:8198
+                  - -operational-address=:8199
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8198"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8198"
+                  - name: VAULT_CACERT
+                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8199
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+                volumeMounts:
+                  - name: vault-tls
+                    mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                    value: "http://127.0.0.1:8098/credentials"
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8198"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8198"
+            volumes:
+              - name: vault-tls
+                configMap:
+                  name: vault-tls
     - name: inject-vault-credentials-agent-gcp
       context:
         - name: POD_NAMESPACE
