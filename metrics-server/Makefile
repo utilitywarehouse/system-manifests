@@ -1,3 +1,3 @@
-version=v0.6.2
+version=v0.6.3
 pull-latest:
 	curl -L -o metrics-server.yaml https://github.com/kubernetes-sigs/metrics-server/releases/download/$(version)/components.yaml
