@@ -16,5 +16,4 @@ spec:
             - --cluster-cidr=10.4.0.0/16
             - --configure-cloud-routes=false
             - --controllers=*,-nodeipam,-route,-gkenetworkparamset # Disable controllers we do not need due to calico
-            - --enable-leader-migration=true
             - --v=2

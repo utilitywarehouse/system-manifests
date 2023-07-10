@@ -20,53 +20,6 @@ patches:
       kind: DaemonSet
       name: cloud-controller-manager
       namespace: kube-system
-  # Temporary - to be deleted after migration. Require the node to not be
-  # marked as kube-controller-manager-mode=enable-leader-migration
-  - patch: |-
-      - op: add
-        path: /spec/template/spec/affinity/nodeAffinity/requiredDuringSchedulingIgnoredDuringExecution/nodeSelectorTerms/0/matchExpressions/-
-        value:
-          key: kube-controller-manager-mode
-          operator: NotIn
-          values:
-            - "enable-leader-migration"
-    target:
-      kind: DaemonSet
-      name: cloud-controller-manager
-      namespace: kube-system
-  - patch: |-
-      - op: add
-        path: /spec/template/spec/affinity/nodeAffinity/requiredDuringSchedulingIgnoredDuringExecution/nodeSelectorTerms/1/matchExpressions/-
-        value:
-          key: kube-controller-manager-mode
-          operator: NotIn
-          values:
-            - "enable-leader-migration"
-    target:
-      kind: DaemonSet
-      name: cloud-controller-manager
-      namespace: kube-system
-  # Required during migration
-  # https://kubernetes.io/docs/tasks/administer-cluster/controller-manager-leader-migration/#grant-access-to-migration-lease
-  - patch: |-
-      - op: add
-        path: /rules/-
-        value:
-          apiGroups:
-          - coordination.k8s.io
-          resources:
-          - leases
-          resourceNames:
-          - cloud-provider-extraction-migration
-          verbs:
-          - create
-          - list
-          - get
-          - update
-    target:
-      kind: Role
-      name: system::leader-locking-cloud-controller-manager
-      namespace: kube-system
   # Bind cloud-controller-manager to cloud-node-controller to be able to manage
   # nodes
   - patch: |-
