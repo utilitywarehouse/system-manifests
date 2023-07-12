@@ -1,2 +1,2 @@
 localize:
-	kustomize localize "https://github.com/traefik/traefik-helm-chart//traefik/crds?ref=ec1f9fafca973ba9bcd58ade4f52888a255863ff" # valid for v2.9.8
+	kustomize localize "https://github.com/traefik/traefik-helm-chart//traefik/crds?ref=62d7a9be592b552965fb690681b6f4f8865ce792" # valid for v2.10.3
