@@ -32,6 +32,21 @@ patches:
     target:
       kind: ClusterRoleBinding
       name: system:controller:cloud-node-controller
+  # Allow cloud-controller-manager to patch services in order to be able to create LoadBalancers
+  - patch: |-
+      - op: add
+        path: /rules/-
+        value:
+          apiGroups:
+          - ""
+          resources:
+          - services
+          verbs:
+          - patch
+          - update
+    target:
+      kind: ClusterRole
+      name: system:cloud-controller-manager
 
 images:
   - name: cloud-controller-manager
