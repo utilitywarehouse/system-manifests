@@ -14,6 +14,7 @@ metadata:
 spec:
   validationFailureAction: Enforce
   background: true
+  failurePolicy: Ignore
   rules:
   - name: restrict-scheduling-to-master
     match:

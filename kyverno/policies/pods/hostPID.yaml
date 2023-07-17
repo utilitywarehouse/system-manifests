@@ -12,6 +12,7 @@ metadata:
 spec:
   validationFailureAction: Enforce
   background: true
+  failurePolicy: Ignore
   rules:
     - name: default
       match:
