@@ -16,6 +16,7 @@ metadata:
 spec:
   validationFailureAction: Enforce
   background: true
+  failurePolicy: Ignore
   rules:
     - name: app-armor
       match:
