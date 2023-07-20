@@ -2,6 +2,14 @@
 # https://github.com/kyverno/kyverno/blob/main/config/install.yaml#L7528-L7530
 # Since we deploy a lot of things under kube-system, let's not exclude it
 # blindly, but cater for kube-system resources in our policies.
+#
+# Under `webhooks` config key we can define namespaceSelectors and
+# objectSelectors we want to exclude from Kyverno generated hooks. By default
+# we follow a fail open policy and configure Kyverno to use `failPolicy: Ignore`
+# to all hooks generated. We can use custom objectSelectors for things we need
+# to define with more strict policies but we need to be careful to create manual
+# hooks with `failPolicy: Fail` for all objectSelectors. Otherwise we risk
+# opening holes in our policies for particular labels.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,3 +18,4 @@ metadata:
 data:
   excludeGroupRole: system:nodes,system:kube-scheduler
   resourceFilters: "[Event,*,*][*,kube-public,*][*,kube-node-lease,*][Node,*,*][APIService,*,*][TokenReview,*,*][SubjectAccessReview,*,*][SelfSubjectAccessReview,*,*][*,kyverno,kyverno*][Binding,*,*][ReplicaSet,*,*][ReportChangeRequest,*,*][ClusterReportChangeRequest,*,*][PolicyReport,*,*][ClusterPolicyReport,*,*]"
+  webhooks: '[{"objectSelector": {"matchExpressions": [{"key":"xds.semaphore.uw.systems/client","operator":"NotIn","values":["true"]}]}}]'
