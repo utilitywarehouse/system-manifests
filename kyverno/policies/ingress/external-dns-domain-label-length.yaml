@@ -18,7 +18,6 @@ metadata:
 spec:
   validationFailureAction: Enforce
   background: true
-  failurePolicy: Ignore
   rules:
     - name: domain-label-limit
       # To be patched in environments that do not use infra as prefix

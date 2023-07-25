@@ -13,7 +13,6 @@ metadata:
 spec:
   validationFailureAction: Enforce
   background: false
-  failurePolicy: Ignore
   rules:
   - name: require-annotation-before-deleting
     match:

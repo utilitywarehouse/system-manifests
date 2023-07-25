@@ -24,6 +24,7 @@ spec:
       containers:
       - args:
         - -v=0
+        - --forceFailurePolicyIgnore=true
         - --admissionReports=false
         - --backgroundScan=false
         name: kyverno

@@ -4,7 +4,6 @@ metadata:
   name: ensure-prisma-and-onprem-vpn-ip-whitelist
 spec:
   validationFailureAction: Enforce
-  failurePolicy: Ignore
   mutateExistingOnPolicyUpdate: true
   rules:
     - name: default
