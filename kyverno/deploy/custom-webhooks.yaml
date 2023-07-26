@@ -1,0 +1,76 @@
+# This is a mutation webhook for resources that escape the one managed via
+# Kyverno and we want to have a strict failPolicy.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: kyverno-custom-resource-mutating-webhook
+  annotations:
+    cert-manager.io/inject-ca-from: kube-system/kyverno-serving-cert
+webhooks:
+- admissionReviewVersions: ["v1"]
+  clientConfig:
+   service:
+     name: kyverno-svc
+     namespace: kube-system
+     path: /mutate/fail
+     port: 443
+  name: custom-mutate.kyverno.svc-fail
+  failurePolicy: Fail
+  objectSelector:
+    matchLabels:
+      xds.semaphore.uw.systems/client: "true"
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["*"]
+    apiVersions: ["*"]
+    resources: ["*/*"]
+    scope: "*"
+---
+# This is a validation webhook for resources that escape the one managed via
+# Kyverno and we want to have a strict failPolicy.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: kyverno-custom-resource-validating-webhook
+  annotations:
+    cert-manager.io/inject-ca-from: kube-system/kyverno-serving-cert
+webhooks:
+- admissionReviewVersions: ["v1"]
+  clientConfig:
+   service:
+     name: kyverno-svc
+     namespace: kube-system
+     path: /validate/fail
+     port: 443
+  name: custom-validate.kyverno.svc-fail
+  failurePolicy: Fail
+  objectSelector:
+    matchLabels:
+      xds.semaphore.uw.systems/client: "true"
+  rules:
+  - operations: ["CREATE", "UPDATE"]
+    apiGroups: ["*"]
+    apiVersions: ["*"]
+    resources: ["*/*"]
+    scope: "*"
+---
+# Certificates for webhooks
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: kyverno-selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kyverno-serving-cert
+spec:
+  dnsNames:
+    - kyverno.kube-system.svc
+    - kyverno.kube-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: kyverno-selfsigned-issuer
+  secretName: kyverno-webhook-server-cert
