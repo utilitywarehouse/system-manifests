@@ -5,7 +5,7 @@ kind: MutatingWebhookConfiguration
 metadata:
   name: kyverno-custom-resource-mutating-webhook
   annotations:
-    cert-manager.io/inject-ca-from: kube-system/kyverno-serving-cert
+    cert-manager.io/inject-ca-from-secret: kube-system/kyverno-svc.kube-system.svc.kyverno-tls-ca # Managed by Kyverno
 webhooks:
 - admissionReviewVersions: ["v1"]
   clientConfig:
@@ -34,7 +34,7 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: kyverno-custom-resource-validating-webhook
   annotations:
-    cert-manager.io/inject-ca-from: kube-system/kyverno-serving-cert
+    cert-manager.io/inject-ca-from-secret: kube-system/kyverno-svc.kube-system.svc.kyverno-tls-ca # Managed by Kyverno
 webhooks:
 - admissionReviewVersions: ["v1"]
   clientConfig:
@@ -55,24 +55,3 @@ webhooks:
     apiVersions: ["*"]
     resources: ["*/*"]
     scope: "*"
----
-# Certificates for webhooks
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: kyverno-selfsigned-issuer
-spec:
-  selfSigned: {}
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: kyverno-serving-cert
-spec:
-  dnsNames:
-    - kyverno-svc.kube-system.svc
-    - kyverno-svc.kube-system.svc.cluster.local
-  issuerRef:
-    kind: Issuer
-    name: kyverno-selfsigned-issuer
-  secretName: kyverno-webhook-server-cert
