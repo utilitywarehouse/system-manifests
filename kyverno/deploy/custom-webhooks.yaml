@@ -70,8 +70,8 @@ metadata:
   name: kyverno-serving-cert
 spec:
   dnsNames:
-    - kyverno.kube-system.svc
-    - kyverno.kube-system.svc.cluster.local
+    - kyverno-svc.kube-system.svc
+    - kyverno-svc.kube-system.svc.cluster.local
   issuerRef:
     kind: Issuer
     name: kyverno-selfsigned-issuer
