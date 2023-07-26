@@ -56,13 +56,15 @@ webhooks:
     resources: ["*/*"]
     scope: "*"
 ---
-# Certificates for webhooks
+# Dummy Issuer and Certificate to make cert-manager aware of Kyverno CA and be
+# able to inject into webhooks
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: kyverno-selfsigned-issuer
 spec:
-  selfSigned: {}
+  ca:
+    secretName: kyverno-svc.kube-system.svc.kyverno-tls-ca # Generated/managed by Kyverno
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
