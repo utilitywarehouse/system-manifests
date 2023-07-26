@@ -16,6 +16,7 @@ webhooks:
      port: 443
   name: custom-mutate.kyverno.svc-fail
   failurePolicy: Fail
+  sideEffects: None
   objectSelector:
     matchLabels:
       xds.semaphore.uw.systems/client: "true"
@@ -44,6 +45,7 @@ webhooks:
      port: 443
   name: custom-validate.kyverno.svc-fail
   failurePolicy: Fail
+  sideEffects: None
   objectSelector:
     matchLabels:
       xds.semaphore.uw.systems/client: "true"
