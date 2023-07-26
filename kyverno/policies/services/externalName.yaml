@@ -14,7 +14,6 @@ metadata:
 spec:
   validationFailureAction: Enforce
   background: false # Disable due to warning events noise: https://github.com/kyverno/kyverno/issues/4093
-  failurePolicy: Ignore
   rules:
     - name: default
       match:
