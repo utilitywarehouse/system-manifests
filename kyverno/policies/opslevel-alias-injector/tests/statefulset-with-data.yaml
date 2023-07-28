@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: with-data
+  namespace: dev-enablement
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        app.uw.systems/opslevel-service-alias: "k8s:sts:dev-enablement-with-data"
+    spec:
+      containers:
+        - name: elasticsearch
+          image: elasticsearch:latest
+          env:
+            - name: OPSLEVEL_SERVICE_ALIAS
+              value: "k8s:sts:dev-enablement-with-data"

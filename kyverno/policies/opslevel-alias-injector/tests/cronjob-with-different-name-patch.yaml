@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: with-different-name
+  namespace: dev-enablement
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            app.uw.systems/opslevel-service-alias: k8s:cronjob:dev-enablement-with-different-name
+        spec:
+          containers:
+            - name: job-container
+              image: my-job-image:latest
+              env:
+                - name: OPSLEVEL_SERVICE_ALIAS
+                  value: k8s:cronjob:dev-enablement-with-different-name

@@ -7,3 +7,4 @@ resources:
   - pods/
   - serviceaccounts/
   - services/
+  - opslevel-alias-injector/

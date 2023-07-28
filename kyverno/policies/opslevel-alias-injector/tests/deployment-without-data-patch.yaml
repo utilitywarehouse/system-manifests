@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: without-data
+  namespace: dev-enablement
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        app.uw.systems/opslevel-service-alias: "k8s:deployment:dev-enablement-without-data"
+        foo.example/some-other-annotation: value
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          env:
+            - name: SOME_OTHER_VAR
+              value: ok
+            - name: OPSLEVEL_SERVICE_ALIAS
+              value: "k8s:deployment:dev-enablement-without-data"

@@ -1,0 +1,72 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: opslevel-alias-injector
+spec:
+  rules:
+  - name: inject-opslevel-alias-for-deployments
+    match:
+      all:
+      - resources:
+          kinds:
+          - Deployment
+          namespaces:
+            - dev-enablement
+    mutate:
+      patchStrategicMerge:
+        spec:
+          template:
+            metadata:
+              annotations:
+                app.uw.systems/opslevel-service-alias: "k8s:deployment:{{ request.namespace }}-{{ request.object.metadata.name }}"
+            spec:
+              containers:
+                # conditional anchor, only add the value if not present
+                - (name): "*"
+                  env:
+                    - name: OPSLEVEL_SERVICE_ALIAS
+                      value: "k8s:deployment:{{ request.namespace }}-{{ request.object.metadata.name }}"
+  - name: inject-opslevel-alias-for-statefulsets
+    match:
+      all:
+      - resources:
+          kinds:
+          - StatefulSet
+          namespaces:
+            - dev-enablement
+    mutate:
+      patchStrategicMerge:
+        spec:
+          template:
+            metadata:
+              annotations:
+                app.uw.systems/opslevel-service-alias: "k8s:sts:{{ request.namespace }}-{{ request.object.metadata.name }}"
+            spec:
+              containers:
+                - (name): "*"
+                  env:
+                    - name: OPSLEVEL_SERVICE_ALIAS
+                      value: "k8s:sts:{{ request.namespace }}-{{ request.object.metadata.name }}"
+  - name: inject-opslevel-alias-for-cronjobs
+    match:
+      all:
+      - resources:
+          kinds:
+          - CronJob
+          namespaces:
+            - dev-enablement
+    mutate:
+      patchStrategicMerge:
+        spec:
+          jobTemplate:
+            spec:
+              template:
+                metadata:
+                  annotations:
+                    app.uw.systems/opslevel-service-alias: "k8s:cronjob:{{ request.namespace }}-{{ request.object.metadata.name }}"
+                spec:
+                  containers:
+                    - (name): "*"
+                      env:
+                        - name: OPSLEVEL_SERVICE_ALIAS
+                          value: "k8s:cronjob:{{ request.namespace }}-{{ request.object.metadata.name }}"
