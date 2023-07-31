@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: without-data
+  namespace: dev-enablement
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        foo.example/some-other-annotation: value
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          env:
+            - name: SOME_OTHER_VAR
+              value: ok
