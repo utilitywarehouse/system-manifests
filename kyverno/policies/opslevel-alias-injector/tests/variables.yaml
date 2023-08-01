@@ -1,2 +1,8 @@
 globalValues:
   request.namespace: dev-enablement
+policies:
+  - name: opslevel-alias-injector
+    resources:
+      - name: in-another-namespace
+        values:
+          request.namespace: not-dev-enablement
