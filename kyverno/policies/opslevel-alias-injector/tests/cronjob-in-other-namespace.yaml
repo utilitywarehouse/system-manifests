@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: in-another-namespace
-  namespace: not-dev-enablement
+  namespace: kube-system
 spec:
   schedule: "* * * * *"
   jobTemplate:

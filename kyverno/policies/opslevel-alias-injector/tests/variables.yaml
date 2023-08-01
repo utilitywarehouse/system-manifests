@@ -5,4 +5,4 @@ policies:
     resources:
       - name: in-another-namespace
         values:
-          request.namespace: not-dev-enablement
+          request.namespace: kube-system
