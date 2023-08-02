@@ -2,12 +2,13 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: in-another-namespace
-  namespace: kube-system
+  namespace: not-dev-enablement
 spec:
   schedule: "* * * * *"
   jobTemplate:
     spec:
       template:
+        metadata:
         spec:
           containers:
             - name: job-container
