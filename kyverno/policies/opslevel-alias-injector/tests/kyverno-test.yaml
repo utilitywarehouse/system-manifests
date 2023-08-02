@@ -45,8 +45,7 @@ results:
     rule: inject-opslevel-alias-for-deployments
     resource: in-another-namespace
     kind: Deployment
-    patchedResource: deployment-in-other-namespace-patch.yaml
-    result: pass
+    result: skip
   # StatefulSet tests
   - policy: opslevel-alias-injector
     rule: inject-opslevel-alias-for-statefulsets
@@ -69,8 +68,7 @@ results:
     rule: inject-opslevel-alias-for-statefulsets
     resource: in-another-namespace
     kind: StatefulSet
-    patchedResource: statefulset-in-other-namespace-patch.yaml
-    result: pass
+    result: skip
   # CronJob tests
   - policy: opslevel-alias-injector
     rule: inject-opslevel-alias-for-cronjobs
@@ -93,5 +91,4 @@ results:
     rule: inject-opslevel-alias-for-cronjobs
     resource: in-another-namespace
     kind: CronJob
-    patchedResource: cronjob-in-other-namespace-patch.yaml
-    result: pass
+    result: skip

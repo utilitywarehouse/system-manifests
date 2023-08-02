@@ -10,6 +10,8 @@ spec:
       - resources:
           kinds:
           - Deployment
+          namespaces:
+            - dev-enablement
     mutate:
       patchStrategicMerge:
         spec:
@@ -30,6 +32,8 @@ spec:
       - resources:
           kinds:
           - StatefulSet
+          namespaces:
+            - dev-enablement
     mutate:
       patchStrategicMerge:
         spec:
@@ -49,6 +53,8 @@ spec:
       - resources:
           kinds:
           - CronJob
+          namespaces:
+            - dev-enablement
     mutate:
       patchStrategicMerge:
         spec:
