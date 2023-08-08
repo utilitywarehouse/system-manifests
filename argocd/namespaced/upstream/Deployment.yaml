@@ -20,7 +20,20 @@ spec:
       containers:
         - args:
             - /usr/local/bin/argocd-notifications
-          image: quay.io/argoproj/argocd:v2.7.2
+          env:
+            - name: ARGOCD_NOTIFICATIONS_CONTROLLER_LOGFORMAT
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.log.format
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_NOTIFICATIONS_CONTROLLER_LOGLEVEL
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.log.level
+                  name: argocd-cmd-params-cm
+                  optional: true
+          image: quay.io/argoproj/argocd:v2.8.0
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -91,7 +104,7 @@ spec:
                   app.kubernetes.io/name: argocd-redis-ha-haproxy
               topologyKey: kubernetes.io/hostname
       containers:
-        - image: haproxy:2.6.12-alpine
+        - image: haproxy:2.6.14-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
@@ -115,6 +128,7 @@ spec:
             capabilities:
               drop:
                 - ALL
+            readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
@@ -127,7 +141,7 @@ spec:
             - /readonly/haproxy_init.sh
           command:
             - sh
-          image: haproxy:2.6.12-alpine
+          image: haproxy:2.6.14-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
@@ -135,6 +149,7 @@ spec:
             capabilities:
               drop:
                 - ALL
+            readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
@@ -194,11 +209,6 @@ spec:
         - args:
             - /usr/local/bin/argocd-repo-server
           env:
-            - name: ARGOCD_REDIS
-              valueFrom:
-                configMapKeyRef:
-                  key: redis.server
-                  name: argocd-cmd-params-cm
             - name: ARGOCD_RECONCILIATION_TIMEOUT
               valueFrom:
                 configMapKeyRef:
@@ -221,6 +231,18 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: reposerver.parallelism.limit
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_REPO_SERVER_LISTEN_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: reposerver.listen.address
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_REPO_SERVER_LISTEN_METRICS_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: reposerver.metrics.listen.address
                   name: argocd-cmd-params-cm
                   optional: true
             - name: ARGOCD_REPO_SERVER_DISABLE_TLS
@@ -325,7 +347,7 @@ spec:
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v2.7.2
+          image: quay.io/argoproj/argocd:v2.8.0
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -377,7 +399,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v2.7.2
+          image: quay.io/argoproj/argocd:v2.8.0
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -462,11 +484,6 @@ spec:
           env:
             - name: ARGOCD_API_SERVER_REPLICAS
               value: "2"
-            - name: ARGOCD_REDIS
-              valueFrom:
-                configMapKeyRef:
-                  key: redis.server
-                  name: argocd-cmd-params-cm
             - name: ARGOCD_SERVER_INSECURE
               valueFrom:
                 configMapKeyRef:
@@ -641,6 +658,18 @@ spec:
                   key: server.http.cookie.maxnumber
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_SERVER_LISTEN_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: server.listen.address
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_SERVER_METRICS_LISTEN_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: server.metrics.listen.address
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_SERVER_OTLP_ADDRESS
               valueFrom:
                 configMapKeyRef:
@@ -659,7 +688,7 @@ spec:
                   key: server.enable.proxy.extension
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.7.2
+          image: quay.io/argoproj/argocd:v2.8.0
           imagePullPolicy: Always
           livenessProbe:
             httpGet:

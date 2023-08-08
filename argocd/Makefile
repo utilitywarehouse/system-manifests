@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := get-upstream
 
 # https://github.com/argoproj/argo-cd
-VERSION=v2.7.2
+VERSION=v2.8.0
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
