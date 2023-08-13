@@ -4,6 +4,7 @@ namespace: kube-system
 
 resources:
   - ../upstream/
+  - custom-webhooks.yaml
   - kyverno-pdb.yaml
 
 patches:
