@@ -11,16 +11,7 @@ data:
     spec:
       discover:
         fileName: "*"
-      init:
-        command: 
-          - argocd-voodoobox-plugin
-          - decrypt
-        args:
-          - "--secret-allowed-namespaces-annotation=argocd.voodoobox.plugin.io/allowed-namespaces"
       generate:
         command:
           - argocd-voodoobox-plugin
           - generate
-        args:
-          - "--secret-allowed-namespaces-annotation=argocd.voodoobox.plugin.io/allowed-namespaces"
-      lockRepo: true

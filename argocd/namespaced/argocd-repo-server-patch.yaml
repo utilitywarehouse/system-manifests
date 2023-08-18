@@ -10,7 +10,7 @@ spec:
     spec:
       automountServiceAccountToken: true # for required for voodoobox plugin
       initContainers:
-        - name: init-temp-cleamup
+        - name: init-temp-cleanup
           image: busybox:latest
           command: ["sh", "-c", "rm -rf /tmp/*"] # clean up tmp pvc on re-start
           volumeMounts:
