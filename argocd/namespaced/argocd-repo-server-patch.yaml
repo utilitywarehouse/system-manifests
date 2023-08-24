@@ -22,11 +22,18 @@ spec:
           args:
             - "--loglevel=warn"
           image: quay.io/utilitywarehouse/argocd-voodoobox-plugin:master
+          env:
+            - name: AVP_GLOBAL_GIT_SSH_KEY_FILE
+              value: /etc/global-git-ssh-key/ssh
+            - name: AVP_GLOBAL_GIT_SSH_KNOWN_HOSTS_FILE
+              value: /etc/global-git-ssh-key/known_hosts
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
             runAsUser: 999
           volumeMounts:
+            - mountPath: /etc/global-git-ssh-key
+              name: global-git-ssh-key
             - mountPath: /var/run/argocd
               name: var-files
             - mountPath: /home/argocd/cmp-server/plugins
@@ -59,6 +66,10 @@ spec:
         - configMap:
             name: argocd-voodoobox-plugin
           name: argocd-voodoobox-plugin
+        - name: global-git-ssh-key
+          secret:
+            secretName: global-git-ssh-key
+            defaultMode: 0440
         - name: cmp-tmp
           emptyDir: {}
         - $patch: delete
