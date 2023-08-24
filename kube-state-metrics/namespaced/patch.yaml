@@ -11,5 +11,5 @@ spec:
       containers:
         - name: kube-state-metrics
           args:
-            - --metric-annotations-allowlist=pods=[injector.tumblr.com/request]
+            - --metric-annotations-allowlist=pods=[injector.tumblr.com/request],deployments=[app.uw.systems/tier],statefulsets=[app.uw.systems/tier]
             - --metric-labels-allowlist=namespaces=[uw.systems/owner],pods=[app,app.kubernetes.io/name],nodes=[role,topology.kubernetes.io/zone]
