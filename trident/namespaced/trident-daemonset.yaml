@@ -26,7 +26,12 @@ spec:
         securityContext:
           privileged: true
           allowPrivilegeEscalation: true
-        image: netapp/trident:23.04.0
+          capabilities:
+            drop:
+            - all
+            add:
+            - SYS_ADMIN
+        image: netapp/trident:23.07.0
         imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
@@ -106,7 +111,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.7.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0
         imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
@@ -140,6 +145,15 @@ spec:
                     operator: In
                     values:
                     - linux
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - node.csi.trident.netapp.io
+              topologyKey: kubernetes.io/hostname
       tolerations:
       - effect: "NoExecute"
         operator: "Exists"
