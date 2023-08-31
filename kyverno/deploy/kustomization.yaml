@@ -4,12 +4,18 @@ namespace: kube-system
 
 resources:
   - ../upstream/
-  - kyverno-pdb.yaml
+  - kyverno-admission-controller-pdb.yaml
 
 patches:
   - path: delete-ns.yaml
-  - path: deployment-arguments-patch.yaml
-  - path: deployment-master-schedule-patch.yaml
-  - path: deployment-replicas-patch.yaml
+  - path: kyverno-admission-controller-args-patch.yaml
+  - path: kyverno-admission-controller-master-schedule-patch.yaml
+  - path: kyverno-admission-controller-replicas-patch.yaml
+  - path: kyverno-background-controller-args-patch.yaml
+  - path: kyverno-background-controller-metrics-svc-patch.yaml
+  - path: kyverno-cleanup-controller-args-patch.yaml
+  - path: kyverno-cleanup-controller-metrics-svc-patch.yaml
   - path: kyverno-config-patch.yaml
-  - path: metrics-svc-patch.yaml
+  - path: kyverno-reports-controller-args-patch.yaml
+  - path: kyverno-reports-controller-metrics-svc-patch.yaml
+  - path: kyverno-svc-metrics-patch.yaml
