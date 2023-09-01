@@ -59,19 +59,19 @@ spec:
           spec:
             source:
               X(chart):
-    - name: destination-server-name
-      match:
-        any:
-          - resources:
-              kinds:
-                - Application
-      validate:
-        message: >-
-          `spec.destination.name` should not be empty.
-        pattern:
-          - spec:
-              destination:
-                name: "?*"
+#    - name: destination-server-name
+#      match:
+#        any:
+#          - resources:
+#              kinds:
+#                - Application
+#      validate:
+#        message: >-
+#          `spec.destination.name` should not be empty.
+#        pattern:
+#          - spec:
+#              destination:
+#                name: "?*"
     - name: empty-destination-namespace
       match:
         any:
