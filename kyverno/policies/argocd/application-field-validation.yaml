@@ -67,15 +67,10 @@ spec:
                 - Application
       validate:
         message: >-
-          `spec.destination.server` OR `spec.destination.name` should be specified but never both.
-        anyPattern:
+          `spec.destination.name` should not be empty.
+        pattern:
           - spec:
               destination:
-                server: "?*"
-                X(name):
-          - spec:
-              destination:
-                X(server):
                 name: "?*"
     - name: empty-destination-namespace
       match:
