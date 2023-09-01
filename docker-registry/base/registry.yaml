@@ -80,7 +80,7 @@ spec:
               mountPath: /workdir/secret-config
       containers:
         - name: docker-registry
-          image: registry:2.8.1
+          image: registry:2.8.2
           resources:
             requests:
               cpu: 0m
@@ -102,7 +102,7 @@ spec:
               path: /
               port: 5000
         - name: docker-registry-auth
-          image: cesanta/docker_auth:1.9.0
+          image: cesanta/docker_auth:1.11.0
           args:
             - /config/auth_config.yml
             - -logtostderr=true

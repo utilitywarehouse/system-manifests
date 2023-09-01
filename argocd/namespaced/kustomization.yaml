@@ -4,7 +4,6 @@ kind: Kustomization
 resources:
   - argocd-voodoobox-plugin.yaml
   - egress-network-policies.yaml
-
   - upstream/ConfigMap.yaml
   - upstream/Deployment.yaml
   - upstream/NetworkPolicy.yaml
@@ -15,13 +14,74 @@ resources:
   - upstream/ServiceAccount.yaml
   - upstream/StatefulSet.yaml
 
-patchesStrategicMerge:
-  - applicationset-patch.yaml
-  - argocd-cm.yaml
-  - argocd-cmd-params-cm.yaml
-  - argocd-notifications-server-patch.yaml
-  - argocd-rbac-cm.yaml
-  - argocd-repo-server-patch.yaml
-  - dex-patch.yaml
-  - prometheus-patch.yaml
-  - resources-patch.yaml
+patches:
+  - path: argocd-application-controller-patch.yaml
+  - path: argocd-cm-patch.yaml
+  - path: argocd-cmd-params-cm-patch.yaml
+  - path: argocd-notifications-server-patch.yaml
+  - path: argocd-rbac-cm-patch.yaml
+  - path: argocd-redis-ha-haproxy-patch.yaml
+  - path: argocd-redis-ha-server-patch.yaml
+  - path: argocd-repo-server-patch.yaml
+  - path: argocd-server-patch.yaml
+
+  # convert Deployment to StatefulSet
+  - patch: |-
+      - op: replace
+        path: /kind
+        value: StatefulSet
+    target:
+      group: apps
+      kind: Deployment
+      name: argocd-repo-server
+      version: v1
+
+  # add prometheus annotations
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: argocd-metrics
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "8082"
+          prometheus.io/path: /metrics
+    target:
+      kind: Service
+      name: argocd-metrics
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: argocd-notifications-controller-metrics
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "9001"
+          prometheus.io/path: /metrics
+    target:
+      kind: Service
+      name: argocd-notifications-controller-metrics
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: argocd-repo-server
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "8084"
+          prometheus.io/path: /metrics
+    target:
+      kind: Service
+      name: argocd-repo-server
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: argocd-server-metrics
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "8083"
+          prometheus.io/path: /metrics
+    target:
+      kind: Service
+      name: argocd-server-metrics

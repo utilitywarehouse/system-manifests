@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyverno
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      # Deploy kyverno on master nodes to avoid being affected by other
+      # workloads. If kyverno is down, admission requests will fail.
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+      nodeSelector:
+        role: master

@@ -1,0 +1,64 @@
+name: disallow-privileged-containers
+policies:
+  - ../externalIPs.yaml
+  - ../externalName.yaml
+  - ../loadBalancerIP.yaml
+  - ../nodePort.yaml
+  - ../semaphore-service-mirror-length.yaml
+resources:
+  - test-externalIPs.yaml
+  - test-externalName.yaml
+  - test-loadbalancerIP.yaml
+  - test-nodePort.yaml
+  - test-semaphore-service-mirror-length.yaml
+results:
+# Test services external IPs
+  - policy: restrict-external-ips
+    rule: default
+    resource: test-externalIP-not-allowed
+    kind: Service
+    result: fail
+# Test services loadBalancerIP
+  - policy: restrict-load-balancer-ip
+    rule: default
+    resource: test-loadBalancerIP-not-set
+    kind: Service
+    result: pass
+  - policy: restrict-load-balancer-ip
+    rule: default
+    resource: test-loadBalancerIP-not-allowed
+    kind: Service
+    result: fail
+ # Test services externalNames
+  - policy: no-localhost-service
+    rule: default
+    resource: test-externalName-localhost-sys-ingress-certs
+    kind: Service
+    result: skip
+ # Test NodePort Services
+  - policy: restrict-nodeport
+    rule: default
+    resource: test-nodePort-not-set
+    kind: Service
+    result: pass
+  - policy: restrict-nodeport
+    rule: default
+    resource: test-nodePort-not-allowed
+    kind: Service
+    result: fail
+  # Test semaphore-service-mirror service name length
+  - policy: mirror-name-length
+    rule: default
+    resource: test-valid-length
+    kind: Service
+    result: pass
+  - policy: mirror-name-length
+    rule: default
+    resource: test-very-very-very-very-very-very-very-very-long-name-svc
+    kind: Service
+    result: fail
+  - policy: mirror-name-length
+    rule: default
+    resource: broadband-product-availability-app
+    kind: Service
+    result: fail

@@ -7,10 +7,10 @@ resources:
   - upstream/CustomResourceDefinition.yaml
   - voodoobox-plugin-rbac.yaml
 
-patchesJson6902:
-  - target:
+patches:
+  - path: clusterRole-path.yaml
+    target:
       group: rbac.authorization.k8s.io
-      version: v1
       kind: ClusterRole
       name: argocd-server
-    path: clusterRole-path.yaml
+      version: v1

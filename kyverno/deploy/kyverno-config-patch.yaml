@@ -1,0 +1,12 @@
+# Kyverno upstream deployment config excludes kube-system resources by default:
+# https://github.com/kyverno/kyverno/blob/main/config/install.yaml#L7528-L7530
+# Since we deploy a lot of things under kube-system, let's not exclude it
+# blindly, but cater for kube-system resources in our policies.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kyverno
+  namespace: kube-system
+data:
+  excludeGroupRole: system:nodes,system:kube-scheduler
+  resourceFilters: "[Event,*,*][*,kube-public,*][*,kube-node-lease,*][Node,*,*][APIService,*,*][TokenReview,*,*][SubjectAccessReview,*,*][SelfSubjectAccessReview,*,*][*,kyverno,kyverno*][Binding,*,*][ReplicaSet,*,*][ReportChangeRequest,*,*][ClusterReportChangeRequest,*,*][PolicyReport,*,*][ClusterPolicyReport,*,*]"

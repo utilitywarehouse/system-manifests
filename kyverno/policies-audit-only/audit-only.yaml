@@ -1,0 +1,223 @@
+# Patches validationFailureAction for all policies that we need to run in
+# audit only mode.
+#
+# ingress
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-default-tlsoptions
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-or-operator
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-wildcard-hostsni
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: external-dns-domain-label-length
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-ingress-host
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-ingressroute-host
+spec:
+  validationFailureAction: Audit
+---
+# namespaces
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: ensure-ns-name-label
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-delete-annotation-ns-label
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: require-ns-owner-label
+spec:
+  validationFailureAction: Audit
+---
+# pods
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-apparmor-profiles
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: pod-capabilities
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-ipc-pods
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-network-pods
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: hostpath-vols
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-pid-pods
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-ports
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-scheduling-to-master-nodes
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-containers
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privilege-escalation
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-proc-mount
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-seccomp
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-selinux
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-sysctls
+spec:
+  validationFailureAction: Audit
+---
+# serviceaccounts
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: vault-aws-role-arn
+spec:
+  validationFailureAction: Audit
+---
+# services
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-external-ips
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: no-localhost-service
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-load-balancer-ip
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-nodeport
+spec:
+  validationFailureAction: Audit
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: mirror-name-length
+spec:
+  validationFailureAction: Audit
+---
+# Middlewares
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: ensure-prisma-and-onprem-vpn-ip-whitelist
+spec:
+  validationFailureAction: Audit
+---

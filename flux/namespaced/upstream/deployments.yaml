@@ -2,11 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/component: helm-controller
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: helm-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -22,7 +23,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -32,7 +33,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: fluxcd/helm-controller:v0.22.2
+          image: ghcr.io/fluxcd/helm-controller:v0.28.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -81,11 +82,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/component: image-automation-controller
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: image-automation-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -101,7 +103,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -111,7 +113,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: fluxcd/image-automation-controller:v0.24.1
+          image: ghcr.io/fluxcd/image-automation-controller:v0.28.0
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -160,11 +162,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/component: image-reflector-controller
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: image-reflector-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -180,7 +183,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -190,7 +193,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: fluxcd/image-reflector-controller:v0.20.0
+          image: ghcr.io/fluxcd/image-reflector-controller:v0.23.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -243,11 +246,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/component: kustomize-controller
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: kustomize-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -263,7 +267,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -273,7 +277,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: fluxcd/kustomize-controller:v0.27.0
+          image: ghcr.io/fluxcd/kustomize-controller:v0.32.0
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -322,11 +326,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/component: notification-controller
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: notification-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -351,7 +356,7 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: fluxcd/notification-controller:v0.25.1
+          image: ghcr.io/fluxcd/notification-controller:v0.30.2
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -406,11 +411,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/component: source-controller
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
     control-plane: controller
   name: source-controller
-  namespace: sys-flux
+  namespace: sys-fluxcd
 spec:
   replicas: 1
   selector:
@@ -428,7 +434,7 @@ spec:
     spec:
       containers:
         - args:
-            - --events-addr=http://notification-controller.sys-flux.svc.cluster.local./
+            - --events-addr=http://notification-controller.sys-fluxcd.svc.cluster.local./
             - --watch-all-namespaces
             - --log-level=info
             - --log-encoding=json
@@ -440,7 +446,9 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          image: fluxcd/source-controller:v0.26.1
+            - name: TUF_ROOT
+              value: /tmp/.sigstore
+          image: ghcr.io/fluxcd/source-controller:v0.33.0
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:

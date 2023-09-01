@@ -1,0 +1,23 @@
+name: test-ingress-and-traefik-resources
+policies:
+  - ../ensure-prisma-and-onprem-vpn-ip-whitelist.yaml
+resources:
+  - test-ensure-prisma-ip.yaml
+results:
+  - policy: ensure-prisma-and-onprem-vpn-ip-whitelist
+    rule: default
+    resource: test-should-add
+    patchedResource: mutated-resource.yaml
+    kind: Middleware
+    result: pass
+  - policy: ensure-prisma-and-onprem-vpn-ip-whitelist
+    rule: default
+    resource: test-should-override
+    patchedResource: mutated-resource.yaml
+    kind: Middleware
+    result: pass
+  - policy: ensure-prisma-and-onprem-vpn-ip-whitelist
+    rule: default
+    resource: test-should-skip
+    kind: Middleware
+    result: skip

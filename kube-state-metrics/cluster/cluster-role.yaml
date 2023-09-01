@@ -4,7 +4,7 @@ metadata:
   labels:
     app.kubernetes.io/component: exporter
     app.kubernetes.io/name: kube-state-metrics
-    app.kubernetes.io/version: 2.6.0
+    app.kubernetes.io/version: 2.9.2
   name: kube-state-metrics
 rules:
 - apiGroups:
@@ -78,6 +78,13 @@ rules:
   - list
   - watch
 - apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - list
+  - watch
+- apiGroups:
   - storage.k8s.io
   resources:
   - storageclasses
@@ -97,6 +104,7 @@ rules:
   - networking.k8s.io
   resources:
   - networkpolicies
+  - ingressclasses
   - ingresses
   verbs:
   - list

@@ -2,7 +2,8 @@
 
 
 # https://github.com/fluxcd/flux2
-VERSION=v0.32.0
+VERSION=v0.38.3
+TF_CON_VER=v0.13.1
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
@@ -20,8 +21,8 @@ get-upstream-resource-types:
 get-upstream:
 	curl -Ls https://github.com/fluxcd/flux2/releases/download/$(VERSION)/install.yaml > /tmp/flux.yaml
 	
-	# replace flux-system with sys-flux
-	sd  flux-system sys-flux /tmp/flux.yaml
+	# replace flux-system with sys-fluxcd
+	sd  flux-system sys-fluxcd /tmp/flux.yaml
 
 	# cluster resources 
 	yq 'select(.kind=="CustomResourceDefinition")' /tmp/flux.yaml > cluster/upstream/crds.yaml
@@ -36,3 +37,23 @@ get-upstream:
 
 	# remove temp file
 	rm  /tmp/flux.yaml
+
+
+.PHONY: get-tf-controller
+get-tf-controller:
+	curl -Ls https://github.com/weaveworks/tf-controller/releases/download/${TF_CON_VER}/tf-controller.crds.yaml > tf-controller/cluster/upstream/crds.yaml
+	curl -Ls https://github.com/weaveworks/tf-controller/releases/download/${TF_CON_VER}/tf-controller.deployment.yaml > tf-controller/namespaced/upstream/deployment.yaml
+	curl -Ls https://github.com/weaveworks/tf-controller/releases/download/${TF_CON_VER}/tf-controller.rbac.yaml > /tmp/tf-controller.rbac.yaml
+
+	# replace flux-system with sys-fluxcd
+	sd flux-system sys-fluxcd /tmp/tf-controller.rbac.yaml
+
+	# cluster resources
+	yq 'select(.kind=="ClusterRole")' /tmp/tf-controller.rbac.yaml > tf-controller/cluster/upstream/cluster-roles.yaml
+	yq 'select(.kind=="ClusterRoleBinding")' /tmp/tf-controller.rbac.yaml > tf-controller/cluster/upstream/cluster-role-bindings.yaml
+
+
+	# namespace resources
+	yq 'select(.kind=="ServiceAccount")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/upstream/sa.yaml
+	yq 'select(.kind=="Role")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/upstream/role.yaml
+	yq 'select(.kind=="RoleBinding")' /tmp/tf-controller.rbac.yaml > tf-controller/namespaced/upstream/role-bindings.yaml

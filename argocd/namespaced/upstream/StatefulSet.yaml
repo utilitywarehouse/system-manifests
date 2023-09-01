@@ -33,10 +33,8 @@ spec:
                 topologyKey: kubernetes.io/hostname
               weight: 5
       containers:
-        - command:
-            - argocd-application-controller
-            - --redis
-            - argocd-redis-ha-haproxy:6379
+        - args:
+            - /usr/local/bin/argocd-application-controller
           env:
             - name: ARGOCD_CONTROLLER_REPLICAS
               value: "1"
@@ -160,7 +158,19 @@ spec:
                   key: application.namespaces
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.5.1
+            - name: ARGOCD_CONTROLLER_SHARDING_ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.sharding.algorithm
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_KUBECTL_PARALLELISM_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.kubectl.parallelism.limit
+                  name: argocd-cmd-params-cm
+                  optional: true
+          image: quay.io/argoproj/argocd:v2.8.1
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
@@ -220,7 +230,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: 226aec192d2f29b5355769c9f1fbf093bf36c3a1e15b574b71fb8fe73fd37c05
+        checksum/init-config: 69130412bda04eacad3530cb7bcf26cf121401e725e15d0959dd71a7380afe75
       labels:
         app.kubernetes.io/name: argocd-redis-ha
     spec:
@@ -237,7 +247,7 @@ spec:
             - /data/conf/redis.conf
           command:
             - redis-server
-          image: redis:7.0.5-alpine
+          image: redis:7.0.11-alpine
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -276,6 +286,7 @@ spec:
             capabilities:
               drop:
                 - ALL
+            readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
@@ -290,7 +301,7 @@ spec:
             - /data/conf/sentinel.conf
           command:
             - redis-sentinel
-          image: redis:7.0.5-alpine
+          image: redis:7.0.11-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
@@ -324,6 +335,7 @@ spec:
             capabilities:
               drop:
                 - ALL
+            readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
@@ -342,10 +354,18 @@ spec:
               value: 40000915ab58c3fa8fd888fb8b24711944e6cbb4
             - name: SENTINEL_ID_2
               value: 2bbec7894d954a8af3bb54d13eaec53cb024e2ca
-          image: redis:7.0.5-alpine
+          image: redis:7.0.11-alpine
           imagePullPolicy: IfNotPresent
           name: split-brain-fix
           resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
           volumeMounts:
             - mountPath: /readonly-config
               name: config
@@ -364,7 +384,7 @@ spec:
               value: 40000915ab58c3fa8fd888fb8b24711944e6cbb4
             - name: SENTINEL_ID_2
               value: 2bbec7894d954a8af3bb54d13eaec53cb024e2ca
-          image: redis:7.0.5-alpine
+          image: redis:7.0.11-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
@@ -372,6 +392,7 @@ spec:
             capabilities:
               drop:
                 - ALL
+            readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:

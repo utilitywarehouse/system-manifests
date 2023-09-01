@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: cluster-reconciler
 roleRef:
@@ -12,16 +12,16 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kustomize-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
   - kind: ServiceAccount
     name: helm-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
-    app.kubernetes.io/instance: sys-flux
+    app.kubernetes.io/instance: sys-fluxcd
     app.kubernetes.io/part-of: flux
   name: crd-controller
 roleRef:
@@ -31,19 +31,19 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: kustomize-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
   - kind: ServiceAccount
     name: helm-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
   - kind: ServiceAccount
     name: source-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
   - kind: ServiceAccount
     name: notification-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
   - kind: ServiceAccount
     name: image-reflector-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd
   - kind: ServiceAccount
     name: image-automation-controller
-    namespace: sys-flux
+    namespace: sys-fluxcd

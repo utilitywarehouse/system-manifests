@@ -8,6 +8,9 @@ patches:
         value: 3
       - op: remove
         path: /spec/template/spec/nodeSelector
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 170Mi
     target:
       kind: Deployment
       name: coredns
@@ -19,9 +22,7 @@ patches:
     target:
       kind: Service
       name: kube-dns
-
-patchesStrategicMerge:
-  - patches/ignore.yaml
+  - path: patches/ignore.yaml
 
 resources:
   - upstream/

@@ -1,0 +1,28 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-ipc-pods
+  annotations:
+    policies.kyverno.io/title: Disallow HostIPC Pods
+    policies.kyverno.io/category: Pod Security Standards (Baseline)
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      This policy ensures Pods do not use the host's IPC namespace
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: default
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: >-
+          HostIPC pods are disallowed. The field spec.hostIPC must be unset or
+          set to `false`.
+        pattern:
+          spec:
+            =(hostIPC): "false"

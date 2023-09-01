@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trident-csi
+  name: trident-controller
   annotations:
     secret.reloader.stakater.com/reload: "server-tls,client-tls,trident-ca"
 spec:
@@ -12,6 +12,8 @@ spec:
         # killed when rolling workers, which includes attaching/detaching of
         # volumes
         - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
           effect: NoSchedule
       nodeSelector:
         role: master

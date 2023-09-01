@@ -1,0 +1,41 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-wildcard-hostsni
+  annotations:
+    policies.kyverno.io/title: Disallow Wildcard HostSNI
+    policies.kyverno.io/category: Traefik
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: IngressRouteTCP
+    policies.kyverno.io/description: >-
+      Prevent IngressRouteTCP from hijacking all traffic by preventing wildcard
+      HostSNIs.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: default
+      match:
+        any:
+          - resources:
+              kinds:
+                - IngressRouteTCP
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.routes[?contains(keys(@), 'match')] | length(@) }}"
+            operator: GreaterThanOrEquals
+            value: 1
+          - key: "{{ request.operation }}"
+            operator: NotEquals
+            value: DELETE
+      validate:
+        message: "HostSNI rules must not contain a wildcard host '*'"
+        foreach:
+          - list: request.object.spec.routes
+            deny:
+              conditions:
+                all:
+                  - key: >-
+                      {{ element.match | regex_match('HostSNI\(`.*\*+.*`\)', @) }}
+                    operator: Equals
+                    value: true

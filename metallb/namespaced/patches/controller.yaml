@@ -9,7 +9,7 @@ spec:
       containers:
         - args:
             - --port=7472
-            - --log-level=info
+            - --log-level=warn
           env:
             - $patch: delete
               name: METALLB_ML_SECRET_NAME  # only required for L2/ARP mode

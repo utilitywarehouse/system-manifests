@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: cloud-controller-manager
+          args:
+            - /cloud-controller-manager
+            - --allocate-node-cidrs=true
+            - --cloud-config=/etc/kubernetes/config/cloud_provider/cloud.conf
+            - --cloud-provider=gce
+            - --cluster-cidr=10.4.0.0/16
+            - --configure-cloud-routes=false
+            - --controllers=*,-nodeipam,-route,-gkenetworkparamset # Disable controllers we do not need due to calico
+            - --v=2

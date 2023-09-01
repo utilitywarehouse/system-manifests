@@ -1,0 +1,55 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - upstream.yaml
+
+patches:
+  - path: args-patch.yaml
+  - path: image-patch.yaml
+  - path: volume-patch.yaml
+  # Deploy on control-plane nodes. Upstream sets this to null which makes
+  # apiserver to moan. Also, we want to schedule pods there before waiting for
+  # our labeller to mark the node as control-plane, thus we can use role=master
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/nodeSelector
+        value:
+          role: "master"
+    target:
+      kind: DaemonSet
+      name: cloud-controller-manager
+      namespace: kube-system
+  # Bind cloud-controller-manager to cloud-node-controller to be able to manage
+  # nodes
+  - patch: |-
+      - op: add
+        path: /subjects/-
+        value:
+          kind: ServiceAccount
+          name: cloud-controller-manager
+          namespace: kube-system
+    target:
+      kind: ClusterRoleBinding
+      name: system:controller:cloud-node-controller
+  # Allow cloud-controller-manager to patch services/status in order to be able to create LoadBalancers.
+  # Permissions for the root resource services still yeld an error.
+  - patch: |-
+      - op: add
+        path: /rules/-
+        value:
+          apiGroups:
+          - ""
+          resources:
+          - services/status
+          verbs:
+          - patch
+          - update
+    target:
+      kind: ClusterRole
+      name: system:cloud-controller-manager
+
+images:
+  - name: cloud-controller-manager
+    newName: registry.k8s.io/cloud-provider-gcp/cloud-controller-manager
+    newTag: v26.2.4

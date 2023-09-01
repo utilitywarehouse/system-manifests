@@ -1,0 +1,36 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: test-should-add
+  labels:
+    mutate.uw.systems/middleware: ensure-prisma-and-onprem-vpn-ip-whitelist
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: test-should-override
+  labels:
+    mutate.uw.systems/middleware: ensure-prisma-and-onprem-vpn-ip-whitelist
+spec:
+  ipWhiteList:
+    ipStrategy:
+      depth: 1
+    sourceRange:
+      - 34.96.70.57
+      - 34.117.238.171
+      - 34.120.72.104
+      - 35.190.22.129
+      - 54.76.156.48
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: test-should-skip
+  labels:
+    kubernetes.io/ingress.class: traefik-public-v2-argo
+spec:
+  ipWhiteList:
+    ipStrategy:
+      depth: 1
+    sourceRange:
+      - 1.1.1.1

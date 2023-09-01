@@ -1,0 +1,20 @@
+# Patch cloud config with the location we set it via our ignition
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+      - name: cloud-controller-manager
+        volumeMounts:
+        - mountPath: /etc/kubernetes/config/cloud_provider/cloud.conf
+          name: cloudconfig
+          readOnly: true
+      volumes:
+      - hostPath:
+          path: /etc/kubernetes/config/cloud_provider/cloud.conf
+          type: ""
+        name: cloudconfig

@@ -12,6 +12,8 @@ spec:
         # Mark the pod so it can be scheduled on master nodes.
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
       # Deploy on masters to be able to get credentials/permissions from the node
       nodeSelector:
         role: master

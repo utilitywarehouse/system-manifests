@@ -1,0 +1,40 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: vault-aws-role-arn
+  annotations:
+    policies.kyverno.io/title: Validate Vault AWS role arn
+    policies.kyverno.io/category: Operations
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Vault
+    policies.kyverno.io/description: >-
+      Verify that `vault.uw.systems/aws-role` annotation contains a valid role
+      arn
+spec:
+  validationFailureAction: Enforce
+  background: false # Disable due to warning events noise.
+  rules:
+    - name: default
+      match:
+        resources:
+          kinds:
+            - ServiceAccount
+      preconditions:
+        all:
+          - key: "{{ request.operation }}"
+            operator: NotEquals
+            value: DELETE
+          - key: "{{ request.object.metadata.annotations.keys(@)[?contains(@, 'vault.uw.systems/')] }}"
+            operator: AnyIn
+            value:
+              - vault.uw.systems/aws-role
+      validate:
+        message: >-
+          The annotation `vault.uw.systems/aws-role` must contain a valid role arn
+        deny:
+          conditions:
+            all:
+              - key: >-
+                  {{ request.object.metadata.annotations."vault.uw.systems/aws-role" | regex_match('^arn:aws:iam::[0-9]+:role/[\w+=,.@-]+', @) }}
+                operator: Equals
+                value: false

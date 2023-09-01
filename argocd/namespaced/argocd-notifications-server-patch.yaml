@@ -8,4 +8,12 @@ spec:
       containers:
         - name: argocd-notifications-controller
           args:
+            - /usr/local/bin/argocd-notifications
             - "--loglevel=warn"
+          resources:
+            requests:
+              memory: 0Mi
+              cpu: 0
+            limits:
+              cpu: 1
+              memory: 500Mi

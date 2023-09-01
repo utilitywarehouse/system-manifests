@@ -5,7 +5,6 @@ A Kustomize base for deploying
 
 ## Updating
 
-
 Use `make pull-upstream` to update local resource copies. Followed by `make
 clean-ns-attr` to remove namespace attribute from namespaced resources (it
 breaks Kustomize).

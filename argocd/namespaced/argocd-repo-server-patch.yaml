@@ -1,48 +1,85 @@
+# this patch prepares this deployment to be converted in to StatefulSet
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: argocd-repo-server
 spec:
+  replicas: 3
+  serviceName: argocd-repo-server # for StatefulSet specs
   template:
     spec:
-      automountServiceAccountToken: true
-      volumes:
-        - configMap:
-            name: argocd-voodoobox-plugin
-          name: argocd-voodoobox-plugin
+      automountServiceAccountToken: true # for required for voodoobox plugin
+      initContainers:
+        - name: init-temp-cleanup
+          image: busybox:latest
+          command: ["sh", "-c", "rm -rf /tmp/*"] # clean up tmp pvc on re-start
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
       containers:
         - name: voodoobox
           command: [/var/run/argocd/argocd-cmp-server]
           args:
             - "--loglevel=warn"
           image: quay.io/utilitywarehouse/argocd-voodoobox-plugin:master
+          env:
+            - name: AVP_GLOBAL_GIT_SSH_KEY_FILE
+              value: /etc/global-git-ssh-key/ssh
+            - name: AVP_GLOBAL_GIT_SSH_KNOWN_HOSTS_FILE
+              value: /etc/global-git-ssh-key/known_hosts
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
             runAsUser: 999
           volumeMounts:
+            - mountPath: /etc/global-git-ssh-key
+              name: global-git-ssh-key
             - mountPath: /var/run/argocd
               name: var-files
             - mountPath: /home/argocd/cmp-server/plugins
               name: plugins
             - mountPath: /tmp
-              name: tmp
+              name: cmp-tmp
             # Register plugins into sidecar
             - mountPath: /home/argocd/cmp-server/config/plugin.yaml
               subPath: avp.yaml
               name: argocd-voodoobox-plugin
           resources:
             requests:
-              memory: 250Mi
-              cpu: 0.1
+              memory: 100Mi
+              cpu: 0
             limits:
-              cpu: 1
+              cpu: 2
               memory: 1000Mi
         - name: argocd-repo-server
           resources:
             requests:
-              memory: 250Mi
-              cpu: 0.1
+              memory: 100Mi
+              cpu: 0
             limits:
-              cpu: 1
+              cpu: 2
               memory: 1000Mi
+      securityContext:
+        # https://argo-cd.readthedocs.io/en/stable/operator-manual/config-management-plugins/#register-the-plugin-sidecar
+        fsGroup: 999
+      volumes:
+        - configMap:
+            name: argocd-voodoobox-plugin
+          name: argocd-voodoobox-plugin
+        - name: global-git-ssh-key
+          secret:
+            secretName: global-git-ssh-key
+            defaultMode: 0440
+        - name: cmp-tmp
+          emptyDir: {}
+        - $patch: delete
+          name: tmp
+  volumeClaimTemplates:
+    - metadata:
+        name: tmp
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi

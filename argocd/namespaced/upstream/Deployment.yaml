@@ -2,176 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app.kubernetes.io/component: controller
-    app.kubernetes.io/name: argocd-applicationset-controller
-    app.kubernetes.io/part-of: argocd-applicationset
-  name: argocd-applicationset-controller
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: argocd-applicationset-controller
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: argocd-applicationset-controller
-    spec:
-      containers:
-        - command:
-            - entrypoint.sh
-            - argocd-applicationset-controller
-          env:
-            - name: NAMESPACE
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.namespace
-          image: quay.io/argoproj/argocd:v2.5.1
-          imagePullPolicy: Always
-          name: argocd-applicationset-controller
-          ports:
-            - containerPort: 7000
-              name: webhook
-            - containerPort: 8080
-              name: metrics
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-          volumeMounts:
-            - mountPath: /app/config/ssh
-              name: ssh-known-hosts
-            - mountPath: /app/config/tls
-              name: tls-certs
-            - mountPath: /app/config/gpg/source
-              name: gpg-keys
-            - mountPath: /app/config/gpg/keys
-              name: gpg-keyring
-            - mountPath: /tmp
-              name: tmp
-      serviceAccountName: argocd-applicationset-controller
-      volumes:
-        - configMap:
-            name: argocd-ssh-known-hosts-cm
-          name: ssh-known-hosts
-        - configMap:
-            name: argocd-tls-certs-cm
-          name: tls-certs
-        - configMap:
-            name: argocd-gpg-keys-cm
-          name: gpg-keys
-        - emptyDir: {}
-          name: gpg-keyring
-        - emptyDir: {}
-          name: tmp
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  labels:
-    app.kubernetes.io/component: dex-server
-    app.kubernetes.io/name: argocd-dex-server
+    app.kubernetes.io/component: notifications-controller
+    app.kubernetes.io/name: argocd-notifications-controller
     app.kubernetes.io/part-of: argocd
-  name: argocd-dex-server
-spec:
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: argocd-dex-server
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: argocd-dex-server
-    spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/part-of: argocd
-                topologyKey: kubernetes.io/hostname
-              weight: 5
-      containers:
-        - command:
-            - /shared/argocd-dex
-            - rundex
-          env:
-            - name: ARGOCD_DEX_SERVER_DISABLE_TLS
-              valueFrom:
-                configMapKeyRef:
-                  key: dexserver.disable.tls
-                  name: argocd-cmd-params-cm
-                  optional: true
-          image: ghcr.io/dexidp/dex:v2.35.3-distroless
-          imagePullPolicy: Always
-          name: dex
-          ports:
-            - containerPort: 5556
-            - containerPort: 5557
-            - containerPort: 5558
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-          volumeMounts:
-            - mountPath: /shared
-              name: static-files
-            - mountPath: /tmp
-              name: dexconfig
-            - mountPath: /tls
-              name: argocd-dex-server-tls
-      initContainers:
-        - command:
-            - cp
-            - -n
-            - /usr/local/bin/argocd
-            - /shared/argocd-dex
-          image: quay.io/argoproj/argocd:v2.5.1
-          imagePullPolicy: Always
-          name: copyutil
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            seccompProfile:
-              type: RuntimeDefault
-          volumeMounts:
-            - mountPath: /shared
-              name: static-files
-            - mountPath: /tmp
-              name: dexconfig
-      serviceAccountName: argocd-dex-server
-      volumes:
-        - emptyDir: {}
-          name: static-files
-        - emptyDir: {}
-          name: dexconfig
-        - name: argocd-dex-server-tls
-          secret:
-            items:
-              - key: tls.crt
-                path: tls.crt
-              - key: tls.key
-                path: tls.key
-              - key: ca.crt
-                path: ca.crt
-            optional: true
-            secretName: argocd-dex-server-tls
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: argocd-notifications-controller
 spec:
   selector:
@@ -185,9 +18,22 @@ spec:
         app.kubernetes.io/name: argocd-notifications-controller
     spec:
       containers:
-        - command:
-            - argocd-notifications
-          image: quay.io/argoproj/argocd:v2.5.1
+        - args:
+            - /usr/local/bin/argocd-notifications
+          env:
+            - name: ARGOCD_NOTIFICATIONS_CONTROLLER_LOGFORMAT
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.log.format
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_NOTIFICATIONS_CONTROLLER_LOGLEVEL
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.log.level
+                  name: argocd-cmd-params-cm
+                  optional: true
+          image: quay.io/argoproj/argocd:v2.8.1
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -245,7 +91,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 33967cee643b636d6e9a66e82b7f85814ceb8c55fba7a1d8af439ef056934e5c
+        checksum/config: 718bbb277da8610063a7c0fd810984577c2e8ab215815a71211dfa6e20f67321
       labels:
         app.kubernetes.io/name: argocd-redis-ha-haproxy
       name: argocd-redis-ha-haproxy
@@ -258,7 +104,7 @@ spec:
                   app.kubernetes.io/name: argocd-redis-ha-haproxy
               topologyKey: kubernetes.io/hostname
       containers:
-        - image: haproxy:2.6.2-alpine
+        - image: haproxy:2.6.14-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
@@ -282,6 +128,7 @@ spec:
             capabilities:
               drop:
                 - ALL
+            readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
@@ -294,7 +141,7 @@ spec:
             - /readonly/haproxy_init.sh
           command:
             - sh
-          image: haproxy:2.6.2-alpine
+          image: haproxy:2.6.14-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
@@ -302,6 +149,7 @@ spec:
             capabilities:
               drop:
                 - ALL
+            readOnlyRootFilesystem: true
             seccompProfile:
               type: RuntimeDefault
           volumeMounts:
@@ -311,9 +159,9 @@ spec:
             - mountPath: /data
               name: data
       securityContext:
-        fsGroup: 1000
+        fsGroup: 99
         runAsNonRoot: true
-        runAsUser: 1000
+        runAsUser: 99
       serviceAccountName: argocd-redis-ha-haproxy
       volumes:
         - configMap:
@@ -349,7 +197,7 @@ spec:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: argocd-repo-server
-                topologyKey: failure-domain.beta.kubernetes.io/zone
+                topologyKey: topology.kubernetes.io/zone
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
@@ -358,11 +206,8 @@ spec:
               topologyKey: kubernetes.io/hostname
       automountServiceAccountToken: false
       containers:
-        - command:
-            - entrypoint.sh
-            - argocd-repo-server
-            - --redis
-            - argocd-redis-ha-haproxy:6379
+        - args:
+            - /usr/local/bin/argocd-repo-server
           env:
             - name: ARGOCD_RECONCILIATION_TIMEOUT
               valueFrom:
@@ -386,6 +231,18 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: reposerver.parallelism.limit
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_REPO_SERVER_LISTEN_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: reposerver.listen.address
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_REPO_SERVER_LISTEN_METRICS_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: reposerver.metrics.listen.address
                   name: argocd-cmd-params-cm
                   optional: true
             - name: ARGOCD_REPO_SERVER_DISABLE_TLS
@@ -478,13 +335,19 @@ spec:
                   key: reposerver.streamed.manifest.max.extracted.size
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_GIT_MODULES_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  key: reposerver.enable.git.submodule
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: HELM_CACHE_HOME
               value: /helm-working-dir
             - name: HELM_CONFIG_HOME
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.8.1
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -492,7 +355,8 @@ spec:
               path: /healthz?full=true
               port: 8084
             initialDelaySeconds: 30
-            periodSeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
           name: argocd-repo-server
           ports:
             - containerPort: 8081
@@ -531,11 +395,11 @@ spec:
               name: plugins
       initContainers:
         - command:
-            - cp
+            - /bin/cp
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v2.5.1
+          image: quay.io/argoproj/argocd:v2.8.1
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -607,7 +471,7 @@ spec:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: argocd-server
-                topologyKey: failure-domain.beta.kubernetes.io/zone
+                topologyKey: topology.kubernetes.io/zone
               weight: 100
           requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
@@ -615,10 +479,8 @@ spec:
                   app.kubernetes.io/name: argocd-server
               topologyKey: kubernetes.io/hostname
       containers:
-        - command:
-            - argocd-server
-            - --redis
-            - argocd-redis-ha-haproxy:6379
+        - args:
+            - /usr/local/bin/argocd-server
           env:
             - name: ARGOCD_API_SERVER_REPLICAS
               value: "2"
@@ -796,6 +658,18 @@ spec:
                   key: server.http.cookie.maxnumber
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_SERVER_LISTEN_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: server.listen.address
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_SERVER_METRICS_LISTEN_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  key: server.metrics.listen.address
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_SERVER_OTLP_ADDRESS
               valueFrom:
                 configMapKeyRef:
@@ -808,7 +682,13 @@ spec:
                   key: application.namespaces
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.5.1
+            - name: ARGOCD_SERVER_ENABLE_PROXY_EXTENSION
+              valueFrom:
+                configMapKeyRef:
+                  key: server.enable.proxy.extension
+                  name: argocd-cmd-params-cm
+                  optional: true
+          image: quay.io/argoproj/argocd:v2.8.1
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
@@ -816,6 +696,7 @@ spec:
               port: 8080
             initialDelaySeconds: 3
             periodSeconds: 30
+            timeoutSeconds: 5
           name: argocd-server
           ports:
             - containerPort: 8080

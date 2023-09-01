@@ -1,0 +1,30 @@
+# Patches Kyverno deployment arguments
+#
+# -v=0 lowers logging verbisity as Kyverno tends to get chatty during background
+# operations and logs were dropper by the forwarders
+#
+# --admissionReports=false
+# --backgroundScan=false
+# If both backgroundScan and admissionReports are set to false the entire
+# reports system will be disabled.
+# https://github.com/kyverno/kyverno/blob/main/CHANGELOG.md#v180-rc3
+# We saw that the Kyverno reporting system, introduced with version v1.7, will
+# produce thousands of admissionreports and backgroundscanreports objects, which
+# can hammer etcd members and will definitely double the db size. Disabling will
+# not stop Kyverno from doing periodic background policy checks and update the
+# metric we rely on to be alerted on violations.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyverno
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+      - args:
+        - -v=0
+        - --forceFailurePolicyIgnore=true
+        - --admissionReports=false
+        - --backgroundScan=false
+        name: kyverno

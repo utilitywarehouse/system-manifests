@@ -1,0 +1,48 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: external-dns-domain-label-length
+  annotations:
+    policies.kyverno.io/title: External-DNS Ingress Length Limit
+    policies.kyverno.io/category: External-DNS
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Ingress
+    policies.kyverno.io/description: >-
+      External-DNS uses TXT records to flag ownership of DNS records. For that
+      purpose it uses the following domain label is used
+      `<prefix>-<type>-<domain-label>`. There is an RFC limitation of 63 chars
+      per DNS domain label which should be respected by the generated
+      TXT records as well. Even though the 63 chars limit is for all labels,
+      let's only check the one edited via external-DNS since the rest should be
+      problematic regardless. 
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: domain-label-limit
+      # To be patched in environments that do not use infra as prefix
+      context:
+        - name: prefix
+          variable:
+            value: infra
+      match:
+        resources:
+          kinds:
+            - Ingress # Starting with capital letter seems to be significant for policy validation on admission
+          annotations:
+            external-dns.alpha.kubernetes.io/target: "*" # This annotation will instruct external-DNS to create CNAME type records
+      preconditions:
+        all:
+          - key: "{{ request.operation }}"
+            operator: NotEquals
+            value: DELETE
+      validate:
+        message: "External-DNS TXT record domain label must be <= 63 chars"
+        foreach:
+          - list: request.object.spec.rules
+            deny:
+              conditions:
+                - key: >-
+                    {{ join('-', [prefix, 'cname', element.host.split(@, '.')[0]]) | length(@) }}
+                  operator: GreaterThan
+                  value: 63
