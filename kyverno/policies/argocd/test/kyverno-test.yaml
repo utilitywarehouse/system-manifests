@@ -1,0 +1,55 @@
+name: test-ingress-and-traefik-resources
+policies:
+  - ../application-field-validation.yaml
+  - ../application-prevent-default-project.yaml
+resources:
+  - test-application-prevent-default-project.yaml
+  - test-application-field-validation.yaml
+results:
+  # Test default-project
+  - policy: argocd-application-prevent-default-project
+    rule: default-project
+    kind: Application
+    resource: test-custom-project
+    result: pass
+  - policy: argocd-application-prevent-default-project
+    rule: default-project
+    kind: Application
+    resource: test-default-project
+    result: fail
+  - policy: argocd-application-prevent-default-project
+    rule: default-project
+    kind: Application
+    resource: test-missing-project-name
+    result: fail
+  # Test Application Fields validation
+  - policy: argocd-application-field-validation
+    rule: empty-project
+    kind: Application
+    resource: test-missing-project-name
+    result: fail
+  - policy: argocd-application-field-validation
+    rule: empty-source-path
+    kind: Application
+    resource: test-missing-source-path
+    result: fail
+  - policy: argocd-application-field-validation
+    rule: empty-source-path
+    kind: Application
+    resource: test-source-path-specified
+    result: pass
+  - policy: argocd-application-field-validation
+    rule: chart-should-not-be-used
+    kind: Application
+    resource: test-source-path-chart-specified
+    result: fail
+  - policy: argocd-application-field-validation
+    rule: destination-server-name
+    kind: Application
+    resource: test-missing-destination-server
+    result: fail
+  - policy: argocd-application-field-validation
+    rule: empty-destination-namespace
+    kind: Application
+    resource: test-missing-destination-namespace
+    result: fail

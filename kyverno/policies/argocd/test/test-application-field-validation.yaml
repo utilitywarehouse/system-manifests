@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-missing-project-name
+spec:
+  source:
+    repoURL: git@github.com:utilitywarehouse/something
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-missing-source-path
+spec:
+  source:
+    repoURL: git@github.com:utilitywarehouse/something
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-source-path-specified
+spec:
+  source:
+    repoURL: git@github.com:utilitywarehouse/something
+    path: dev
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-source-path-chart-specified
+spec:
+  source:
+    repoURL: git@github.com:utilitywarehouse/something
+    path: dev
+    chart: dev
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-missing-destination-server
+spec:
+  destination:
+    namespace: argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-missing-destination-namespace
+spec:
+  destination:
+    server: https://kubernetes.default.svc
