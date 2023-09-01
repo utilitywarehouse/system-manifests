@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-custom-project
+spec:
+  project: prj-sys-argocd
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-default-project
+spec:
+  project: default
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-missing-project-name
+spec:
+  source:
+    repoURL: git@github.com:utilitywarehouse/something
