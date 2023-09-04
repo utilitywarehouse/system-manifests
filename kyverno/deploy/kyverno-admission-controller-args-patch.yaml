@@ -1,4 +1,10 @@
-# Patches Kyverno deployment arguments
+# Patches kyverno controllers deployment arguments.
+#
+# Since Kyverno controllers are now split into separate Deployments we need to
+# specify the needed flags in the respective controller arguments based on:
+# https://kyverno.io/docs/installation/customization/#container-flags
+#
+# The following flags are set:
 #
 # -v=0 lowers logging verbisity as Kyverno tends to get chatty during background
 # operations and logs were dropper by the forwarders
@@ -13,18 +19,21 @@
 # can hammer etcd members and will definitely double the db size. Disabling will
 # not stop Kyverno from doing periodic background policy checks and update the
 # metric we rely on to be alerted on violations.
+#
+# --forceFailurePolicyIgnore=true will make sure we have a fail open policy everywhere.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kyverno
+  name: kyverno-admission-controller
   namespace: kube-system
 spec:
   template:
     spec:
       containers:
-      - args:
-        - -v=0
-        - --forceFailurePolicyIgnore=true
-        - --admissionReports=false
-        - --backgroundScan=false
-        name: kyverno
+        - args:
+            - --backgroundServiceAccountName=system:serviceaccount:kyverno:kyverno-background-controller
+            - --metricsPort=8000 # Default, but leaving for visibility since we need to patch Prometheus annotations on Service level.
+            - --admissionReports=false
+            - --forceFailurePolicyIgnore=true
+            - -v=0
+          name: kyverno

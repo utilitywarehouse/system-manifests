@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyverno-cleanup-controller
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+        - args:
+            - --metricsPort=8000 # Default, but leaving for visibility since we need to patch Prometheus annotations on Service level.
+            - -v=0
+          name: controller

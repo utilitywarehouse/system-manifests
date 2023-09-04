@@ -1,13 +1,13 @@
+# Deploy kyverno admission controller on master nodes to avoid being affected
+# by other workloads. If kyverno is down, admission requests will fail.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kyverno
+  name: kyverno-admission-controller
   namespace: kube-system
 spec:
   template:
     spec:
-      # Deploy kyverno on master nodes to avoid being affected by other
-      # workloads. If kyverno is down, admission requests will fail.
       tolerations:
         - key: node-role.kubernetes.io/master
           effect: NoSchedule
