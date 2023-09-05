@@ -12,10 +12,12 @@ spec:
       initContainers:
         - name: init-temp-cleanup
           image: busybox:latest
-          command: ["sh", "-c", "rm -rf /tmp/*"] # clean up tmp pvc on re-start
+          command: ["sh", "-c", "rm -rf /tmp/* /cmp-tmp/*"] # clean up tmp pvc on re-start
           volumeMounts:
             - mountPath: /tmp
               name: tmp
+            - mountPath: /cmp-tmp
+              name: cmp-tmp
       containers:
         - name: voodoobox
           command: [/var/run/argocd/argocd-cmp-server]
@@ -70,13 +72,19 @@ spec:
           secret:
             secretName: global-git-ssh-key
             defaultMode: 0440
-        - name: cmp-tmp
-          emptyDir: {}
         - $patch: delete
           name: tmp
   volumeClaimTemplates:
     - metadata:
         name: tmp
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+    - metadata:
+        name: cmp-tmp
       spec:
         accessModes:
           - ReadWriteOnce
