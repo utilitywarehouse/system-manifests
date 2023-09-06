@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - args:
-            - --backgroundServiceAccountName=system:serviceaccount:kyverno:kyverno-background-controller
+            - --backgroundServiceAccountName=system:serviceaccount:kube-system:kyverno-background-controller
             - --metricsPort=8000 # Default, but leaving for visibility since we need to patch Prometheus annotations on Service level.
             - --admissionReports=false
             - --forceFailurePolicyIgnore=true
