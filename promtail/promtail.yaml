@@ -29,7 +29,7 @@ spec:
             - /bin/sh
             - -c
             - apk add --no-cache gettext;
-              envsubst < /etc/config-template/config-template.yml > /etc/config-rendered/config.yml
+              envsubst < /etc/config-template/promtail.yaml > /etc/config-rendered/config.yml
           env:
             - name: CLOUD_PROVIDER
               value: aws
