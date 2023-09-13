@@ -70,7 +70,7 @@ spec:
               memory: 512Mi
       volumes:
         - name: config-rendered
-          mountPath: /etc/promtail
+          emptyDir: {}
         - name: config-template
           configMap:
             name: promtail
