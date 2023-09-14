@@ -1,0 +1,124 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    external_labels:
+      cloud_provider: ${CLOUD_PROVIDER}
+      uw_environment: ${UW_ENVIRONMENT}
+      kubernetes_cluster: ${KUBERNETES_CLUSTER}
+
+positions:
+  filename: /var/log/promtail-positions.yaml
+target_config:
+  sync_period: 10s
+scrape_configs:
+  - job_name: pod-logs
+    kubernetes_sd_configs:
+      - role: pod
+    pipeline_stages:
+      - cri: {}
+      - match:
+          selector: '{fluentbit_io_exclude="true"}'
+          action: drop
+          drop_counter_reason: "fluentbit_io_exclude"
+      # https://github.com/projectcalico/calico/issues/7988
+      - match:
+          selector: '{kubernetes_pod_name=~"calico-apiserver.+"} |~ "level=info|called with key"'
+          action: drop
+          drop_counter_reason: promtail_noisy_error
+      # Traefik logs all broken config - repeatedly. We have no control over
+      # this as team's create and manage IngressRoute/Service/Middleware. We
+      # can chase fixes but broken config returns before long. This only
+      # impacts teams trying to use the broken config, surfacing this to us has
+      # low value, but triggers our log rate limiting. Logs are still available
+      # directily from Kubernetes if team's want to debug.
+      - match:
+          selector: '{kubernetes_namespace=~"sys-ingress-.+"} |~ "kubernetes service not found|subset not found for|service port not found|Cannot create service: service not found|Skipping service: no endpoints found|middleware .+ does not exist"'
+          action: drop
+          drop_counter_reason: promtail_noisy_error
+      - limit:
+          rate: 10
+          burst: 10
+          drop: true
+          by_label_name: "limit_key"
+      - labeldrop:
+          - limit_key
+          - fluentbit_io_exclude
+          - filename
+          - kubernetes_hostname
+    relabel_configs:
+      - replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_uid
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+      - action: replace
+        replacement: /var/log/pods/*$1/*.log
+        regex: true/(.*)
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_annotationpresent_kubernetes_io_config_hash
+          - __meta_kubernetes_pod_annotation_kubernetes_io_config_hash
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_name
+        target_label: app_kubernetes_io_name
+      - action: replace
+        source_labels:
+          - __meta_kubernetes_namespace
+        target_label: kubernetes_namespace
+      - action: replace
+        source_labels:
+          - __meta_kubernetes_pod_name
+        target_label: kubernetes_pod_name
+      - action: replace
+        source_labels:
+          - __meta_kubernetes_pod_container_name
+        target_label: kubernetes_container
+      - source_labels:
+          - __meta_kubernetes_pod_label_app
+        target_label: app
+
+      - source_labels:
+          - __meta_kubernetes_pod_label_k8s_app
+        target_label: __tmp_app
+        regex: "(.+)"
+      - source_labels:
+          - __meta_kubernetes_pod_label_app
+        target_label: __tmp_app
+        regex: "(.+)"
+      - source_labels:
+          - __meta_kubernetes_pod_label_app_kubernetes_io_name
+        target_label: __tmp_app
+        regex: "(.+)"
+      - action: replace
+        replacement: $1
+        separator: /
+        source_labels:
+          - __meta_kubernetes_namespace
+          - __tmp_app
+        target_label: limit_key
+
+      - action: replace
+        source_labels:
+          - __meta_kubernetes_pod_annotation_fluentbit_io_exclude
+        target_label: fluentbit_io_exclude
+
+  - job_name: systemd
+    journal:
+      path: /var/log/journal
+    relabel_configs:
+      - source_labels:
+          - __journal__systemd_unit
+        target_label: systemd_unit
+      - source_labels:
+          - __journal__hostname
+        target_label: hostname
+      - source_labels:
+          - __journal_syslog_identifier
+        target_label: syslog_identifier

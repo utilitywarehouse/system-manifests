@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+spec:
+  selector:
+    matchLabels:
+      name: promtail
+  template:
+    metadata:
+      labels:
+        name: promtail
+      annotations:
+        fluentbit.io/exclude: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9080"
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: promtail
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+      initContainers:
+        - name: render-config
+          image: alpine
+          args:
+            - /bin/sh
+            - -c
+            - apk add --no-cache gettext;
+              envsubst < /etc/config-template/promtail.yaml > /etc/config-rendered/promtail.yaml
+          volumeMounts:
+            - name: config-template
+              mountPath: /etc/config-template
+            - name: config-rendered
+              mountPath: /etc/config-rendered
+      containers:
+        - name: promtail
+          image: grafana/promtail
+          args:
+            - -config.file=/etc/promtail/promtail.yaml
+          env:
+            - name: "HOSTNAME" # needed when using kubernetes_sd_configs
+              valueFrom:
+                fieldRef:
+                  fieldPath: "spec.nodeName"
+          volumeMounts:
+            - name: config-rendered
+              mountPath: /etc/promtail
+            - name: logs
+              mountPath: /var/log
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+          resources:
+            requests:
+              cpu: 0m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+      volumes:
+        - name: config-rendered
+          emptyDir: {}
+        - name: config-template
+          configMap:
+            name: promtail
+        - name: logs
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: promtail
