@@ -30,13 +30,6 @@ spec:
             - -c
             - apk add --no-cache gettext;
               envsubst < /etc/config-template/promtail.yaml > /etc/config-rendered/promtail.yaml
-          env:
-            - name: CLOUD_PROVIDER
-              value: aws
-            - name: UW_ENVIRONMENT
-              value: exp
-            - name: KUBERNETES_CLUSTER
-              value: exp-1-aws
           volumeMounts:
             - name: config-template
               mountPath: /etc/config-template
