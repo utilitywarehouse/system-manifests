@@ -41,10 +41,10 @@ spec:
           args:
             - -config.file=/etc/promtail/promtail.yaml
           env:
-            - name: 'HOSTNAME' # needed when using kubernetes_sd_configs
+            - name: "HOSTNAME" # needed when using kubernetes_sd_configs
               valueFrom:
                 fieldRef:
-                  fieldPath: 'spec.nodeName'
+                  fieldPath: "spec.nodeName"
           volumeMounts:
             - name: config-rendered
               mountPath: /etc/promtail
@@ -72,8 +72,7 @@ spec:
         - name: varlibdockercontainers
           hostPath:
             path: /var/lib/docker/containers
-
---- # ServiceAccount.yaml
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
