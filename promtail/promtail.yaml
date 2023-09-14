@@ -29,7 +29,7 @@ spec:
             - /bin/sh
             - -c
             - apk add --no-cache gettext;
-              envsubst < /etc/config-template/promtail.yaml > /etc/config-rendered/config.yml
+              envsubst < /etc/config-template/promtail.yaml > /etc/config-rendered/promtail.yaml
           env:
             - name: CLOUD_PROVIDER
               value: aws
@@ -60,7 +60,6 @@ spec:
             - name: varlibdockercontainers
               mountPath: /var/lib/docker/containers
               readOnly: true
-
           resources:
             requests:
               cpu: 0m
