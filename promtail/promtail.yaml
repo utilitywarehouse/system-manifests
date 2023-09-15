@@ -10,6 +10,7 @@ spec:
     metadata:
       labels:
         name: promtail
+        policy.semaphore.uw.io/name: promtail
       annotations:
         fluentbit.io/exclude: "true"
         prometheus.io/path: /metrics
