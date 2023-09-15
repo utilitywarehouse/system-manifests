@@ -3,7 +3,7 @@ server:
   grpc_listen_port: 0
 
 clients:
-  - url: http://loki:3100/loki/api/v1/push
+  - url: http://loki.sys-log.svc.cluster.aws:3100/loki/api/v1/push
     external_labels:
       cloud_provider: ${CLOUD_PROVIDER}
       uw_environment: ${UW_ENVIRONMENT}
