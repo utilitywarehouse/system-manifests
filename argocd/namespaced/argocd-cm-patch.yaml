@@ -57,3 +57,8 @@ data:
     hs.status = "Progressing"
     hs.message = "Waiting for certificate"
     return hs
+
+  resource.ignoreResourceUpdatesEnabled: "true"
+  resource.customizations.ignoreResourceUpdates.all: |
+      jsonPointers:
+        - /status
