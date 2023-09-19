@@ -1,0 +1,78 @@
+# Source: kubernetes-event-exporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-event-exporter
+  namespace: "sys-prom"
+  labels:
+    app.kubernetes.io/instance: 2.7.2
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kubernetes-event-exporter
+    app.kubernetes.io/version: 1.4.0
+    helm.sh/chart: kubernetes-event-exporter-2.7.2
+    app.kubernetes.io/component: kubernetes-event-exporter
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: 2.7.2
+      app.kubernetes.io/name: kubernetes-event-exporter
+  template:
+    metadata:
+      annotations:
+        checksum/config: 3e6fc85a22a88614e273594a6c5223b9d2b8bd0b1889ccd7ff0c8300322ba07a
+      labels:
+        app.kubernetes.io/instance: 2.7.2
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: kubernetes-event-exporter
+        app.kubernetes.io/version: 1.4.0
+        helm.sh/chart: kubernetes-event-exporter-2.7.2
+        app.kubernetes.io/component: kubernetes-event-exporter
+    spec:
+      serviceAccountName: kubernetes-event-exporter
+      affinity:
+        podAffinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: 2.7.2
+                    app.kubernetes.io/name: kubernetes-event-exporter
+                    app.kubernetes.io/component: kubernetes-event-exporter
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: event-exporter
+          image: docker.io/bitnami/kubernetes-event-exporter:1.4.0-debian-11-r40
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            capabilities:
+              add: []
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1001
+          args:
+            - -conf=/data/config.yaml
+          resources:
+            limits: {}
+            requests: {}
+          ports:
+            - name: http
+              containerPort: 2112
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: cfg
+      volumes:
+        - name: cfg
+          configMap:
+            name: kubernetes-event-exporter

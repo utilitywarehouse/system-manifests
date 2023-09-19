@@ -1,0 +1,3 @@
+fullnameOverride: kubernetes-event-exporter
+config:
+  logLevel: info
