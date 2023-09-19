@@ -1,0 +1,26 @@
+# Source: kubernetes-event-exporter/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-event-exporter
+  namespace: "sys-prom"
+  labels:
+    app.kubernetes.io/instance: 2.7.2
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kubernetes-event-exporter
+    app.kubernetes.io/version: 1.4.0
+    helm.sh/chart: kubernetes-event-exporter-2.7.2
+data:
+  config.yaml: |
+    leaderElection: {}
+    logFormat: pretty
+    logLevel: debug
+    receivers:
+    - file:
+        layout: {}
+        path: /dev/stdout
+      name: dump
+    route:
+      routes:
+      - match:
+        - receiver: dump
