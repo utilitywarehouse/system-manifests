@@ -60,5 +60,5 @@ data:
 
   resource.ignoreResourceUpdatesEnabled: "true"
   resource.customizations.ignoreResourceUpdates.all: |
-      jsonPointers:
-        - /status
+    jsonPointers:
+      - /status
