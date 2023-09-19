@@ -18,9 +18,3 @@ data:
   ## Repo-server properties
   # Set the logging level. One of: debug|info|warn|error (default "info")
   reposerver.log.level: "warn"
-  # Limit on number of concurrent manifests generate requests. Any value less the 1 means no limit. (default "1")
-  reposerver.parallelism.limit: "1"
-  # Cache expiration for repo state, incl. app lists, app details, manifest generation, revision meta-data (default 24h0m0s)
-  # Argo CD assumes by default that manifests only change when the repo changes, so it caches generated manifests (for 24h by default).
-  # With Kustomize remote bases, the manifests can change even though the repo has not changed.
-  reposerver.repo.cache.expiration: "1h"
