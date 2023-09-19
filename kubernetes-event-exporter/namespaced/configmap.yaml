@@ -14,7 +14,7 @@ data:
   config.yaml: |
     leaderElection: {}
     logFormat: pretty
-    logLevel: debug
+    logLevel: info
     receivers:
     - file:
         layout: {}
