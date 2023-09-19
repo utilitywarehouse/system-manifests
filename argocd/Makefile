@@ -12,7 +12,7 @@ get-upstream:
 	curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
 
 	# replace namespace
-	sd  "namespace: argocd" "namespace: sys-argocd" /tmp/argo.yaml
+	sd "namespace: argocd" "namespace: sys-argocd" /tmp/argo.yaml
 	
 	# Filter out dex and applicationset resoruces
 	yq 'select(.metadata.name != "argocd-dex-server*" and .metadata.name != "argocd-applicationset*")' /tmp/argo.yaml > /tmp/argo_filtered.yaml
@@ -34,4 +34,4 @@ get-upstream:
 	yq 'select(.kind=="NetworkPolicy")' /tmp/argo_filtered.yaml > namespaced/upstream/NetworkPolicy.yaml
 
 	# remove temp file
-	rm  /tmp/argo.yaml /tmp/argo_filtered.yaml
+	rm /tmp/argo.yaml /tmp/argo_filtered.yaml
