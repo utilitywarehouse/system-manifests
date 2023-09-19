@@ -19,6 +19,8 @@ get-upstream:
 	echo "  - configmap.yaml" >> namespaced/kustomization.yaml
 	yq 'select(.kind=="Deployment")' /tmp/kubernetes-event-exporter.yaml > namespaced/deployment.yaml
 	echo "  - deployment.yaml" >> namespaced/kustomization.yaml
+	yq 'select(.kind=="Service")' /tmp/kubernetes-event-exporter.yaml > namespaced/service.yaml
+	echo "  - service.yaml" >> namespaced/kustomization.yaml
 	yq 'select(.kind=="ServiceAccount")' /tmp/kubernetes-event-exporter.yaml > namespaced/serviceaccount.yaml
 	echo "  - serviceaccount.yaml" >> namespaced/kustomization.yaml
 	# Cleanup
