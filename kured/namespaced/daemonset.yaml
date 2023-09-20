@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: kured
+  name: kured # Must match `--ds-name`
 spec:
   selector:
     matchLabels:
       name: kured
   updateStrategy:
-   type: RollingUpdate
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -23,12 +23,16 @@ spec:
       restartPolicy: Always
       containers:
         - name: kured
-          image: docker.io/weaveworks/kured:1.10.0
-                 # If you find yourself here wondering why there is no
-                 # :latest tag on Docker Hub,see the FAQ in the README
+          # If you find yourself here wondering why there is no
+          # :latest tag on Docker Hub,see the FAQ in the README
+          image: ghcr.io/kubereboot/kured:1.14.0
           imagePullPolicy: IfNotPresent
           securityContext:
             privileged: true # Give permission to nsenter /proc/1/ns/mnt
+            readOnlyRootFilesystem: true
+          ports:
+            - containerPort: 8080
+              name: metrics
           env:
             # Pass in the name of the node on which this pod is scheduled
             # for use with drain/uncordon operations and lock acquisition
@@ -42,6 +46,7 @@ spec:
 #            - --drain-grace-period=-1
 #            - --skip-wait-for-delete-timeout=0
 #            - --drain-timeout=0
+#            - --drain-pod-selector=""
 #            - --period=1h
 #            - --ds-namespace=kube-system
 #            - --ds-name=kured
@@ -49,6 +54,7 @@ spec:
 #            - --lock-ttl=0
 #            - --prometheus-url=http://prometheus.monitoring.svc.cluster.local
 #            - --alert-filter-regexp=^RebootRequired$
+#            - --alert-filter-match-only=false
 #            - --alert-firing-only=false
 #            - --reboot-sentinel=/var/run/reboot-required
 #            - --prefer-no-schedule-taint=""
@@ -58,7 +64,8 @@ spec:
 #            - --slack-channel=alerting
 #            - --notify-url="" # See also shoutrrr url format
 #            - --message-template-drain=Draining node %s
-#            - --message-template-drain=Rebooting node %s
+#            - --message-template-reboot=Rebooting node %s
+#            - --message-template-uncordon=Node %s rebooted & uncordoned successfully!
 #            - --blocking-pod-selector=runtime=long,cost=expensive
 #            - --blocking-pod-selector=name=temperamental
 #            - --blocking-pod-selector=...
@@ -70,3 +77,6 @@ spec:
 #            - --annotate-nodes=false
 #            - --lock-release-delay=30m
 #            - --log-format=text
+#            - --metrics-host=""
+#            - --metrics-port=8080
+#            - --concurrency=1

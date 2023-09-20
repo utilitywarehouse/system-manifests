@@ -7,6 +7,6 @@ roleRef:
   kind: ClusterRole
   name: kured
 subjects:
-- kind: ServiceAccount
-  name: kured
-  namespace: sys-flatcar
+  - kind: ServiceAccount
+    name: kured
+    namespace: sys-flatcar
