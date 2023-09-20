@@ -5,3 +5,5 @@ resources:
   - role.yaml
   - rolebinding.yaml
   - serviceaccount.yaml
+patches:
+  - path: expose-metrics-patch.yaml
