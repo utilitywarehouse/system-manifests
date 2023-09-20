@@ -1,6 +1,0 @@
-fullnameOverride: kubernetes-event-exporter
-config:
-  logLevel: info
-  metricsNamePrefix: event_exporter_
-metrics:
-  enabled: true
