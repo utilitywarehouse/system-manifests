@@ -6,4 +6,5 @@ resources:
   - rolebinding.yaml
   - serviceaccount.yaml
 patches:
+  - path: canonical-name-label-patch.yaml
   - path: expose-metrics-patch.yaml
