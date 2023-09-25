@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+ name: ebs-csi-node
+spec:
+ template:
+   spec:
+      containers:
+      # We saw that ebs-plugin liveness probe was failing at nodes boot
+      # causing the pods to crashloop and alerts to fire. Triple the
+      # upstream value to allow more init time.
+      - name: ebs-plugin
+        livenessProbe:
+          initialDelaySeconds: 30

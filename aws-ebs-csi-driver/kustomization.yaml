@@ -6,4 +6,5 @@ resources:
 
 patches:
   - path: controller-patch.yaml
-  - path: daemonset-patch.yaml
+  - path: node-args-patch.yaml
+  - path: node-liveness-patch.yaml
