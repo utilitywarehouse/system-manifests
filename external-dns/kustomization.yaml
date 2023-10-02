@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - https://github.com/kubernetes-sigs/external-dns/kustomize?ref=a37b59a414148b787868fb8d0d88ac731c9d63cf # v0.13.2
+  - https://github.com/kubernetes-sigs/external-dns/kustomize?ref=f6c31a69720f5df75fa9a2d5cd2c6a63d9a1c1fc # v0.13.6
 
-patchesStrategicMerge:
-  - patches/deploy.yaml
+patches:
+  - path: patches/deploy.yaml
