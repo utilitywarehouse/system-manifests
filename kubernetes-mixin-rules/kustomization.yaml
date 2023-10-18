@@ -3,4 +3,4 @@ kind: Kustomization
 configMapGenerator:
   - files:
       - mixin-rules.yaml
-    name: prometheus-recording-rules
+    name: mixin-recording-rules
