@@ -8,6 +8,8 @@ clients:
       cloud_provider: ${CLOUD_PROVIDER}
       uw_environment: ${UW_ENVIRONMENT}
       kubernetes_cluster: ${KUBERNETES_CLUSTER}
+      cluster: ${KUBERNETES_CLUSTER}
+      provider: ${CLOUD_PROVIDER}
 
 positions:
   filename: /var/log/promtail-positions.yaml
@@ -74,12 +76,24 @@ scrape_configs:
         target_label: kubernetes_namespace
       - action: replace
         source_labels:
+          - __meta_kubernetes_namespace
+        target_label: namespace
+      - action: replace
+        source_labels:
           - __meta_kubernetes_pod_name
         target_label: kubernetes_pod_name
       - action: replace
         source_labels:
+          - __meta_kubernetes_pod_name
+        target_label: pod
+      - action: replace
+        source_labels:
           - __meta_kubernetes_pod_container_name
         target_label: kubernetes_container
+      - action: replace
+        source_labels:
+          - __meta_kubernetes_pod_container_name
+        target_label: container
       - source_labels:
           - __meta_kubernetes_pod_label_app
         target_label: app
