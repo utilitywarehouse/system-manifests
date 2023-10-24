@@ -16,3 +16,4 @@ resources:
 
 patches:
   - path: csi-gce-pd-controller-patch.yaml
+  - path: csi-gce-pd-node-patch.yaml
