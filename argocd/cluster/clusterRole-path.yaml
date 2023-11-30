@@ -16,6 +16,7 @@
       - argoproj.io
     resources:
       - applications
+      - applicationsets
     verbs:
       - get
       - list
