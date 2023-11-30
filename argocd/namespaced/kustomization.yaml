@@ -19,7 +19,6 @@ patches:
   - path: argocd-cm-patch.yaml
   - path: argocd-cmd-params-cm-patch.yaml
   - path: argocd-notifications-server-patch.yaml
-  - path: argocd-rbac-cm-patch.yaml
   - path: argocd-redis-ha-haproxy-patch.yaml
   - path: argocd-redis-ha-server-patch.yaml
   - path: argocd-repo-server-patch.yaml
