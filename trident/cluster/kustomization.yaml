@@ -4,3 +4,10 @@ resources:
   - trident-controller-clusterrolebinding.yaml
   - trident-controller-clusterrole.yaml
   - trident-crds.yaml
+patches:
+- target:
+    group: rbac.authorization.k8s.io
+    version: v1
+    kind: ClusterRole
+    name: trident-controller
+  path: trident-controller-clusterrole-patch.yaml
