@@ -1,3 +1,6 @@
+# Argo CD doesn't create ClusterRole for notification by default
+# https://argo-cd.readthedocs.io/en/stable/operator-manual/app-any-namespace/#adapt-kubernetes-rbac
+# we need this ClusterRole as we use, 'Applications in any namespace' feature
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -15,8 +18,6 @@ rules:
       - get
       - list
       - watch
-      - update
-      - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -33,4 +34,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: argocd-notifications-controller
-    namespace: argocd
+    namespace: sys-argocd
