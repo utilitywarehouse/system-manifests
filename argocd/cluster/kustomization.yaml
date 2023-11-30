@@ -5,6 +5,7 @@ resources:
   - upstream/ClusterRole.yaml
   - upstream/ClusterRoleBinding.yaml
   - upstream/CustomResourceDefinition.yaml
+  - notification-controller-clusterRole.yaml
   - voodoobox-plugin-rbac.yaml
 
 patches:
