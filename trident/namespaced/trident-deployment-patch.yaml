@@ -7,6 +7,16 @@ metadata:
 spec:
   template:
     spec:
+      containers:
+        - name: csi-provisioner
+          args:
+            - --v=2
+            - --timeout=600s
+            - --csi-address=$(ADDRESS)
+            - --retry-interval-start=8s
+            - --retry-interval-max=30s
+            - --feature-gates=Topology=True
+            - --feature-gates=CrossNamespaceVolumeDataSource=true
       tolerations:
         # Mark the pod so it can be scheduled on master nodes, to avoid being
         # killed when rolling workers, which includes attaching/detaching of
