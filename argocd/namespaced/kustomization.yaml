@@ -15,8 +15,6 @@ resources:
   - upstream/StatefulSet.yaml
 
 patches:
-  # add notification Triggers and Templates from the catalog
-  - path: https://raw.githubusercontent.com/argoproj/argo-cd/stable/notifications_catalog/install.yaml
   - path: argocd-application-controller-patch.yaml
   - path: argocd-cm-patch.yaml
   - path: argocd-cmd-params-cm-patch.yaml
