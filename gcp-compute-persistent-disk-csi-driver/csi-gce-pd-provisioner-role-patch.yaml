@@ -1,0 +1,6 @@
+- op: add
+  path: /rules/0
+  value:
+    apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["referencegrants"]
+    verbs: ["get", "list", "watch"]
