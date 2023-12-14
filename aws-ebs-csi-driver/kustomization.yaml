@@ -8,3 +8,9 @@ patches:
   - path: controller-patch.yaml
   - path: node-args-patch.yaml
   - path: node-liveness-patch.yaml
+  - target:
+      group: rbac.authorization.k8s.io
+      version: v1
+      kind: ClusterRole
+      name: ebs-external-provisioner-role
+    path: ebs-external-provisioner-role-patch.yaml
