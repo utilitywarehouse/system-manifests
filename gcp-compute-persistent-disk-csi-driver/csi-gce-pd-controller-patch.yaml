@@ -30,6 +30,19 @@ spec:
             - $patch: delete
               name: cloud-sa-volume
               mountPath: "/etc/cloud-sa"
+        - name: csi-provisioner
+          args:
+            - --v=2
+            - --csi-address=/csi/csi.sock
+            - --feature-gates=Topology=true
+            - --feature-gates=CrossNamespaceVolumeDataSource=true
+            - --http-endpoint=:22011
+            - --leader-election-namespace=$(PDCSI_NAMESPACE)
+            - --timeout=250s
+            - --extra-create-metadata
+            - --leader-election
+            - --default-fstype=ext4
+            - --controller-publish-readonly=true
       volumes:
         - $patch: delete
           name: cloud-sa-volume
