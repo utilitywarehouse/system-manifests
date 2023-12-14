@@ -22,3 +22,12 @@ spec:
               name: AWS_ACCESS_KEY_ID
             - $patch: delete
               name: AWS_SECRET_ACCESS_KEY
+        - name: csi-provisioner
+          args:
+            - --csi-address=$(ADDRESS)
+            - --v=2
+            - --feature-gates=Topology=true
+            - --feature-gates=CrossNamespaceVolumeDataSource=true
+            - --extra-create-metadata
+            - --leader-election=true
+            - --default-fstype=ext4
