@@ -18,3 +18,6 @@ data:
   ## Repo-server properties
   # Set the logging level. One of: debug|info|warn|error (default "info")
   reposerver.log.level: "warn"
+
+  # .git folder is not required in voodoobox plugin exclude it to increase the speed of manifest generation
+  reposerver.plugin.tar.exclusions: ".git/*"
