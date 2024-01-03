@@ -31,7 +31,7 @@ spec:
             - all
             add:
             - SYS_ADMIN
-        image: netapp/trident:23.07.0
+        image: netapp/trident:23.10.0
         imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
@@ -111,7 +111,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.8.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.9.0
         imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
