@@ -8,8 +8,8 @@ spec:
     spec:
       containers:
         - args:
-            - --caSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-ca
-            - --tlsSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-pair
+            - --caSecretName=kyverno-cleanup-controller.kube-system.svc.kyverno-tls-ca
+            - --tlsSecretName=kyverno-cleanup-controller.kube-system.svc.kyverno-tls-pair
             - --metricsPort=8000 # Default, but leaving for visibility since we need to patch Prometheus annotations on Service level.
             - -v=0
             - --ttlReconciliationInterval=1m
