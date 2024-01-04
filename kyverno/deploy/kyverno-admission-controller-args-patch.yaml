@@ -31,8 +31,8 @@ spec:
     spec:
       containers:
         - args:
-            - --caSecretName=kyverno-svc.kyverno.svc.kyverno-tls-ca
-            - --tlsSecretName=kyverno-svc.kyverno.svc.kyverno-tls-pair
+            - --caSecretName=kyverno-svc.kube-system.svc.kyverno-tls-ca
+            - --tlsSecretName=kyverno-svc.kube-system.svc.kyverno-tls-pair
             - --backgroundServiceAccountName=system:serviceaccount:kube-system:kyverno-background-controller
             - --metricsPort=8000 # Default, but leaving for visibility since we need to patch Prometheus annotations on Service level.
             - --admissionReports=false
