@@ -20,3 +20,25 @@ patches:
   - path: kyverno-reports-controller-args-patch.yaml
   - path: kyverno-reports-controller-metrics-svc-patch.yaml
   - path: kyverno-svc-metrics-patch.yaml
+  # Patch cleanup-controller to allow access to secret names generated for
+  # kube-system namespace, since we deploy Kyverno there.
+  - patch: |-
+      - op: add
+        path: /rules/-
+        value:
+          apiGroups:
+            - ''
+          resources:
+            - secrets
+          verbs:
+            - delete
+            - get
+            - list
+            - update
+            - watch
+          resourceNames:
+            - kyverno-cleanup-controller.kube-system.svc.kyverno-tls-ca
+            - kyverno-cleanup-controller.kube-system.svc.kyverno-tls-pair
+    target:
+      kind: Role
+      name: kyverno:cleanup-controller
