@@ -22,6 +22,7 @@ spec:
   background: true
   rules:
     - name: empty-project
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -34,6 +35,7 @@ spec:
           spec:
             project: "?*"
     - name: empty-source-path
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -47,6 +49,7 @@ spec:
             source:
               path: "?*"
     - name: chart-should-not-be-used
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
@@ -60,6 +63,7 @@ spec:
             source:
               X(chart):
 #    - name: destination-server-name
+#      skipBackgroundRequests: true
 #      match:
 #        any:
 #          - resources:
@@ -73,6 +77,7 @@ spec:
 #              destination:
 #                name: "?*"
     - name: empty-destination-namespace
+      skipBackgroundRequests: true
       match:
         any:
           - resources:
