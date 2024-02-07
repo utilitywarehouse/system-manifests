@@ -294,7 +294,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials
-                image: vault:1.8.4
+                image: docker.io/hashicorp/vault:1.15.2
                 command:
                   - sh
                   - -c
@@ -307,6 +307,7 @@ spec:
                                 config = {
                                     role = "{{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}"
                                 }
+                                exit_on_err = true
                             }
 
                             sink "file" {
