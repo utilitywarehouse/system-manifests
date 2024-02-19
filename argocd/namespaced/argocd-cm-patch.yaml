@@ -62,3 +62,7 @@ data:
   resource.customizations.ignoreResourceUpdates.all: |
     jsonPointers:
       - /status
+
+  resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
+    - field: spec.duration
+      type: meta/v1/Duration
