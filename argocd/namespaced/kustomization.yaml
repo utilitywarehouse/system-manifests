@@ -21,6 +21,7 @@ patches:
   - path: argocd-notifications-server-patch.yaml
   - path: argocd-redis-ha-haproxy-patch.yaml
   - path: argocd-redis-ha-server-patch.yaml
+  - path: argocd-redis-sentinel-reset-patch.yaml
   - path: argocd-repo-server-patch.yaml
   - path: argocd-server-patch.yaml
 
