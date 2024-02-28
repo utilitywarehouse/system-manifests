@@ -18,3 +18,5 @@ spec:
             limits:
               cpu: 100m
               memory: 100Mi
+          livenessProbe:
+            initialDelaySeconds: 30 # needed to init in larger clusters with many resources like dev-merit
