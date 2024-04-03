@@ -1,6 +1,0 @@
-$patch: delete
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: tf-runner
-  namespace: sys-fluxcd
