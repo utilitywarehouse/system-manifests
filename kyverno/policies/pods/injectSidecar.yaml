@@ -40,9 +40,10 @@ spec:
               injector.tumblr.com/status: "injected"
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
-            containers:
+            initContainers:
               - name: vault-credentials-agent
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                restartPolicy: Always
                 lifecycle:
                   postStart:
                     exec:
@@ -108,9 +109,10 @@ spec:
               injector.tumblr.com/status: "injected"
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
-            containers:
+            initContainers:
               - name: vault-credentials-agent-aws
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                restartPolicy: Always
                 lifecycle:
                   postStart:
                     exec:
@@ -218,9 +220,10 @@ spec:
               injector.tumblr.com/status: "injected"
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
-            containers:
+            initContainers:
               - name: vault-credentials-agent
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                restartPolicy: Always
                 lifecycle:
                   postStart:
                     exec:
