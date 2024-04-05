@@ -44,7 +44,7 @@ spec:
               - name: vault-credentials-agent
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
-                readinessProbe:
+                startupProbe:
                   tcpSocket:
                     port: 8098
                   periodSeconds: 2
@@ -110,7 +110,7 @@ spec:
               - name: vault-credentials-agent-aws
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
-                readinessProbe:
+                startupProbe:
                   tcpSocket:
                     port: 8098
                   periodSeconds: 2
@@ -139,7 +139,7 @@ spec:
               - name: vault-credentials-agent-gcp
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
-                readinessProbe:
+                startupProbe:
                   tcpSocket:
                     port: 8098
                   periodSeconds: 2
@@ -215,7 +215,7 @@ spec:
               - name: vault-credentials-agent
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
-                readinessProbe:
+                startupProbe:
                   tcpSocket:
                     port: 8098
                   periodSeconds: 2
