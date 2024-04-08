@@ -44,14 +44,13 @@ spec:
               - name: vault-credentials-agent
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
-                lifecycle:
-                  postStart:
-                    exec:
-                      command:
-                        - /bin/sh
-                        - -c
-                        - |
-                          while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                startupProbe:
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -74,6 +73,7 @@ spec:
                 volumeMounts:
                   - name: vault-tls
                     mountPath: /etc/tls
+            containers:
               - (name): "*"
                 env:
                   - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
@@ -113,14 +113,13 @@ spec:
               - name: vault-credentials-agent-aws
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
-                lifecycle:
-                  postStart:
-                    exec:
-                      command:
-                        - /bin/sh
-                        - -c
-                        - |
-                          while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                startupProbe:
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -145,14 +144,14 @@ spec:
                     mountPath: /etc/tls
               - name: vault-credentials-agent-gcp
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
-                lifecycle:
-                  postStart:
-                    exec:
-                      command:
-                        - /bin/sh
-                        - -c
-                        - |
-                          while ! nc -w 1 127.0.0.1 8198; do sleep 1; done
+                restartPolicy: Always
+                startupProbe:
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -181,6 +180,7 @@ spec:
                 volumeMounts:
                   - name: vault-tls
                     mountPath: /etc/tls
+            containers:
               - (name): "*"
                 env:
                   - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
@@ -224,14 +224,13 @@ spec:
               - name: vault-credentials-agent
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
-                lifecycle:
-                  postStart:
-                    exec:
-                      command:
-                        - /bin/sh
-                        - -c
-                        - |
-                          while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                startupProbe:
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -258,6 +257,7 @@ spec:
                 volumeMounts:
                   - name: vault-tls
                     mountPath: /etc/tls
+            containers:
               - (name): "*"
                 env:
                   - name: GCE_METADATA_HOST
