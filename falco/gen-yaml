@@ -1,0 +1,9 @@
+#!/bin/sh
+
+FALCO_CHART_VERSION="4.2.5"
+helm repo add falcosecurity https://falcosecurity.github.io/charts
+helm repo update
+# Generate manifests but delete dummy Secrets. We should create them downstream
+# and use strongbox to encrypt.
+helm template falco -n sys-falco --set driver.kind=ebpf --set tty=true falcosecurity/falco --version=${FALCO_CHART_VERSION} --set falcosidekick.enabled=true --set falcosidekick.webui.enabled=true |\
+  awk  'BEGIN{RS="---\n"; ORS="---\n"} !match($0, /kind: Secret\nmetadata/) {print}'> upstream.yaml
