@@ -45,9 +45,12 @@ spec:
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
                 startupProbe:
-                  tcpSocket:
-                    port: 8098
-                  periodSeconds: 2
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -111,9 +114,12 @@ spec:
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
                 startupProbe:
-                  tcpSocket:
-                    port: 8098
-                  periodSeconds: 2
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -140,9 +146,12 @@ spec:
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
                 startupProbe:
-                  tcpSocket:
-                    port: 8098
-                  periodSeconds: 2
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -216,9 +225,12 @@ spec:
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
                 startupProbe:
-                  tcpSocket:
-                    port: 8098
-                  periodSeconds: 2
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
