@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+  namespace: sys-falco
+spec:
+  template:
+    spec:
+      containers:
+        - name: falco
+          volumeMounts:
+            - mountPath: /etc/falco/falco_rules.local.yaml
+              name: falco-rules-local
+              subPath: falco_rules.local.yaml
+      volumes:
+        - name: falco-rules-local
+          configMap:
+            name: falco-rules-local

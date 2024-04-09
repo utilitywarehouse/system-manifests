@@ -1,0 +1,47 @@
+# This is a copy of the macro from upstream:
+# https://github.com/falcosecurity/rules/blob/main/rules/falco_rules.yaml
+# appending all the system namespaces from which we expect calls to kubernetes
+# apiserver.
+- macro: k8s_containers
+  condition: >
+    (container.image.repository in (gcr.io/google_containers/hyperkube-amd64,
+     gcr.io/google_containers/kube2sky,
+     docker.io/sysdig/sysdig, sysdig/sysdig,
+     fluent/fluentd-kubernetes-daemonset, prom/prometheus,
+     falco_containers,
+     falco_no_driver_containers,
+     ibm_cloud_containers,
+     velero/velero,
+     quay.io/jetstack/cert-manager-cainjector, weaveworks/kured,
+     quay.io/prometheus-operator/prometheus-operator, k8s.gcr.io/ingress-nginx/kube-webhook-certgen,
+     registry.k8s.io/ingress-nginx/kube-webhook-certgen, quay.io/spotahome/redis-operator,
+     registry.opensource.zalan.do/acid/postgres-operator, registry.opensource.zalan.do/acid/postgres-operator-ui,
+     rabbitmqoperator/cluster-operator, quay.io/kubecost1/kubecost-cost-model,
+     docker.io/bitnami/prometheus, docker.io/bitnami/kube-state-metrics, mcr.microsoft.com/oss/azure/aad-pod-identity/nmi,
+     ghcr.io/kedacore/keda)
+     or (k8s.ns.name in (kube-system,
+     sys-argocd,
+     sys-metallb,
+     sys-mon,
+     sys-prom,
+     sys-kube-applier,
+     sys-semaphore,
+     sys-terraform-applier,
+     sys-vault)))
+
+# Patch "Packet socket created in container" rule to avoid catching metallb
+# pods, which are expected to violate it.
+- rule: Packet socket created in container
+  desc: > 
+    Detect new packet socket at the device driver (OSI Layer 2) level in a container. Packet socket could be used for ARP Spoofing 
+    and privilege escalation (CVE-2020-14386) by an attacker. Noise can be reduced by using the user_known_packet_socket_binaries
+    template list.
+  condition: > 
+    evt.type=socket and evt.dir=>
+    and container 
+    and evt.arg.domain contains AF_PACKET 
+    and not proc.name in (user_known_packet_socket_binaries)
+    and not k8s.ns.name in (sys-metallb)
+  output: Packet socket was created in a container (socket_info=%evt.args connection=%fd.name lport=%fd.lport rport=%fd.rport fd_type=%fd.type fd_proto=fd.l4proto evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname command=%proc.cmdline terminal=%proc.tty %container.info)
+  priority: NOTICE
+  tags: [maturity_stable, container, network, mitre_credential_access, T1557.002]

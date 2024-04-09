@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Namespace is passed to helm and is rendered on the manifests we get from
+# upstream. Adding here as well to make the configMapGenerator work as expected
+namespace: sys-falco
+
+resources:
+  - upstream.yaml
+
+patches:
+  - path: falco-driver-loader-privileged.yaml
+  - path: falco-rules-local.yaml
+
+configMapGenerator:
+  - files:
+      - falco_rules.local.yaml=resources/falco_rules.local.yaml
+    name: falco-rules-local

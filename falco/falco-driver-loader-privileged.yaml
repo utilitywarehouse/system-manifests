@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+  namespace: sys-falco
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: falco-driver-loader
+          securityContext:
+            privileged: true

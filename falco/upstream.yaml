@@ -1,0 +1,796 @@
+---
+# Source: falco/charts/falcosidekick/templates/rbac-ui.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: falco-falcosidekick-ui
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ui
+---
+# Source: falco/charts/falcosidekick/templates/rbac.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: falco-falcosidekick
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: core
+---
+# Source: falco/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falco-4.2.5
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "0.37.1"
+    app.kubernetes.io/managed-by: Helm
+data:
+  falco.yaml: |-
+    base_syscalls:
+      custom_set: []
+      repair: false
+    buffered_outputs: false
+    engine:
+      ebpf:
+        buf_size_preset: 4
+        drop_failed_exit: false
+        probe: ${HOME}/.falco/falco-bpf.o
+      kind: ebpf
+    file_output:
+      enabled: false
+      filename: ./events.txt
+      keep_alive: false
+    grpc:
+      bind_address: unix:///run/falco/falco.sock
+      enabled: false
+      threadiness: 0
+    grpc_output:
+      enabled: false
+    http_output:
+      ca_bundle: ""
+      ca_cert: ""
+      ca_path: /etc/falco/certs/
+      client_cert: /etc/falco/certs/client/client.crt
+      client_key: /etc/falco/certs/client/client.key
+      compress_uploads: false
+      echo: false
+      enabled: true
+      insecure: false
+      keep_alive: false
+      mtls: false
+      url: http://falco-falcosidekick:2801
+      user_agent: falcosecurity/falco
+    json_include_output_property: true
+    json_include_tags_property: true
+    json_output: true
+    libs_logger:
+      enabled: false
+      severity: debug
+    load_plugins: []
+    log_level: info
+    log_stderr: true
+    log_syslog: true
+    metrics:
+      convert_memory_to_mb: true
+      enabled: false
+      include_empty_values: false
+      interval: 1h
+      kernel_event_counters_enabled: true
+      libbpf_stats_enabled: true
+      output_rule: true
+      resource_utilization_enabled: true
+      state_counters_enabled: true
+    output_timeout: 2000
+    outputs:
+      max_burst: 1000
+      rate: 0
+    outputs_queue:
+      capacity: 0
+    plugins:
+    - init_config: null
+      library_path: libk8saudit.so
+      name: k8saudit
+      open_params: http://:9765/k8s-audit
+    - library_path: libcloudtrail.so
+      name: cloudtrail
+    - init_config: ""
+      library_path: libjson.so
+      name: json
+    priority: debug
+    program_output:
+      enabled: false
+      keep_alive: false
+      program: 'jq ''{text: .output}'' | curl -d @- -X POST https://hooks.slack.com/services/XXX'
+    rule_matching: first
+    rules_file:
+    - /etc/falco/falco_rules.yaml
+    - /etc/falco/falco_rules.local.yaml
+    - /etc/falco/rules.d
+    stdout_output:
+      enabled: true
+    syscall_event_drops:
+      actions:
+      - log
+      - alert
+      max_burst: 1
+      rate: 0.03333
+      simulate_drops: false
+      threshold: 0.1
+    syscall_event_timeouts:
+      max_consecutives: 1000
+    syslog_output:
+      enabled: true
+    time_format_iso_8601: false
+    watch_config_files: true
+    webserver:
+      enabled: true
+      k8s_healthz_endpoint: /healthz
+      listen_port: 8765
+      ssl_certificate: /etc/falco/falco.pem
+      ssl_enabled: false
+      threadiness: 0
+---
+# Source: falco/templates/falcoctl-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: falco-falcoctl
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falco-4.2.5
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "0.37.1"
+    app.kubernetes.io/managed-by: Helm
+data:
+  falcoctl.yaml: |-
+    artifact:
+      allowedTypes:
+      - rulesfile
+      - plugin
+      follow:
+        every: 6h
+        falcoversions: http://localhost:8765/versions
+        pluginsDir: /plugins
+        refs:
+        - falco-rules:3
+        rulesfilesDir: /rulesfiles
+      install:
+        pluginsDir: /plugins
+        refs:
+        - falco-rules:3
+        resolveDeps: true
+        rulesfilesDir: /rulesfiles
+    indexes:
+    - name: falcosecurity
+      url: https://falcosecurity.github.io/falcoctl/index.yaml
+---
+# Source: falco/charts/falcosidekick/templates/rbac-ui.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: falco-falcosidekick-ui
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ui
+rules: []
+---
+# Source: falco/charts/falcosidekick/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: falco-falcosidekick
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: core
+rules:
+- apiGroups:
+    - ""
+  resources:
+    - endpoints
+  verbs:
+    - get
+---
+# Source: falco/charts/falcosidekick/templates/rbac-ui.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: falco-falcosidekick-ui
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ui
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: falco-falcosidekick-ui
+subjects:
+- kind: ServiceAccount
+  name: falco-falcosidekick-ui
+---
+# Source: falco/charts/falcosidekick/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: falco-falcosidekick
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: core
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: falco-falcosidekick
+subjects:
+- kind: ServiceAccount
+  name: falco-falcosidekick
+---
+# Source: falco/charts/falcosidekick/templates/service-ui.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: falco-falcosidekick-ui
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ui
+spec:
+  type: ClusterIP
+  ports:
+    - port: 2802
+         
+      targetPort: 2802
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/component: ui
+---
+# Source: falco/charts/falcosidekick/templates/service-ui.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: falco-falcosidekick-ui-redis
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ui
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/component: ui-redis
+---
+# Source: falco/charts/falcosidekick/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: falco-falcosidekick
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: core
+spec:
+  type: ClusterIP
+  ports:
+    - port: 2801
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 2810
+      targetPort: http-notls
+      protocol: TCP
+      name: http-notls
+  selector:
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/component: core
+---
+# Source: falco/templates/daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: falco
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falco-4.2.5
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "0.37.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: falco
+      app.kubernetes.io/instance: falco
+  template:
+    metadata:
+      name: falco
+      labels:
+        app.kubernetes.io/name: falco
+        app.kubernetes.io/instance: falco
+      annotations:
+        checksum/config: ead6e802047a5a7e6c46c078790baad7ef9dbc88629b2d6460e62d6dacec7eea
+        checksum/rules: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        checksum/certs: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    spec:
+      serviceAccountName: default
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+      containers:
+        - name: falco
+          image: docker.io/falcosecurity/falco-no-driver:0.37.1
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+            requests:
+              cpu: 100m
+              memory: 512Mi
+          securityContext:
+            privileged: true
+          args:
+            - /usr/bin/falco        
+            - --cri
+            - /run/containerd/containerd.sock
+            - --cri
+            - /run/crio/crio.sock
+            - -pk
+          env:
+            - name: FALCO_K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          tty: true
+          livenessProbe:
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 15
+            httpGet:
+              path: /healthz
+              port: 8765
+          readinessProbe:
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 15
+            httpGet:
+              path: /healthz
+              port: 8765
+          volumeMounts:
+            - mountPath: /etc/falco
+              name: rulesfiles-install-dir
+            - mountPath: /usr/share/falco/plugins
+              name: plugins-install-dir
+            - mountPath: /root/.falco
+              name: root-falco-fs
+            - mountPath: /host/proc
+              name: proc-fs
+            - mountPath: /host/etc
+              name: etc-fs
+              readOnly: true
+            - name: debugfs
+              mountPath: /sys/kernel/debug
+            - mountPath: /host/var/run/docker.sock
+              name: docker-socket
+            - mountPath: /host/run/containerd/containerd.sock
+              name: containerd-socket
+            - mountPath: /host/run/crio/crio.sock
+              name: crio-socket
+            - mountPath: /etc/falco/falco.yaml
+              name: falco-yaml
+              subPath: falco.yaml
+            
+        - name: falcoctl-artifact-follow
+          image: docker.io/falcosecurity/falcoctl:0.7.2
+          imagePullPolicy: IfNotPresent
+          args:
+            - artifact
+            - follow
+            - --log-format=json
+          securityContext:
+          volumeMounts:
+            - mountPath: /plugins
+              name: plugins-install-dir
+            - mountPath: /rulesfiles
+              name: rulesfiles-install-dir
+            - mountPath: /etc/falcoctl
+              name: falcoctl-config-volume
+          env:
+      initContainers:
+        - name: falco-driver-loader
+          image: docker.io/falcosecurity/falco-driver-loader:0.37.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - ebpf
+          securityContext:
+          volumeMounts:
+            - mountPath: /root/.falco
+              name: root-falco-fs
+            - mountPath: /host/proc
+              name: proc-fs
+              readOnly: true
+            - mountPath: /host/boot
+              name: boot-fs
+              readOnly: true
+            - mountPath: /host/lib/modules
+              name: lib-modules
+            - mountPath: /host/usr
+              name: usr-fs
+              readOnly: true
+            - mountPath: /host/etc
+              name: etc-fs
+              readOnly: true
+          env:
+        - name: falcoctl-artifact-install
+          image: docker.io/falcosecurity/falcoctl:0.7.2
+          imagePullPolicy: IfNotPresent
+          args: 
+            - artifact
+            - install
+            - --log-format=json
+          securityContext:
+          volumeMounts:
+            - mountPath: /plugins
+              name: plugins-install-dir
+            - mountPath: /rulesfiles
+              name: rulesfiles-install-dir
+            - mountPath: /etc/falcoctl
+              name: falcoctl-config-volume
+          env:
+      volumes:
+        - name: plugins-install-dir
+          emptyDir: {}
+        - name: rulesfiles-install-dir
+          emptyDir: {}
+        - name: root-falco-fs
+          emptyDir: {}  
+        - name: boot-fs
+          hostPath:
+            path: /boot
+        - name: lib-modules
+          hostPath:
+            path: /lib/modules
+        - name: usr-fs
+          hostPath:
+            path: /usr
+        - name: etc-fs
+          hostPath:
+            path: /etc
+        - name: debugfs
+          hostPath:
+            path: /sys/kernel/debug
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+        - name: containerd-socket
+          hostPath:
+            path: /run/containerd/containerd.sock
+        - name: crio-socket
+          hostPath:
+            path: /run/crio/crio.sock
+        - name: proc-fs
+          hostPath:
+            path: /proc
+        - name: falcoctl-config-volume
+          configMap: 
+            name: falco-falcoctl
+            items:
+              - key: falcoctl.yaml
+                path: falcoctl.yaml
+        - name: falco-yaml
+          configMap:
+            name: falco
+            items:
+            - key: falco.yaml
+              path: falco.yaml
+        
+  updateStrategy:
+    type: RollingUpdate
+---
+# Source: falco/charts/falcosidekick/templates/deployment-ui.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: falco-falcosidekick-ui
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ui
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: falcosidekick
+      app.kubernetes.io/instance: falco
+      app.kubernetes.io/component: ui
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: falcosidekick-0.7.15
+        app.kubernetes.io/name: falcosidekick
+        app.kubernetes.io/instance: falco
+        app.kubernetes.io/version: "2.28.0"
+        app.kubernetes.io/part-of: falcosidekick
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: ui
+    spec:
+      serviceAccountName: falco-falcosidekick-ui
+      securityContext:
+        fsGroup: 1234
+        runAsUser: 1234
+      containers:
+        - name: falcosidekick-ui
+          image: "docker.io/falcosecurity/falcosidekick-ui:2.2.0"
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: falco-falcosidekick-ui
+          args:
+            - "-r"
+            - falco-falcosidekick-ui-redis:6379
+            - "-l"
+            - info
+          ports:
+            - name: http
+              containerPort: 2802
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/v1/healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/v1/healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          resources:
+            {}
+---
+# Source: falco/charts/falcosidekick/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: falco-falcosidekick
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: core
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: falcosidekick
+      app.kubernetes.io/instance: falco
+      app.kubernetes.io/component: core
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: falcosidekick-0.7.15
+        app.kubernetes.io/name: falcosidekick
+        app.kubernetes.io/instance: falco
+        app.kubernetes.io/version: "2.28.0"
+        app.kubernetes.io/part-of: falcosidekick
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: core
+      annotations:
+        checksum/config: c9be571bb101bc1032aebb24cd06e94e0b289249fd35585eb60d6587ec298e7e
+    spec:
+      serviceAccountName: falco-falcosidekick
+      securityContext:
+        fsGroup: 1234
+        runAsUser: 1234
+      containers:
+        - name: falcosidekick
+          image: "docker.io/falcosecurity/falcosidekick:2.28.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 2801
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          envFrom:
+            - secretRef:
+                name: falco-falcosidekick
+          env:
+            - name: DEBUG
+              value: "false"
+            - name: CUSTOMFIELDS
+              value: ""
+            - name: TEMPLATEDFIELDS
+              value: ""
+            - name: BRACKETREPLACER
+              value: ""
+            - name: MUTUALTLSFILESPATH
+              value: "/etc/certs"
+            - name: MUTUALTLSCLIENT_CERTFILE
+              value: ""
+            - name: MUTUALTLSCLIENT_KEYFILE
+              value: ""
+            - name: MUTUALTLSCLIENT_CACERTFILE
+              value: ""
+          resources:
+            {}
+---
+# Source: falco/charts/falcosidekick/templates/deployment-ui.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: falco-falcosidekick-ui-redis
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/name: falcosidekick
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "2.28.0"
+    app.kubernetes.io/part-of: falcosidekick
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: ui-redis
+spec:
+  replicas: 1
+  serviceName: falco-falcosidekick-ui-redis
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: falcosidekick
+      app.kubernetes.io/instance: falco
+      app.kubernetes.io/component: ui-redis
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: falcosidekick-0.7.15
+        app.kubernetes.io/name: falcosidekick
+        app.kubernetes.io/instance: falco
+        app.kubernetes.io/version: "2.28.0"
+        app.kubernetes.io/part-of: falcosidekick
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: ui-redis
+    spec:
+      serviceAccountName: falco-falcosidekick-ui
+      containers:
+        - name: redis
+          image: "docker.io/redis/redis-stack:6.2.6-v3"
+          imagePullPolicy: IfNotPresent
+          args: []
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+          - name: falco-falcosidekick-ui-redis-data
+            mountPath: /data
+          resources:
+            {}
+  volumeClaimTemplates:
+    - metadata:
+        name: falco-falcosidekick-ui-redis-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
+---
+# Source: falco/charts/falcosidekick/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "falco-falcosidekick-test-connection"
+  namespace: sys-falco
+  labels:
+    app.kubernetes.io/name: falcosidekick
+    helm.sh/chart: falcosidekick-0.7.15
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: curl
+      image: appropriate/curl
+      command: ['curl']
+      args:  ["-X", "POST", 'falco-falcosidekick:2801/ping']
+  restartPolicy: Never
+---
