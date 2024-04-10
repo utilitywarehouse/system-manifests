@@ -22,6 +22,7 @@
      or (k8s.ns.name in (kube-system,
      sys-argocd,
      sys-metallb,
+     sys-log,
      sys-mon,
      sys-prom,
      sys-kube-applier,
