@@ -7,3 +7,4 @@ resources:
 patches:
   - path: affinity-patch.yaml
   - path: args-patch.yaml
+  - path: node-selector-patch.yaml
