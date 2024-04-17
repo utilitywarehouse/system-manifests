@@ -1,0 +1,14 @@
+# Schedule on nodes labelled via kubelet as role=master. This os to avoid a
+# dependency on our kube-master-node-labeller and instead be able to schedule
+# pods right away on fresh nodes
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      nodeSelector: 
+        $patch: replace
+        role: master
