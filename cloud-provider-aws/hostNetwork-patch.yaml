@@ -1,5 +1,5 @@
 # Use host networking so that we do not rely on calico-node to be running on a
-# node before being able to schedule cloud conteoller manager pods. This should
+# node before being able to schedule cloud controller manager pods. This should
 # untie the controller from calico deployment.
 apiVersion: apps/v1
 kind: DaemonSet
