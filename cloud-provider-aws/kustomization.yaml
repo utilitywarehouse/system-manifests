@@ -8,4 +8,3 @@ patches:
   - path: affinity-patch.yaml
   - path: args-patch.yaml
   - path: hostNetwork-patch.yaml
-  - path: node-selector-patch.yaml
