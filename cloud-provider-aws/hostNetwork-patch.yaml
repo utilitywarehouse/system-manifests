@@ -1,0 +1,12 @@
+# Use host networking so that we do not rely on calico-node to be running on a
+# node before being able to schedule cloud conteoller manager pods. This should
+# untie the controller from calico deployment.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: aws-cloud-controller-manager
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      hostNetwork: true
