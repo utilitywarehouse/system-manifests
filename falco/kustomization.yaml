@@ -10,7 +10,6 @@ resources:
 patches:
   - path: falco-driver-loader-privileged.yaml
   - path: falco-rules-local.yaml
-  - path: falco-sidekick-metrics.yaml
 
 configMapGenerator:
   - files:
