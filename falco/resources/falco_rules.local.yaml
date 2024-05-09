@@ -1,34 +1,9 @@
-# This is a copy of the macro from upstream:
-# https://github.com/falcosecurity/rules/blob/main/rules/falco_rules.yaml
-# appending all the system namespaces from which we expect calls to kubernetes
-# apiserver.
+# We have a ;lot of things that are talking to apiservers, for example this
+# rule reports a lot of activity from Mongo orchestrators in dev environments.
+# Instead of trying to police every request and whitelist, it should be safe to
+# just allow all and rely on audit logs to trace access to apiservers.
 - macro: k8s_containers
-  condition: >
-    (container.image.repository in (gcr.io/google_containers/hyperkube-amd64,
-     gcr.io/google_containers/kube2sky,
-     docker.io/sysdig/sysdig, sysdig/sysdig,
-     fluent/fluentd-kubernetes-daemonset, prom/prometheus,
-     falco_containers,
-     falco_no_driver_containers,
-     ibm_cloud_containers,
-     velero/velero,
-     quay.io/jetstack/cert-manager-cainjector, weaveworks/kured,
-     quay.io/prometheus-operator/prometheus-operator, k8s.gcr.io/ingress-nginx/kube-webhook-certgen,
-     registry.k8s.io/ingress-nginx/kube-webhook-certgen, quay.io/spotahome/redis-operator,
-     registry.opensource.zalan.do/acid/postgres-operator, registry.opensource.zalan.do/acid/postgres-operator-ui,
-     rabbitmqoperator/cluster-operator, quay.io/kubecost1/kubecost-cost-model,
-     docker.io/bitnami/prometheus, docker.io/bitnami/kube-state-metrics, mcr.microsoft.com/oss/azure/aad-pod-identity/nmi,
-     ghcr.io/kedacore/keda)
-     or (k8s.ns.name in (kube-system,
-     sys-argocd,
-     sys-metallb,
-     sys-log,
-     sys-mon,
-     sys-prom,
-     sys-kube-applier,
-     sys-semaphore,
-     sys-terraform-applier,
-     sys-vault)))
+  condition: (always_true)
 
 # Patch "Packet socket created in container" rule to avoid catching metallb
 # pods, which are expected to violate it.
