@@ -3,7 +3,7 @@
 # commented out in the default configuration shipped with falco, as it is not
 # used. Bringing it in since we want to use it below.
 - macro: always_true
-  condition: (evt.num=>0)
+  condition: (evt.num>=0)
 
 # We have a ;lot of things that are talking to apiservers, for example this
 # rule reports a lot of activity from Mongo orchestrators in dev environments.
