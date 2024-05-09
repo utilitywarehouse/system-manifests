@@ -771,7 +771,7 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: 1Gi
+            storage: 10Gi
 ---
 # Source: falco/charts/falcosidekick/templates/tests/test-connection.yaml
 apiVersion: v1
