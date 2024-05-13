@@ -12,7 +12,6 @@ spec:
         name: promtail
         policy.semaphore.uw.io/name: promtail
       annotations:
-        fluentbit.io/exclude: "true"
         prometheus.io/path: /metrics
         prometheus.io/port: "9080"
         prometheus.io/scrape: "true"
