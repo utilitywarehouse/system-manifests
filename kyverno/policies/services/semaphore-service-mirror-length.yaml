@@ -44,5 +44,5 @@ spec:
           conditions:
             - key: >-
                {{ join('-', [request.object.metadata.namespace, '73736d', request.object.metadata.name]) | length(@) }}
-              operator: GreaterThanOrEquals
+              operator: GreaterThan
               value: 57 # 63 - 6 (merit-)
