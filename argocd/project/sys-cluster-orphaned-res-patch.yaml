@@ -5,6 +5,7 @@ metadata:
 spec:
   orphanedResources:
     warn: true
+    # do not remove 'ignore' its patched via kustomize
     ignore:
       - kind: ConfigMap
         name: cert-manager-*
