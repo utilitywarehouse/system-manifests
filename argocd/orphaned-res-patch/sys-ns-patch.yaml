@@ -15,7 +15,7 @@ spec:
         name: dev-aws-wildcard-crt
       # secret managed by cert-manager
       - kind: Secret
-        name: "{feat-private-aws-ingress-crt,ingress-crt}"
+        name: "{feat-private-aws-ingress-crt,ingress-crt,*-wildcard-crt}"
       # sys-vault/tf-applier stores state in secret
       - kind: Secret
         name: tfstate-*
@@ -29,3 +29,9 @@ spec:
       - group: discovery.k8s.io
         kind: EndpointSlice
         name: "gl-*"
+
+      # resources managed by trident controller
+      - group: trident.netapp.io
+        kind: "{TridentBackend,TridentNode,TridentStorageClass,TridentVersion}"
+      - group: trident.netapp.io
+        kind: "{TridentVolume,TridentVolumePublication,TridentSnapshot}"
