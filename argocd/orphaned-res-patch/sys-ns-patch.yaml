@@ -29,3 +29,9 @@ spec:
       - group: discovery.k8s.io
         kind: EndpointSlice
         name: "gl-*"
+
+      # resources managed by trident controller
+      - group: trident.netapp.io
+        kind: "{TridentBackend,TridentNode,TridentStorageClass,TridentVersion}"
+      - group: trident.netapp.io
+        kind: "{TridentVolume,TridentVolumePublication,TridentSnapshot}"
