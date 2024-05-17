@@ -10,17 +10,18 @@ spec:
       - group: argoproj.io
         kind: AppProject
         name: default
-      - group: ""
-        kind: Secret
+
+      - kind: Secret
         name: dev-aws-wildcard-crt
       # secret managed by cert-manager
-      - group: ""
-        kind: Secret
+      - kind: Secret
         name: "{feat-private-aws-ingress-crt,ingress-crt}"
       # sys-vault/tf-applier stores state in secret
-      - group: ""
-        kind: Secret
+      - kind: Secret
         name: tfstate-*
+      - kind: Secret
+        name: "{client-tls,matchbox-ca,server-tls,trident-ca}"
+
       # resources generated via semaphore-service-mirror
       - group: "*"
         kind: "{Service,Endpoints,EndpointSlice}"
