@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: system
+spec:
+  orphanedResources:
+    warn: true
+    # do not remove 'ignore' its patched via kustomize
+    ignore:
+      - group: argoproj.io
+        kind: AppProject
+        name: default
+      - group: ""
+        kind: Secret
+        name: dev-aws-wildcard-crt
+      # secret managed by cert-manager
+      - group: ""
+        kind: Secret
+        name: "{feat-private-aws-ingress-crt,ingress-crt}"
+      # sys-vault/tf-applier stores state in secret
+      - group: ""
+        kind: Secret
+        name: tfstate-*
+      # resources generated via semaphore-service-mirror
+      - group: "*"
+        kind: "{Service,Endpoints,EndpointSlice}"
+        name: "*-73736d-*"
+      - group: discovery.k8s.io
+        kind: EndpointSlice
+        name: "gl-*"

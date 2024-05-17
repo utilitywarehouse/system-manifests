@@ -1,0 +1,11 @@
+- op: add
+  path: "/spec/orphanedResources/ignore/-"
+  value:
+    group: wgpolicyk8s.io
+    kind: PolicyReport
+- op: add
+  path: "/spec/orphanedResources/ignore/-"
+  value:
+    group: ""
+    kind: ConfigMap
+    name: vault-tls

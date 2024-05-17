@@ -1,0 +1,72 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: system-cluster
+spec:
+  orphanedResources:
+    warn: true
+    # do not remove 'ignore' its patched via kustomize
+    ignore:
+      - kind: ConfigMap
+        name: cert-manager-*
+      - kind: ConfigMap
+        name: "{controller-leader-election-helper,container-linux-update-operator-lock}"
+      - kind: ConfigMap
+        name: extension-apiserver-authentication
+      - kind: ConfigMap
+        name: kube-apiserver-legacy-service-account-token-tracking
+      - kind: ConfigMap
+        name: ingress-uid
+      - kind: ConfigMap
+        name: k8s-sidecar-injector-configs-*
+
+      - kind: Secret
+        name: calico-apiserver-certs
+      - kind: Secret
+        name: cert-manager-webhook-ca
+      - kind: Secret
+        name: k8s-sidecar-injector-webhook-server-cert
+      - kind: Secret
+        name: "{kyverno-cleanup-controller*,kyverno-svc*}"
+      - kind: Secret
+        name: letsencrypt-*
+      - kind: Secret
+        name: snapshot-validation-secret
+
+      - kind: Service
+        name: "{kubelet,kube-controller-manager,kube-scheduler}"
+
+      - kind: ServiceAccount
+        name: "*-controller"
+      - kind: ServiceAccount
+        name: "{generic-garbage-collector,pod-garbage-collector}"
+      - kind: ServiceAccount
+        name: "{horizontal-pod-autoscaler,persistent-volume-binder,root-ca-cert-publisher}"
+      - kind: ServiceAccount
+        name: "{aws-cloud-provider,cloud-provider}"
+      - kind: ServiceAccount
+        name: legacy-service-account-token-cleaner
+      - kind: ServiceAccount
+        name: kyverno
+
+      - group: rbac.authorization.k8s.io
+        kind: "{Role,RoleBinding}"
+        name: "{extension-apiserver-authentication-reader,system::extension-apiserver-authentication-reader,}"
+      - group: rbac.authorization.k8s.io
+        kind: "{Role,RoleBinding}"
+        name: system::leader-locking-kube-controller-manager
+      - group: rbac.authorization.k8s.io
+        kind: "{Role,RoleBinding}"
+        name: system::leader-locking-kube-scheduler
+      - group: rbac.authorization.k8s.io
+        kind: "{Role,RoleBinding}"
+        name: system:controller:bootstrap-signer
+      - group: rbac.authorization.k8s.io
+        kind: "{Role,RoleBinding}"
+        name: system:controller:cloud-provider
+      - group: rbac.authorization.k8s.io
+        kind: "{Role,RoleBinding}"
+        name: system:controller:token-cleaner
+
+      - group: kyverno.io
+        kind: "{BackgroundScanReport,ReportChangeRequest}"
