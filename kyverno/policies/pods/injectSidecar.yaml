@@ -28,11 +28,15 @@ spec:
                 injector.tumblr.com/request: "vault-sidecar-aws"
               kinds:
                 - Pod
+              operations:
+                - CREATE
           - resources:
               annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws"
               kinds:
                 - Pod
+              operations:
+                - CREATE
       mutate:
         patchStrategicMerge:
           metadata:
@@ -97,11 +101,15 @@ spec:
                 injector.tumblr.com/request: "vault-sidecar-aws-gcp"
               kinds:
                 - Pod
+              operations:
+                - CREATE
           - resources:
               annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp"
               kinds:
                 - Pod
+              operations:
+                - CREATE
       mutate:
         patchStrategicMerge:
           metadata:
@@ -208,11 +216,15 @@ spec:
                 injector.tumblr.com/request: "vault-sidecar-gcp"
               kinds:
                 - Pod
+              operations:
+                - CREATE
           - resources:
               annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp"
               kinds:
                 - Pod
+              operations:
+                - CREATE
       mutate:
         patchStrategicMerge:
           metadata:
@@ -283,11 +295,15 @@ spec:
                 injector.tumblr.com/request: "vault-init-container-aws"
               kinds:
                 - Pod
+              operations:
+                - CREATE
           - resources:
               annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-init-container-aws"
               kinds:
                 - Pod
+              operations:
+                - CREATE
       mutate:
         patchStrategicMerge:
           metadata:
