@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- hub.traefik.io_accesscontrolpolicies.yaml
+- hub.traefik.io_apiaccesses.yaml
+- hub.traefik.io_apiportals.yaml
+- hub.traefik.io_apiratelimits.yaml
+- hub.traefik.io_apis.yaml
+- hub.traefik.io_apiversions.yaml
+- hub.traefik.io_edgeingresses.yaml
+- traefik.io_ingressroutes.yaml
+- traefik.io_ingressroutetcps.yaml
+- traefik.io_ingressrouteudps.yaml
+- traefik.io_middlewares.yaml
+- traefik.io_middlewaretcps.yaml
+- traefik.io_serverstransports.yaml
+- traefik.io_serverstransporttcps.yaml
+- traefik.io_tlsoptions.yaml
+- traefik.io_tlsstores.yaml
+- traefik.io_traefikservices.yaml
