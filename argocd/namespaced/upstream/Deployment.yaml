@@ -45,7 +45,7 @@ spec:
                   key: notificationscontroller.selfservice.enabled
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.11.0
+          image: quay.io/argoproj/argocd:v2.11.1
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -103,7 +103,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 492a6adabb741e0cee39be9aa5155c41a4456629f862d0006a2d892dbecfbcae
+        checksum/config: e34e8124c38bcfd2f16e75620bbde30158686692b13bc449eecc44c51b207d54
         prometheus.io/path: /metrics
         prometheus.io/port: "9101"
         prometheus.io/scrape: "true"
@@ -119,7 +119,13 @@ spec:
                   app.kubernetes.io/name: argocd-redis-ha-haproxy
               topologyKey: kubernetes.io/hostname
       containers:
-        - image: haproxy:2.6.14-alpine
+        - env:
+            - name: AUTH
+              valueFrom:
+                secretKeyRef:
+                  key: auth
+                  name: argocd-redis
+          image: public.ecr.aws/docker/library/haproxy:2.6.14-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
@@ -154,11 +160,27 @@ spec:
             - mountPath: /run/haproxy
               name: shared-socket
       initContainers:
+        - command:
+            - argocd
+            - admin
+            - redis-initial-password
+          image: quay.io/argoproj/argocd:v2.11.1
+          imagePullPolicy: IfNotPresent
+          name: secret-init
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
         - args:
             - /readonly/haproxy_init.sh
           command:
             - sh
-          image: haproxy:2.6.14-alpine
+          image: public.ecr.aws/docker/library/haproxy:2.6.14-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
@@ -226,6 +248,11 @@ spec:
         - args:
             - /usr/local/bin/argocd-repo-server
           env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: auth
+                  name: argocd-redis
             - name: ARGOCD_RECONCILIATION_TIMEOUT
               valueFrom:
                 configMapKeyRef:
@@ -406,7 +433,7 @@ spec:
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v2.11.0
+          image: quay.io/argoproj/argocd:v2.11.1
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -458,7 +485,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v2.11.0
+          image: quay.io/argoproj/argocd:v2.11.1
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -543,6 +570,11 @@ spec:
           env:
             - name: ARGOCD_API_SERVER_REPLICAS
               value: "2"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: auth
+                  name: argocd-redis
             - name: ARGOCD_SERVER_INSECURE
               valueFrom:
                 configMapKeyRef:
@@ -777,7 +809,7 @@ spec:
                   key: server.api.content.types
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.11.0
+          image: quay.io/argoproj/argocd:v2.11.1
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
