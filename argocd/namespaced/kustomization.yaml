@@ -85,3 +85,23 @@ patches:
     target:
       kind: Service
       name: argocd-server-metrics
+
+  # https://github.com/argoproj/argo-cd/issues/18356
+  - patch: |-
+      - op: add
+        path: /spec/egress/1/ports/-
+        value:
+          port: 443
+          protocol: TCP
+    target:
+      kind: NetworkPolicy
+      name: argocd-redis-ha-proxy-network-policy
+  - patch: |-
+      - op: add
+        path: /spec/egress/1/ports/-
+        value:
+          port: 443
+          protocol: TCP
+    target:
+      kind: NetworkPolicy
+      name: argocd-redis-ha-server-network-policy
