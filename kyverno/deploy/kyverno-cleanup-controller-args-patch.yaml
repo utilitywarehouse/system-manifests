@@ -8,9 +8,8 @@ spec:
     spec:
       containers:
         - args:
-            - --ttlReconciliationInterval=1m
-            - --caSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-ca
-            - --tlsSecretName=kyverno-cleanup-controller.kyverno.svc.kyverno-tls-pair
+            - --caSecretName=kyverno-cleanup-controller.kube-system.svc.kyverno-tls-ca
+            - --tlsSecretName=kyverno-cleanup-controller.kube-system.svc.kyverno-tls-pair
             - --servicePort=443
             - --cleanupServerPort=9443
             - --webhookServerPort=9443
