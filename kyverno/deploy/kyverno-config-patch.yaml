@@ -120,3 +120,4 @@ data:
     [ServiceMonitor,kyverno,kyverno-reports-controller]
     [Secret,kyverno,kyverno-svc.kyverno.svc.*]
     [Secret,kyverno,kyverno-cleanup-controller.kyverno.svc.*]
+  webhooks: '[{"namespaceSelector": {"matchExpressions": [{"key":"kubernetes.io/metadata.name","operator":"NotIn","values":["kyverno"]}]}}]'
