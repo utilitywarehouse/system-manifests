@@ -31,13 +31,23 @@ spec:
     spec:
       containers:
         - args:
-            - --caSecretName=kyverno-svc.kube-system.svc.kyverno-tls-ca
-            - --tlsSecretName=kyverno-svc.kube-system.svc.kyverno-tls-pair
-            - --backgroundServiceAccountName=system:serviceaccount:kube-system:kyverno-background-controller
-            - --metricsPort=8000 # Default, but leaving for visibility since we need to patch Prometheus annotations on Service level.
+            - --caSecretName=kyverno-svc.kyverno.svc.kyverno-tls-ca
+            - --tlsSecretName=kyverno-svc.kyverno.svc.kyverno-tls-pair
+            - --backgroundServiceAccountName=system:serviceaccount:kyverno:kyverno-background-controller
+            - --servicePort=443
+            - --webhookServerPort=9443
+            - --disableMetrics=false
+            - --otelConfig=prometheus
+            - --metricsPort=8000
             - --admissionReports=false
             - --forceFailurePolicyIgnore=true
+            - --enableConfigMapCaching=true
+            - --enableDeferredLoading=true
             - --generateValidatingAdmissionPolicy=false
-            - --enablePolicyException=true
-            - -v=0
+            - --maxAPICallResponseLength=2000000
+            - --loggingFormat=text
+            - --v=0
+            - --omitEvents=PolicyApplied,PolicySkipped
+            - --enablePolicyException=false
+            - --protectManagedResources=false
           name: kyverno
