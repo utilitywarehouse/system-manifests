@@ -31,6 +31,6 @@ spec:
         conditions:
           all:
           - key: "{{ request.object.metadata.annotations.\"uw.systems/delete-allowed\" || '' }}"
-            operator: NotIn
+            operator: AnyNotIn
             value:
             - "true"
