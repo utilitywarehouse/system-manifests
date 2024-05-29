@@ -24,6 +24,13 @@ spec:
                 - key: '{{ target.metadata.labels."mutate.uw.systems/middleware" || "" }}'
                   operator: Equals
                   value: ensure-prisma-and-onprem-vpn-ip-whitelist
+          - apiVersion: traefik.io/v1alpha1
+            kind: Middleware
+            preconditions:
+              all:
+                - key: '{{ target.metadata.labels."mutate.uw.systems/middleware" || "" }}'
+                  operator: Equals
+                  value: ensure-prisma-and-onprem-vpn-ip-whitelist
         patchStrategicMerge:
           spec:
             ipWhiteList:

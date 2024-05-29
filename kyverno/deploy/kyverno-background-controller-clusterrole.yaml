@@ -13,6 +13,7 @@ rules:
   # 'ensure-prisma-and-onprem-vpn-ip-whitelist' policy mutates Middleware
   - apiGroups:
       - traefik.containo.us
+      - traefik.io
     resources:
       - middlewares
     verbs:
