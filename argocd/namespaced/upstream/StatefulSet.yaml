@@ -223,7 +223,7 @@ spec:
                   key: controller.ignore.normalizer.jq.timeout
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.11.1
+          image: quay.io/argoproj/argocd:v2.11.2
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
@@ -306,7 +306,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:7.0.14-alpine
+          image: redis:7.0.14-alpine
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -366,7 +366,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:7.0.14-alpine
+          image: redis:7.0.14-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
@@ -424,7 +424,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:7.0.14-alpine
+          image: redis:7.0.14-alpine
           imagePullPolicy: IfNotPresent
           name: split-brain-fix
           resources: {}
@@ -459,7 +459,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:7.0.14-alpine
+          image: redis:7.0.14-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
