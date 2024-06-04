@@ -36,8 +36,8 @@ spec:
               cpu: 0m
               memory: 24Mi
             limits:
-              cpu: 300m
-              memory: 128Mi
+              cpu: 1000m
+              memory: 256Mi
           ports:
             - containerPort: 9100
               hostPort: 9100
