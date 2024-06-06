@@ -11,14 +11,17 @@ metadata:
 spec:
   validationFailureAction: Enforce
   rules:
-  - name: check-deprecated-apis
-    match:
-      any:
-      - resources:
-          kinds:
-          - traefik.containo.us/v1alpha1/*
-    validate:
-      message: >-
-        {{ request.object.apiVersion }}/{{ request.object.kind }} is deprecated.
-        Please use traefik.io/v1alpha1/{{ request.object.kind }} instead.
-      deny: {}
+    - name: check-deprecated-apis
+      match:
+        any:
+          - resources:
+              kinds:
+                - traefik.containo.us/v1alpha1/*
+              operations:
+                - CREATE
+                - UPDATE
+      validate:
+        message: >-
+          {{ request.object.apiVersion }}/{{ request.object.kind }} is deprecated.
+          Please use traefik.io/v1alpha1/{{ request.object.kind }} instead.
+        deny: {}
