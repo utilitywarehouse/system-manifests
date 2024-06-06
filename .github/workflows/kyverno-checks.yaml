@@ -1,0 +1,103 @@
+name: Check Kyverno manifests
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  check-for-kyverno:
+    runs-on: ubuntu-latest
+    outputs:
+      kyverno-found: ${{ steps.kyverno-check.outputs.found }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Fetch both the merge commit GitHub generates for the pull request
+          # and both its parents, i.e. the tip of the branch and the tip of master
+          fetch-depth: 2
+      - name: Check for kyverno in changed files
+        id: kyverno-check
+        run: |
+          changed_files="$(git diff --name-only --diff-filter=d HEAD^1 HEAD)"
+          # Look for any files changed in `kyverno` directory
+          while IFS= read -r file; do
+            if [[ "${file}" == "kyverno"* ]]; then
+              echo "::set-output name=found::true"
+              exit 0
+            fi
+          done <<< "${changed_files}"
+          echo "::set-output name=found::false"
+
+  compare-with-upstream:
+    needs: check-for-kyverno
+    if: needs.check-for-kyverno.outputs.kyverno-found == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./kyverno/
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Ensure Kustomize
+        run: >-
+          command -v kustomize ||
+          curl --silent --location https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.2.1/kustomize_v5.2.1_linux_amd64.tar.gz |
+          tar zx -C /usr/local/bin
+      - name: Run `kustomize build`
+        run: |
+          set -o pipefail
+
+          mkdir built-manifests/
+          kustomize build deploy/ \
+            | yq eval "select(.kind != \"CustomResourceDefinition\")" \
+            | tee built-manifests/build-output
+      - name: Get checkout info
+        id: get-checkout-info
+        run: |
+          echo "master-sha=$(git rev-parse --verify HEAD^1)" >> "$GITHUB_OUTPUT"
+      - name: Checkout master
+        run: |
+          git -c advice.detachedHead=false checkout --force "${{ steps.get-checkout-info.outputs.master-sha}}"
+      - name: Run `kustomize build` across files in master
+        run: |
+          set -o pipefail
+
+          mkdir root-manifests/
+          kustomize build deploy/ \
+            | yq eval "select(.kind != \"CustomResourceDefinition\")" \
+            | tee root-manifests/build-output
+      - name: Compare both manifests
+        id: diff
+        run: |
+          diff_output="$(git --no-pager diff --no-index root-manifests/ built-manifests/ || true)"
+          if [ -n "$diff_output" ]
+          then
+            echo "diff-output<<EOF" >> "$GITHUB_OUTPUT"
+            awk -v max_length=25000 '{len+=length(); print} len >= max_length {exit(0)}' <<< "${diff_output}" >> "$GITHUB_OUTPUT"
+            echo -e "\n=============================================" >> "$GITHUB_OUTPUT"
+            if [[ ${#diff_output} -gt 25000 ]]
+            then
+              echo -e "(Diff output is truncated to 25000 characters)" >> "$GITHUB_OUTPUT"
+            fi
+            add=$(echo "$diff_output" | grep -o '\+kind' | wc -l)
+            destroy=$(echo "$diff_output" | grep -o '\-kind' | wc -l)
+            change=$(echo "$diff_output" | grep -o '^@@' | wc -l)
+            echo "k8s objects: $add to add, $destroy to destroy" >> "$GITHUB_OUTPUT"
+            echo "$change changed hunks" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Diff as PR comment
+        if: steps.diff.outputs.diff-output != ''
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: k8s-diff
+          recreate: true
+          message: |
+            Post `kustomize build` diff:
+
+            ```diff
+            ${{ steps.diff.outputs.diff-output }}
+            ```
