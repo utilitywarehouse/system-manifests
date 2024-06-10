@@ -9,7 +9,9 @@ resources:
 
 patches:
   - path: falco-driver-loader-privileged.yaml
+  - path: falco-exclude-logs.yaml
   - path: falco-rules-local.yaml
+  - path: falcosidekick-exclude-logs.yaml
 
 configMapGenerator:
   - files:
