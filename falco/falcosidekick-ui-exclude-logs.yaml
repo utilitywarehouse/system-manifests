@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: falco-falcosidekick-ui
+  namespace: sys-falco
+spec:
+  template:
+    metadata:
+      annotations:
+        fluentbit.io/exclude: "true"
