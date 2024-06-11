@@ -12,6 +12,7 @@ patches:
   - path: falco-exclude-logs.yaml
   - path: falco-rules-local.yaml
   - path: falcosidekick-exclude-logs.yaml
+  - path: falcosidekick-ui-exclude-logs.yaml
 
 configMapGenerator:
   - files:
