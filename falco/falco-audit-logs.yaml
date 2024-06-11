@@ -7,5 +7,4 @@ spec:
   template:
     metadata:
       annotations:
-        # Do not push logs until we have a Loki instance for audit purpose.
-        fluentbit.io/exclude: "true"
+        promtail-audit-logs: "true"

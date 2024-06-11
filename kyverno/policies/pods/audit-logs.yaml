@@ -1,0 +1,29 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: audit-logs-label
+  annotations:
+    policies.kyverno.io/title: Control Labelling for pushing to Loki-audits
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      We should be able to control which pods logs will be pushed to Loki-audits.
+      Since this is selected via a label we should restrict the pods that can use
+      it.
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: default
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      validate:
+        message: >-
+          Labelling pods with promtail-audit-logs: "true" is not allowed.
+        deny:
+          conditions:
+            all:
+            - key: "{{ request.object.metadata.labels.promtail-audit-logs || '' }}"
+              operator: Equals
+              value: "true"
