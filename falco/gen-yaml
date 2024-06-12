@@ -10,6 +10,5 @@ helm template falco -n sys-falco \
   --set tty=true falcosecurity/falco \
   --version=${FALCO_CHART_VERSION} \
   --set falcosidekick.enabled=true \
-  --set falcosidekick.webui.enabled=true \
-  --set falcosidekick.webui.redis.storageSize=10Gi |\
+  --set falcosidekick.webui.enabled=false |\
   awk  'BEGIN{RS="---\n"; ORS="---\n"} !match($0, /kind: Secret\nmetadata/) {print}'> upstream.yaml
