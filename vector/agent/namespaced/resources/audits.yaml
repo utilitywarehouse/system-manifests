@@ -1,0 +1,19 @@
+data_dir: /vector-data-dir
+sources:
+  kubernetes_audit_logs:
+    type: kubernetes_logs
+    extra_namespace_label_selector: "name=sys-falco"
+
+sinks:
+  loki_audits:
+    inputs:
+      - kubernetes_audit_logs
+    type: loki
+    endpoint: http://loki-audits.sys-log.svc.cluster.aws:3100
+    path: /loki/api/v1/push
+    encoding:
+      codec: text
+    labels:
+      cloud_provider: "${CLOUD_PROVIDER}"
+      uw_environment: "${UW_ENVIRONMENT}"
+      kubernetes_cluster: "${KUBERNETES_CLUSTER}"
