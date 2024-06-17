@@ -2,14 +2,14 @@ server:
   http_listen_port: 9080
   grpc_listen_port: 0
 
-# clients:
-#   - url: http://loki.sys-log.svc.cluster.aws:3100/loki/api/v1/push
-#     external_labels:
-#       cloud_provider: ${CLOUD_PROVIDER}
-#       uw_environment: ${UW_ENVIRONMENT}
-#       kubernetes_cluster: ${KUBERNETES_CLUSTER}
-#       cluster: ${KUBERNETES_CLUSTER}
-#       provider: ${CLOUD_PROVIDER}
+clients:
+  - url: http://loki.sys-log.svc.cluster.aws:3100/loki/api/v1/push
+    external_labels:
+      cloud_provider: ${CLOUD_PROVIDER}
+      uw_environment: ${UW_ENVIRONMENT}
+      kubernetes_cluster: ${KUBERNETES_CLUSTER}
+      cluster: ${KUBERNETES_CLUSTER}
+      provider: ${CLOUD_PROVIDER}
 #
 # positions:
 #   filename: /var/log/promtail-positions.yaml
