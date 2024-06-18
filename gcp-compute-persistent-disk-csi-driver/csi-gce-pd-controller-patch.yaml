@@ -19,9 +19,6 @@ spec:
         role: master
       containers:
         - name: gce-pd-driver
-          # Latest available pushed image is v1.11.1
-          # https://github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/issues/1397
-          image: registry.k8s.io/cloud-provider-gcp/gcp-compute-persistent-disk-csi-driver:v1.11.1
           # Delete the expected gcp credentials secret and mount
           env:
             - $patch: delete
@@ -30,6 +27,7 @@ spec:
             - $patch: delete
               name: cloud-sa-volume
               mountPath: "/etc/cloud-sa"
+        # Keeps upstream manifests and adds CrossNamespaceVolumeDataSource=true feature gate
         - name: csi-provisioner
           args:
             - --v=2

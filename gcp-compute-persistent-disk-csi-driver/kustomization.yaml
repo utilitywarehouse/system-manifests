@@ -9,14 +9,10 @@ namespace: kube-system
 # Use a commit ref instead of tag, as images do not follow tags in the repo
 #  manifests.
 resources:
-  # Using latest manifests version in time of this change, but will have to
-  # patch the image locally under csi-gce-pd-controller-patch.yaml to the
-  # latest version
-  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-master?ref=18a713415b80584164803f26e904cc85c6274b45
+  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-master?ref=fda486201567e7fc99e12659708595195f426b50
 
 patches:
   - path: csi-gce-pd-controller-patch.yaml
-  - path: csi-gce-pd-node-patch.yaml
   - target:
       group: rbac.authorization.k8s.io
       version: v1
