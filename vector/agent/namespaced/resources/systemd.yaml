@@ -1,0 +1,34 @@
+data_dir: /vector-data-dir
+sources:
+  systemd_logs:
+    type: journald
+    current_boot_only: true
+    journal_directory: /var/log/journal
+
+transforms:
+  systemd_remap:
+    inputs:
+      - systemd_logs
+    type: remap
+    source: |
+      .systemd_unit = ._SYSTEMD_UNIT
+      .hostname = .host
+      .syslog_identifier = .SYSLOG_IDENTIFIER
+
+sinks:
+  loki_systemd:
+    inputs:
+      - systemd_remap
+    type: loki
+    endpoint: http://loki.sys-log.svc.cluster.aws:3100
+    path: /loki/api/v1/push
+    encoding:
+      codec: text
+    labels:
+      cloud_provider: "${CLOUD_PROVIDER}"
+      uw_environment: "${UW_ENVIRONMENT}"
+      kubernetes_cluster: "${KUBERNETES_CLUSTER}"
+      log_source: "systemd"
+      systemd_unit: '{{ systemd_unit }}'
+      hostname: '{{ hostname }}'
+      syslog_identifier: '{{ syslog_identifier }}'

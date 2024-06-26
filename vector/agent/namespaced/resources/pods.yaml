@@ -1,0 +1,65 @@
+data_dir: /vector-data-dir
+sources:
+  kubernetes_logs:
+    type: kubernetes_logs
+    extra_namespace_label_selector: "name!=sys-falco"
+
+transforms:
+  drop_exclude:
+    inputs:
+      - kubernetes_logs
+    type: filter
+    condition: '.kubernetes.pod_labels.fluentbit_io_exclude != "true"'
+
+  drop_calico:
+    inputs:
+      - drop_exclude
+    type: filter
+    condition: '!(.kubernetes.pod_name == "calico-apiserver" && (contains(string!(.message), "level=info") || contains(string!(.message), "called with key")))'
+
+  drop_traefik:
+    inputs:
+      - drop_calico
+    type: filter
+    condition: '!(starts_with(string!(.kubernetes.pod_namespace), "sys-ingress-") && (contains(string!(.message), "kubernetes service not found") || contains(string!(.message), "subset not found for") || contains(string!(.message), "service port not found") || contains(string!(.message), "Cannot create service: service not found") || contains(string!(.message), "Skipping service: no endpoints found") || (contains(string!(.message), "middleware") && contains(string!(.message), "does not exist"))))'
+
+  kubernetes_remap:
+    inputs:
+      - drop_traefik
+    type: remap
+    source: |
+      .app, _ = get(.kubernetes.pod_labels, ["app.kubernetes.io/name"])
+      if is_nullish(.app) {
+        .app, _ = get(.kubernetes.pod_labels, ["app"])
+      }
+      if is_nullish(.app) {
+        .app = .kubernetes.container_name
+      }
+      .limit_key = string!(.kubernetes.pod_namespace) + "/" + string!(.app)
+
+  throttle:
+    inputs:
+      - kubernetes_remap
+    type: throttle
+    key_field: '{{ limit_key }}'
+    threshold: 10
+    window_secs: 1
+
+sinks:
+  loki_kubernetes:
+    inputs:
+      - throttle
+    type: loki
+    endpoint: http://loki.sys-log.svc.cluster.aws:3100
+    path: /loki/api/v1/push
+    encoding:
+      codec: text
+    labels:
+      cloud_provider: "${CLOUD_PROVIDER}"
+      uw_environment: "${UW_ENVIRONMENT}"
+      kubernetes_cluster: "${KUBERNETES_CLUSTER}"
+      app: '{{ app }}'
+      app_kubernetes_io_name: '{{ app }}'
+      kubernetes_namespace: '{{ kubernetes.pod_namespace }}'
+      kubernetes_pod_name: '{{ kubernetes.pod_name }}'
+      kubernetes_container: '{{ kubernetes.container_name }}'
