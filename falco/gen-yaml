@@ -8,7 +8,7 @@ helm repo update
 helm template falco -n sys-falco \
   --set driver.kind=ebpf \
   --set tty=true falcosecurity/falco \
+  --set falco.json_output=true \
   --version=${FALCO_CHART_VERSION} \
-  --set falcosidekick.enabled=true \
-  --set falcosidekick.webui.enabled=false |\
+  --set falcosidekick.enabled=false |\
   awk  'BEGIN{RS="---\n"; ORS="---\n"} !match($0, /kind: Secret\nmetadata/) {print}'> upstream.yaml
