@@ -1,19 +1,4 @@
 ---
-# Source: falco/charts/falcosidekick/templates/rbac.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: falco-falcosidekick
-  namespace: sys-falco
-  labels:
-    helm.sh/chart: falcosidekick-0.7.15
-    app.kubernetes.io/name: falcosidekick
-    app.kubernetes.io/instance: falco
-    app.kubernetes.io/version: "2.28.0"
-    app.kubernetes.io/part-of: falcosidekick
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: core
----
 # Source: falco/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -56,11 +41,11 @@ data:
       client_key: /etc/falco/certs/client/client.key
       compress_uploads: false
       echo: false
-      enabled: true
+      enabled: false
       insecure: false
       keep_alive: false
       mtls: false
-      url: http://falco-falcosidekick:2801
+      url: ""
       user_agent: falcosecurity/falco
     json_include_output_property: true
     json_include_tags_property: true
@@ -167,80 +152,6 @@ data:
     - name: falcosecurity
       url: https://falcosecurity.github.io/falcoctl/index.yaml
 ---
-# Source: falco/charts/falcosidekick/templates/rbac.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
-  name: falco-falcosidekick
-  namespace: sys-falco
-  labels:
-    helm.sh/chart: falcosidekick-0.7.15
-    app.kubernetes.io/name: falcosidekick
-    app.kubernetes.io/instance: falco
-    app.kubernetes.io/version: "2.28.0"
-    app.kubernetes.io/part-of: falcosidekick
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: core
-rules:
-- apiGroups:
-    - ""
-  resources:
-    - endpoints
-  verbs:
-    - get
----
-# Source: falco/charts/falcosidekick/templates/rbac.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: falco-falcosidekick
-  namespace: sys-falco
-  labels:
-    helm.sh/chart: falcosidekick-0.7.15
-    app.kubernetes.io/name: falcosidekick
-    app.kubernetes.io/instance: falco
-    app.kubernetes.io/version: "2.28.0"
-    app.kubernetes.io/part-of: falcosidekick
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: core
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: falco-falcosidekick
-subjects:
-- kind: ServiceAccount
-  name: falco-falcosidekick
----
-# Source: falco/charts/falcosidekick/templates/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: falco-falcosidekick
-  namespace: sys-falco
-  labels:
-    helm.sh/chart: falcosidekick-0.7.15
-    app.kubernetes.io/name: falcosidekick
-    app.kubernetes.io/instance: falco
-    app.kubernetes.io/version: "2.28.0"
-    app.kubernetes.io/part-of: falcosidekick
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: core
-spec:
-  type: ClusterIP
-  ports:
-    - port: 2801
-      targetPort: http
-      protocol: TCP
-      name: http
-    - port: 2810
-      targetPort: http-notls
-      protocol: TCP
-      name: http-notls
-  selector:
-    app.kubernetes.io/name: falcosidekick
-    app.kubernetes.io/instance: falco
-    app.kubernetes.io/component: core
----
 # Source: falco/templates/daemonset.yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -265,7 +176,7 @@ spec:
         app.kubernetes.io/name: falco
         app.kubernetes.io/instance: falco
       annotations:
-        checksum/config: ead6e802047a5a7e6c46c078790baad7ef9dbc88629b2d6460e62d6dacec7eea
+        checksum/config: c4880829942754a84ac44fa03fa74c49a95a1e11d8c187bfff5846e558721e93
         checksum/rules: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
         checksum/certs: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     spec:
@@ -445,106 +356,4 @@ spec:
         
   updateStrategy:
     type: RollingUpdate
----
-# Source: falco/charts/falcosidekick/templates/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: falco-falcosidekick
-  namespace: sys-falco
-  labels:
-    helm.sh/chart: falcosidekick-0.7.15
-    app.kubernetes.io/name: falcosidekick
-    app.kubernetes.io/instance: falco
-    app.kubernetes.io/version: "2.28.0"
-    app.kubernetes.io/part-of: falcosidekick
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/component: core
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: falcosidekick
-      app.kubernetes.io/instance: falco
-      app.kubernetes.io/component: core
-  template:
-    metadata:
-      labels:
-        helm.sh/chart: falcosidekick-0.7.15
-        app.kubernetes.io/name: falcosidekick
-        app.kubernetes.io/instance: falco
-        app.kubernetes.io/version: "2.28.0"
-        app.kubernetes.io/part-of: falcosidekick
-        app.kubernetes.io/managed-by: Helm
-        app.kubernetes.io/component: core
-      annotations:
-        checksum/config: 961f671b802f2e1df3e0ddbd58adf1652366324261f2590d7dda3720b0200af9
-    spec:
-      serviceAccountName: falco-falcosidekick
-      securityContext:
-        fsGroup: 1234
-        runAsUser: 1234
-      containers:
-        - name: falcosidekick
-          image: "docker.io/falcosecurity/falcosidekick:2.28.0"
-          imagePullPolicy: IfNotPresent
-          ports:
-            - name: http
-              containerPort: 2801
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /ping
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 5
-          readinessProbe:
-            httpGet:
-              path: /ping
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 5
-          envFrom:
-            - secretRef:
-                name: falco-falcosidekick
-          env:
-            - name: DEBUG
-              value: "false"
-            - name: CUSTOMFIELDS
-              value: ""
-            - name: TEMPLATEDFIELDS
-              value: ""
-            - name: BRACKETREPLACER
-              value: ""
-            - name: MUTUALTLSFILESPATH
-              value: "/etc/certs"
-            - name: MUTUALTLSCLIENT_CERTFILE
-              value: ""
-            - name: MUTUALTLSCLIENT_KEYFILE
-              value: ""
-            - name: MUTUALTLSCLIENT_CACERTFILE
-              value: ""
-          resources:
-            {}
----
-# Source: falco/charts/falcosidekick/templates/tests/test-connection.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: "falco-falcosidekick-test-connection"
-  namespace: sys-falco
-  labels:
-    app.kubernetes.io/name: falcosidekick
-    helm.sh/chart: falcosidekick-0.7.15
-    app.kubernetes.io/instance: falco
-    app.kubernetes.io/managed-by: Helm
-  annotations:
-    "helm.sh/hook": test-success
-spec:
-  containers:
-    - name: curl
-      image: appropriate/curl
-      command: ['curl']
-      args:  ["-X", "POST", 'falco-falcosidekick:2801/ping']
-  restartPolicy: Never
 ---
