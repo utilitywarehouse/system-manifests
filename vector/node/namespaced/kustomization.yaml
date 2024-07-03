@@ -5,7 +5,7 @@ resources:
   - serviceaccount.yaml
 
 configMapGenerator:
-  - name: vector
+  - name: vector-node
     files:
       - audits.yaml=resources/audits.yaml
       - pods.yaml=resources/pods.yaml

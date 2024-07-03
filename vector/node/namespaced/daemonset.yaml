@@ -1,19 +1,22 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: vector
+  name: vector-node
   labels:
     app.kubernetes.io/name: vector
+    app.kubernetes.io/instance: vector-node
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: vector
+      app.kubernetes.io/instance: vector-node
   template:
     metadata:
       labels:
         app.kubernetes.io/name: vector
+        app.kubernetes.io/instance: vector-node
     spec:
-      serviceAccountName: vector
+      serviceAccountName: vector-node
       containers:
         - name: vector
           image: "timberio/vector:0.39.X-debian"
@@ -64,7 +67,7 @@ spec:
           projected:
             sources:
               - configMap:
-                  name: vector
+                  name: vector-node
         - name: data
           hostPath:
             path: /var/lib/vector
