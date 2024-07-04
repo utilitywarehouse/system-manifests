@@ -15,6 +15,10 @@ spec:
       labels:
         app.kubernetes.io/name: vector
         app.kubernetes.io/instance: vector-node
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
     spec:
       serviceAccountName: vector-node
       containers:
@@ -38,10 +42,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
-          ports:
-            - name: prom-exporter
-              containerPort: 9090
-              protocol: TCP
           volumeMounts:
             - name: data
               mountPath: "/vector-data-dir"
