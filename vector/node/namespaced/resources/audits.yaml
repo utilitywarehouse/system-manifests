@@ -8,22 +8,25 @@ sources:
     include:
       - /var/log/kube-api-server/audit
 
-sinks:
-  loki_audits_for_events:
+transforms:
+  kubernetes_events_remap:
     inputs:
       - kubernetes_events
-    type: loki
-    endpoint: http://loki-audits.sys-log.svc.cluster.aws:3100
-    encoding:
-      codec: text
-    labels:
-      cloud_provider: "${CLOUD_PROVIDER}"
-      uw_environment: "${UW_ENVIRONMENT}"
-      kubernetes_cluster: "${KUBERNETES_CLUSTER}"
-      log_source: kube_audits_events
-  loki_audits_for_apiserver:
+    type: remap
+    source: |
+      .log_source = "kube_audits_events"
+  kubernetes_apiserver_remap:
     inputs:
       - kubernetes_apiserver
+    type: remap
+    source: |
+      .log_source = "kube_audits_apiserver"
+
+sinks:
+  loki_audits:
+    inputs:
+      - kubernetes_events_remap
+      - kubernetes_apiserver_remap
     type: loki
     endpoint: http://loki-audits.sys-log.svc.cluster.aws:3100
     encoding:
@@ -32,4 +35,4 @@ sinks:
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"
-      log_source: kube_audits_apiserver
+      log_source: '{{ log_source }}'
