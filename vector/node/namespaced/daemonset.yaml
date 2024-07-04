@@ -16,6 +16,11 @@ spec:
         app.kubernetes.io/name: vector
         app.kubernetes.io/instance: vector-node
     spec:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
       serviceAccountName: vector-node
       containers:
         - name: vector
