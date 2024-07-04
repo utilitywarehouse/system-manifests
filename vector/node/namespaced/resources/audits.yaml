@@ -1,19 +1,38 @@
 data_dir: /vector-data-dir
 sources:
-  kubernetes_audit_logs:
+  kubernetes_events:
     type: kubernetes_logs
     extra_namespace_label_selector: "name=sys-falco"
+  kubernetes_apiserver:
+    type: file
+    include:
+      - /var/log/kube-api-server/audit
+
+transforms:
+  kubernetes_events_remap:
+    inputs:
+      - kubernetes_events
+    type: remap
+    source: |
+      .log_source = "kube_audits_events"
+  kubernetes_apiserver_remap:
+    inputs:
+      - kubernetes_apiserver
+    type: remap
+    source: |
+      .log_source = "kube_audits_apiserver"
 
 sinks:
   loki_audits:
     inputs:
-      - kubernetes_audit_logs
+      - kubernetes_events_remap
+      - kubernetes_apiserver_remap
     type: loki
     endpoint: http://loki-audits.sys-log.svc.cluster.aws:3100
-    path: /loki/api/v1/push
     encoding:
       codec: text
     labels:
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"
+      log_source: '{{ log_source }}'
