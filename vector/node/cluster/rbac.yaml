@@ -1,9 +1,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: vector
+  name: vector-node
   labels:
     app.kubernetes.io/name: vector
+    app.kubernetes.io/instance: vector-node
 rules:
   - apiGroups:
       - ""
@@ -18,14 +19,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: vector
+  name: vector-node
   labels:
     app.kubernetes.io/name: vector
+    app.kubernetes.io/instance: vector-node
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: vector
+  name: vector-node
 subjects:
   - kind: ServiceAccount
-    name: vector
+    name: vector-node
     namespace: sys-log
