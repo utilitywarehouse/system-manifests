@@ -8,5 +8,6 @@ configMapGenerator:
   - name: vector-node
     files:
       - audits.yaml=resources/audits.yaml
+      - metrics.yaml=resources/metrics.yaml
       - pods.yaml=resources/pods.yaml
       - systemd.yaml=resources/systemd.yaml
