@@ -1,0 +1,15 @@
+---
+# Source: https://github.com/actions/actions-runner-controller/tree/gha-runner-scale-set-0.9.3/charts/gha-runner-scale-set-controller/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: arc-gha-rs-controller
+  namespace: kube-system
+  labels:
+    helm.sh/chart: gha-rs-controller-0.9.3
+    app.kubernetes.io/name: gha-rs-controller
+    app.kubernetes.io/namespace: kube-system
+    app.kubernetes.io/instance: arc
+    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/part-of: gha-rs-controller
+    app.kubernetes.io/managed-by: Helm
