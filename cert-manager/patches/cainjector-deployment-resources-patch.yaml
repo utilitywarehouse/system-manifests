@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-manager-cainjector
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: cert-manager-cainjector
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              memory: 86Mi 

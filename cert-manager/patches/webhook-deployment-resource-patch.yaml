@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-manager-webhook
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: cert-manager-webhook
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              memory: 26Mi 
