@@ -7,3 +7,15 @@ resources:
   - upstream/actions.github.com_ephemeralrunnersets.yaml
   - upstream/manager_cluster_role.yaml
   - upstream/manager_cluster_role_binding.yaml
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /subjects/0/namespace
+        value: "x"
+      - op: replace
+        path: /subjects/0/name
+        value: "y"
+    target:
+      kind: ClusterRoleBinding
+      name: arc-gha-rs-controller
