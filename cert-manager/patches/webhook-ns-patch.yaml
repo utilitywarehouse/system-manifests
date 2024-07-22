@@ -1,0 +1,27 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: cert-manager-webhook
+  annotations:
+    cert-manager.io/inject-ca-from-secret: "kube-system/cert-manager-webhook-ca"
+webhooks:
+  - name: webhook.cert-manager.io
+    clientConfig:
+      service:
+        name: cert-manager-webhook
+        namespace: kube-system
+        path: /mutate
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: cert-manager-webhook
+  annotations:
+    cert-manager.io/inject-ca-from-secret: "kube-system/cert-manager-webhook-ca"
+webhooks:
+  - name: webhook.cert-manager.io
+    clientConfig:
+      service:
+        name: cert-manager-webhook
+        namespace: kube-system
+        path: /validate

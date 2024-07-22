@@ -1,0 +1,5 @@
+#!/bin/sh
+
+helm repo add awspca https://cert-manager.github.io/aws-privateca-issuer
+helm template ${AWS_PCA_RELEASE} awspca/aws-privateca-issuer --version ${AWS_PCA_RELEASE} --set fullnameOverride=aws-privateca-issuer --set approverRole.namespace=kube-system --namespace kube-system > upstream/upstream.yaml
+helm show crds awspca/aws-privateca-issuer --version ${AWS_PCA_RELEASE} > crds.yaml
