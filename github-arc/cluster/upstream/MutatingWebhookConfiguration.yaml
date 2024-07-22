@@ -1,0 +1,86 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: actions-runner-system/serving-cert
+  name: mutating-webhook-configuration
+webhooks:
+  - admissionReviewVersions:
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: dev-enablement
+        path: /mutate-actions-summerwind-dev-v1alpha1-runner
+    failurePolicy: Fail
+    name: mutate.runner.actions.summerwind.dev
+    rules:
+      - apiGroups:
+          - actions.summerwind.dev
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - runners
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: dev-enablement
+        path: /mutate-actions-summerwind-dev-v1alpha1-runnerdeployment
+    failurePolicy: Fail
+    name: mutate.runnerdeployment.actions.summerwind.dev
+    rules:
+      - apiGroups:
+          - actions.summerwind.dev
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - runnerdeployments
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: dev-enablement
+        path: /mutate-actions-summerwind-dev-v1alpha1-runnerreplicaset
+    failurePolicy: Fail
+    name: mutate.runnerreplicaset.actions.summerwind.dev
+    rules:
+      - apiGroups:
+          - actions.summerwind.dev
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - runnerreplicasets
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1beta1
+    clientConfig:
+      service:
+        name: webhook-service
+        namespace: dev-enablement
+        path: /mutate-runner-set-pod
+    failurePolicy: Ignore
+    name: mutate-runner-pod.webhook.actions.summerwind.dev
+    rules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+        resources:
+          - pods
+    sideEffects: None
