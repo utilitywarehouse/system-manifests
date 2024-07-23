@@ -1,0 +1,21 @@
+githubConfigUrl: "https://github.com/utilitywarehouse"
+
+githubConfigSecret: uw-arc-gh-app
+
+maxRunners: 5
+minRunners: 1
+
+runnerScaleSetName: "cluster-os-dind"
+containerMode:
+  type: "dind"  ## type can be set to dind or kubernetes
+
+template:
+  spec:
+    containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner:latest
+        command: ["/home/runner/run.sh"]
+
+controllerServiceAccount:
+  namespace: dev-enablement
+  name: arc-gha-rs-controller
