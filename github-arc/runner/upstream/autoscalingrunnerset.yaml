@@ -51,6 +51,11 @@ spec:
               mountPath: /home/runner/_work
             - name: dind-sock
               mountPath: /var/run
+          resources:
+            limits:
+              cpu: 4000m
+              memory: 4Gi
+              ephemeral-storage: 5Gi
         - name: dind
           image: docker:dind
           args:
