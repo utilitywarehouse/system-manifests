@@ -58,7 +58,11 @@ spec:
           volumeMounts:
             - mountPath: /tmp
               name: tmp
-      restartPolicy: Never
+          resources:
+            limits:
+              cpu: 0
+              memory: 512Mi
+
       terminationGracePeriodSeconds: 10
       volumes:
         - name: tmp
