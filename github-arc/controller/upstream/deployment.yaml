@@ -58,6 +58,7 @@ spec:
           volumeMounts:
             - mountPath: /tmp
               name: tmp
+      restartPolicy: Never
       terminationGracePeriodSeconds: 10
       volumes:
         - name: tmp
