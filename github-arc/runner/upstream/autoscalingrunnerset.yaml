@@ -14,7 +14,7 @@ metadata:
     actions.github.com/scale-set-name: cluster-os-dind
     actions.github.com/scale-set-namespace: default
   annotations:
-    actions.github.com/values-hash: 97dbae371c1c56fd84a224081b562c18eae65f60d4f3b4ee37a82d3bed83c71
+    actions.github.com/values-hash: 343f372ba6dc5bdea04fc739caca991cc5b057e38bc25198c5a2c4a66f48929
     actions.github.com/cleanup-manager-role-binding: cluster-os-dind-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: cluster-os-dind-gha-rs-manager
     actions.github.com/cleanup-no-permission-service-account-name: cluster-os-dind-gha-rs-no-permission
@@ -36,6 +36,38 @@ spec:
           volumeMounts:
             - name: dind-externals
               mountPath: /home/runner/tmpDir
+        - command:
+            - cp
+            - -r
+            - /home/runner/externals/.
+            - /home/runner/tmpDir/
+          image: ghcr.io/actions/actions-runner:latest
+          name: init-dind-externals
+          volumeMounts:
+            - mountPath: /home/runner/tmpDir
+              name: dind-externals
+        - command:
+            - sh
+            - -c
+            - |
+              set -x
+              cp -a /etc/. /dind-etc/
+              echo 'runner:x:1001:1001:runner:/home/runner:/bin/ash' >> /dind-etc/passwd
+              echo 'runner:x:1001:' >> /dind-etc/group
+              echo 'runner:100000:65536' >> /dind-etc/subgid
+              echo 'runner:100000:65536' >>  /dind-etc/subuid
+              chmod 755 /dind-etc;
+              chmod u=rwx,g=rx+s,o=rx /dind-home
+              chown 1001:1001 /dind-home
+          image: docker:dind-rootless
+          name: init-dind-rootless
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /dind-etc
+              name: dind-etc
+            - mountPath: /dind-home
+              name: dind-home
       containers:
         - name: runner
           command:
@@ -47,10 +79,10 @@ spec:
             - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
               value: "120"
           volumeMounts:
-            - name: work
-              mountPath: /home/runner/_work
-            - name: dind-sock
-              mountPath: /var/run
+            - mountPath: /home/runner/_work
+              name: work
+            - mountPath: /var/run
+              name: dind-sock
         - name: dind
           image: docker:dind
           args:
@@ -74,5 +106,13 @@ spec:
           emptyDir: {}
         - name: dind-externals
           emptyDir: {}
-        - name: work
-          emptyDir: {}
+        - emptyDir: {}
+          name: work
+        - emptyDir: {}
+          name: dind-externals
+        - emptyDir: {}
+          name: dind-sock
+        - emptyDir: {}
+          name: dind-etc
+        - emptyDir: {}
+          name: dind-home
