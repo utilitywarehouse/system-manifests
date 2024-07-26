@@ -2,117 +2,59 @@
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
-  name: cluster-os-dind
+  name: cluster-os-kubernetes
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
-    helm.sh/chart: gha-rs-0.9.1
-    app.kubernetes.io/name: cluster-os-dind
-    app.kubernetes.io/instance: cluster-os-dind
-    app.kubernetes.io/version: "0.9.1"
+    helm.sh/chart: gha-rs-0.9.3
+    app.kubernetes.io/name: cluster-os-kubernetes
+    app.kubernetes.io/instance: cluster-os-kubernetes
+    app.kubernetes.io/version: "0.9.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: cluster-os-dind
+    actions.github.com/scale-set-name: cluster-os-kubernetes
     actions.github.com/scale-set-namespace: default
   annotations:
-    actions.github.com/values-hash: ec945b9aef4d661ff5e818c3587688b2e88ddd5511fa57ecc8b29c70cc50a85
-    actions.github.com/cleanup-manager-role-binding: cluster-os-dind-gha-rs-manager
-    actions.github.com/cleanup-manager-role-name: cluster-os-dind-gha-rs-manager
-    actions.github.com/cleanup-no-permission-service-account-name: cluster-os-dind-gha-rs-no-permission
+    actions.github.com/values-hash: 7a718761d5e913900fba7fc7e8641ed9874aeaf284045d1b119abb52a2be4e3
+    actions.github.com/cleanup-manager-role-binding: cluster-os-kubernetes-gha-rs-manager
+    actions.github.com/cleanup-manager-role-name: cluster-os-kubernetes-gha-rs-manager
+    actions.github.com/cleanup-kubernetes-mode-role-binding-name: cluster-os-kubernetes-gha-rs-kube-mode
+    actions.github.com/cleanup-kubernetes-mode-role-name: cluster-os-kubernetes-gha-rs-kube-mode
+    actions.github.com/cleanup-kubernetes-mode-service-account-name: cluster-os-kubernetes-gha-rs-kube-mode
 spec:
   githubConfigUrl: https://github.com/utilitywarehouse
   githubConfigSecret: uw-arc-gh-app
-  runnerScaleSetName: cluster-os-dind
+  runnerScaleSetName: cluster-os-kubernetes
   maxRunners: 5
   minRunners: 1
   template:
     spec:
       restartPolicy: Never
-      serviceAccountName: cluster-os-dind-gha-rs-no-permission
-      initContainers:
-        - name: init-dind-externals
-          image: ghcr.io/actions/actions-runner:2.317.0
-          command: ["cp"]
-          args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
-          volumeMounts:
-            - name: dind-externals
-              mountPath: /home/runner/tmpDir
-        - command:
-            - cp
-            - -r
-            - /home/runner/externals/.
-            - /home/runner/tmpDir/
-          image: ghcr.io/actions/actions-runner:2.317.0
-          name: init-dind-externals
-          volumeMounts:
-            - mountPath: /home/runner/tmpDir
-              name: dind-externals
-        - command:
-            - sh
-            - -c
-            - |
-              set -x
-              cp -a /etc/. /dind-etc/
-              echo 'runner:x:1001:1001:runner:/home/runner:/bin/ash' >> /dind-etc/passwd
-              echo 'runner:x:1001:' >> /dind-etc/group
-              echo 'runner:100000:65536' >> /dind-etc/subgid
-              echo 'runner:100000:65536' >>  /dind-etc/subuid
-              chmod 755 /dind-etc;
-              chmod u=rwx,g=rx+s,o=rx /dind-home
-              chown 1001:1001 /dind-home
-          image: docker:dind-rootless
-          name: init-dind-rootless
-          securityContext:
-            runAsUser: 0
-          volumeMounts:
-            - mountPath: /dind-etc
-              name: dind-etc
-            - mountPath: /dind-home
-              name: dind-home
+      serviceAccountName: cluster-os-kubernetes-gha-rs-kube-mode
       containers:
         - name: runner
           command:
             - /home/runner/run.sh
           image: ghcr.io/actions/actions-runner:2.317.0
           env:
-            - name: DOCKER_HOST
-              value: unix:///var/run/docker.sock
-            - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
-              value: "120"
-          volumeMounts:
-            - mountPath: /home/runner/_work
-              name: work
-            - mountPath: /var/run
-              name: dind-sock
-        - name: dind
-          image: docker:dind
-          args:
-            - dockerd
-            - --host=unix:///var/run/docker.sock
-            - --group=$(DOCKER_GROUP_GID)
-          env:
-            - name: DOCKER_GROUP_GID
-              value: "123"
-          securityContext:
-            privileged: true
+            - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+              value: "false"
+            - name: ACTIONS_RUNNER_CONTAINER_HOOKS
+              value: /home/runner/k8s/index.js
+            - name: ACTIONS_RUNNER_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           volumeMounts:
             - name: work
               mountPath: /home/runner/_work
-            - name: dind-sock
-              mountPath: /var/run
-            - name: dind-externals
-              mountPath: /home/runner/externals
       volumes:
-        - name: dind-sock
-          emptyDir: {}
-        - name: dind-externals
-          emptyDir: {}
-        - emptyDir: {}
-          name: work
-        - emptyDir: {}
-          name: dind-externals
-        - emptyDir: {}
-          name: dind-sock
-        - emptyDir: {}
-          name: dind-etc
-        - emptyDir: {}
-          name: dind-home
+        - name: work
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+                storageClassName: netapp-ontap-san-ext4

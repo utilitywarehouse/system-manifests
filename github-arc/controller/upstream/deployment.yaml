@@ -5,11 +5,11 @@ metadata:
   name: arc-gha-rs-controller
   namespace: dev-enablement
   labels:
-    helm.sh/chart: gha-rs-controller-0.9.1
+    helm.sh/chart: gha-rs-controller-0.9.3
     app.kubernetes.io/name: gha-rs-controller
     app.kubernetes.io/namespace: dev-enablement
     app.kubernetes.io/instance: arc
-    app.kubernetes.io/version: "0.9.1"
+    app.kubernetes.io/version: "0.9.3"
     app.kubernetes.io/part-of: gha-rs-controller
     app.kubernetes.io/managed-by: Helm
     actions.github.com/controller-service-account-namespace: dev-enablement
@@ -28,7 +28,7 @@ spec:
       labels:
         app.kubernetes.io/part-of: gha-rs-controller
         app.kubernetes.io/component: controller-manager
-        app.kubernetes.io/version: 0.9.1
+        app.kubernetes.io/version: 0.9.3
         app.kubernetes.io/name: gha-rs-controller
         app.kubernetes.io/namespace: dev-enablement
         app.kubernetes.io/instance: arc
@@ -36,7 +36,7 @@ spec:
       serviceAccountName: arc-gha-rs-controller
       containers:
         - name: manager
-          image: "ghcr.io/actions/gha-runner-scale-set-controller:0.9.1"
+          image: "ghcr.io/actions/gha-runner-scale-set-controller:0.9.3"
           imagePullPolicy: IfNotPresent
           args:
             - "--auto-scaling-runner-set-only"
@@ -50,7 +50,7 @@ spec:
             - "/manager"
           env:
             - name: CONTROLLER_MANAGER_CONTAINER_IMAGE
-              value: "ghcr.io/actions/gha-runner-scale-set-controller:0.9.1"
+              value: "ghcr.io/actions/gha-runner-scale-set-controller:0.9.3"
             - name: CONTROLLER_MANAGER_POD_NAMESPACE
               valueFrom:
                 fieldRef:

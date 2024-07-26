@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := get-upstream
 
-VERSION=0.9.1
+VERSION=0.9.3
 
 .PHONY: get-upstream
 get-upstream:
@@ -20,7 +20,7 @@ get-upstream:
 	yq 'select(.kind=="ServiceAccount")' /tmp/ark-controller.yaml > controller/upstream/serviceaccount.yaml
 
 	# Remove the "namespace" attribute so we can easily re-use the base in other namespaces
-	helm template arc-runners -f runner/values.yaml oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version $(VERSION) | sd "^\s*namespace: default\n" "" > /tmp/ark-runner.yaml
+	helm template arc-runners -f runner/values-kubernetes.yaml oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version $(VERSION) | sd "^\s*namespace: default\n" "" > /tmp/ark-runner.yaml
 
 	yq 'select(.kind=="ServiceAccount")' /tmp/ark-runner.yaml > runner/upstream/serviceaccount.yaml
 	yq 'select(.kind=="Role")' /tmp/ark-runner.yaml > runner/upstream/role.yaml
