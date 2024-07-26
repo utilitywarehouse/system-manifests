@@ -4,10 +4,10 @@ kind: Role
 metadata:
   name: cluster-os-dind-gha-rs-manager
   labels:
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.9.1
     app.kubernetes.io/name: cluster-os-dind
     app.kubernetes.io/instance: cluster-os-dind
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.9.1"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: cluster-os-dind
