@@ -9,6 +9,10 @@ fullnameOverride: ""
 
 env:
 
+resources:
+  limits:
+    memory: 512Mi
+
 serviceAccount:
   create: true
   name: ""

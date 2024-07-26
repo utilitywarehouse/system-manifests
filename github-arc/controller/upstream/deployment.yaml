@@ -55,14 +55,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          resources:
+            limits:
+              memory: 512Mi
           volumeMounts:
             - mountPath: /tmp
               name: tmp
-          resources:
-            limits:
-              cpu: 0
-              memory: 512Mi
-
       terminationGracePeriodSeconds: 10
       volumes:
         - name: tmp

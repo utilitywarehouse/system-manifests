@@ -14,7 +14,7 @@ metadata:
     actions.github.com/scale-set-name: cluster-os-dind
     actions.github.com/scale-set-namespace: default
   annotations:
-    actions.github.com/values-hash: 8aea71ed199d06e12d55196d6bd77b9dbd1c1364eb6fe9ac2c68fa87354f4a7
+    actions.github.com/values-hash: 97dbae371c1c56fd84a224081b562c18eae65f60d4f3b4ee37a82d3bed83c71
     actions.github.com/cleanup-manager-role-binding: cluster-os-dind-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: cluster-os-dind-gha-rs-manager
     actions.github.com/cleanup-no-permission-service-account-name: cluster-os-dind-gha-rs-no-permission
@@ -30,7 +30,7 @@ spec:
       serviceAccountName: cluster-os-dind-gha-rs-no-permission
       initContainers:
         - name: init-dind-externals
-          image: ghcr.io/actions/actions-runner:latest
+          image: ghcr.io/actions/actions-runner:2.317.0
           command: ["cp"]
           args: ["-r", "-v", "/home/runner/externals/.", "/home/runner/tmpDir/"]
           volumeMounts:
@@ -40,7 +40,7 @@ spec:
         - name: runner
           command:
             - /home/runner/run.sh
-          image: ghcr.io/actions/actions-runner:latest
+          image: ghcr.io/actions/actions-runner:2.317.0
           env:
             - name: DOCKER_HOST
               value: unix:///var/run/docker.sock
@@ -51,11 +51,6 @@ spec:
               mountPath: /home/runner/_work
             - name: dind-sock
               mountPath: /var/run
-          resources:
-            limits:
-              cpu: 4000m
-              memory: 4Gi
-              ephemeral-storage: 5Gi
         - name: dind
           image: docker:dind
           args:
