@@ -14,7 +14,7 @@ metadata:
     actions.github.com/scale-set-name: cluster-os-kubernetes
     actions.github.com/scale-set-namespace: default
   annotations:
-    actions.github.com/values-hash: d3bd270d7eed7ac4be31b6110ac648bcfd38f26cf4b43064845fc4ef88aa41b
+    actions.github.com/values-hash: 42f23c70521ab5dd2fdd59321e07fc0d6032fc8a3829b0ada3153691986c76b
     actions.github.com/cleanup-manager-role-binding: cluster-os-kubernetes-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: cluster-os-kubernetes-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: cluster-os-kubernetes-gha-rs-kube-mode
@@ -68,5 +68,5 @@ spec:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 1Gi
+                    storage: 5Gi
                 storageClassName: netapp-ontap-san-ext4

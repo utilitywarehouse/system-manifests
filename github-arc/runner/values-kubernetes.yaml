@@ -13,7 +13,7 @@ containerMode:
     storageClassName: "netapp-ontap-san-ext4"
     resources:
       requests:
-        storage: 1Gi
+        storage: 5Gi
 
 template:
   spec:
