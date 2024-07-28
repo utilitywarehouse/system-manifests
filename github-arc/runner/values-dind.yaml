@@ -1,6 +1,6 @@
 githubConfigUrl: "https://github.com/utilitywarehouse"
 
-githubConfigSecret: uw-arc-gh-app
+githubConfigSecret: default
 
 maxRunners: 5
 minRunners: 1
