@@ -14,7 +14,7 @@ metadata:
     actions.github.com/scale-set-name: cluster-os-kubernetes
     actions.github.com/scale-set-namespace: default
   annotations:
-    actions.github.com/values-hash: 42f23c70521ab5dd2fdd59321e07fc0d6032fc8a3829b0ada3153691986c76b
+    actions.github.com/values-hash: bb37bea11cbcbb175f968ec8556e54b0f7153acc190d6359e77853f7a9cbe16
     actions.github.com/cleanup-manager-role-binding: cluster-os-kubernetes-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: cluster-os-kubernetes-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: cluster-os-kubernetes-gha-rs-kube-mode
@@ -22,7 +22,7 @@ metadata:
     actions.github.com/cleanup-kubernetes-mode-service-account-name: cluster-os-kubernetes-gha-rs-kube-mode
 spec:
   githubConfigUrl: https://github.com/utilitywarehouse
-  githubConfigSecret: uw-arc-gh-app
+  githubConfigSecret: default
   runnerScaleSetName: cluster-os-kubernetes
   maxRunners: 5
   minRunners: 1
