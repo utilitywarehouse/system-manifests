@@ -50,7 +50,6 @@ diff-upstream:
 	
 	# diff betweeen remote and local
 	-diff --color -U 0 /tmp/argocd_remote_res /tmp/argocd_local_res
-
 	# 
 	# diff betweeen filtered remote and local
 	-diff --color -U 0 /tmp/argocd_filtered_remote_res /tmp/argocd_local_res
