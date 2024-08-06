@@ -35,3 +35,24 @@ get-upstream:
 
 	# remove temp file
 	rm /tmp/argo.yaml /tmp/argo_filtered.yaml
+
+
+.PHONY: diff-upstream
+diff-upstream:
+	@curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
+	
+	@# Filter out dex and applicationset resoruces
+	@yq 'select(.metadata.name != "argocd-dex-server*" and .metadata.name != "argocd-applicationset*")' /tmp/argo.yaml > /tmp/argo_filtered.yaml
+
+	@yq -o=tsv '.metadata.name + " (" + .kind + ")"' /tmp/argo.yaml | sort > /tmp/argocd_remote_res
+	@yq -o=tsv '.metadata.name + " (" + .kind + ")"' /tmp/argo_filtered.yaml | sort > /tmp/argocd_filtered_remote_res
+	@yq -o=tsv '.metadata.name + " (" + .kind + ")"' cluster/upstream/*.yaml namespaced/upstream/*.yaml | sort > /tmp/argocd_local_res
+	
+	# diff betweeen remote and local
+	-diff --color -U 0 /tmp/argocd_remote_res /tmp/argocd_local_res
+
+	# 
+	# diff betweeen filtered remote and local
+	-diff --color -U 0 /tmp/argocd_filtered_remote_res /tmp/argocd_local_res
+
+	@rm /tmp/argo.yaml /tmp/argo_filtered.yaml  /tmp/argocd_remote_res  /tmp/argocd_filtered_remote_res /tmp/argocd_local_res
