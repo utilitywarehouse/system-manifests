@@ -1,0 +1,44 @@
+# Source: k6-operator/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: k6-operator-leader-election-role
+  namespace: dev-enablement
+  labels:
+    app.kubernetes.io/component: controller
+    helm.sh/chart: k6-operator-3.8.0
+    app.kubernetes.io/name: k6-operator
+    app.kubernetes.io/instance: k6-operator
+    app.kubernetes.io/version: "0.0.16"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: k6-operator
+  annotations:
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - get
+      - list
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
