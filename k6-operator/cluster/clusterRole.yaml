@@ -1,0 +1,93 @@
+# Source: k6-operator/templates/clusterRole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: k6-operator-metrics-reader
+  labels:
+    helm.sh/chart: k6-operator-3.8.0
+    app.kubernetes.io/name: k6-operator
+    app.kubernetes.io/instance: k6-operator
+    app.kubernetes.io/version: "0.0.16"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: k6-operator
+  annotations:
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+---
+# Source: k6-operator/templates/clusterRole.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: k6-operator-proxy-role
+  labels:
+    helm.sh/chart: k6-operator-3.8.0
+    app.kubernetes.io/name: k6-operator
+    app.kubernetes.io/instance: k6-operator
+    app.kubernetes.io/version: "0.0.16"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: k6-operator
+  annotations:
+rules:
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+---
+# Source: k6-operator/templates/clusterRole.yaml
+# permissions for end users to edit privateloadzones.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: privateloadzone-editor-role
+rules:
+  - apiGroups:
+      - k6.io
+    resources:
+      - privateloadzones
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - k6.io
+    resources:
+      - privateloadzones/status
+    verbs:
+      - get
+---
+# Source: k6-operator/templates/clusterRole.yaml
+# permissions for end users to view privateloadzones.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: privateloadzone-viewer-role
+rules:
+  - apiGroups:
+      - k6.io
+    resources:
+      - privateloadzones
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - k6.io
+    resources:
+      - privateloadzones/status
+    verbs:
+      - get

@@ -1,0 +1,15 @@
+# Source: k6-operator/templates/clusterRoleBinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: k6-operator-proxy-rolebinding
+  labels:
+  annotations:
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: k6-operator-proxy-role
+subjects:
+  - kind: ServiceAccount
+    name: k6-operator-controller
+    namespace: dev-enablement
