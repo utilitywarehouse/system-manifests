@@ -1,0 +1,97 @@
+global:
+  image:
+    # global.image.registry -- Global image registry to use if it needs to be overridden for some specific use cases (e.g local registries, custom images, ...)
+    registry: ""
+    # global.image.pullSecrets -- Optional set of global image pull secrets
+    pullSecrets: []
+
+# customAnnotations -- Custom Annotations to be applied on all resources
+customAnnotations: {}
+
+# podAnnotations -- Custom Annotations to be applied on all pods
+podAnnotations: {}
+
+# customLabels -- Custom Label to be applied on all resources
+customLabels: {}
+
+# podLabels -- Custom Label to be applied on all pods
+podLabels: {}
+
+# nodeSelector -- Node Selector to be applied on all containers
+nodeSelector: {}
+
+# affinity -- Affinity to be applied on all containers
+affinity: {}
+
+# tolerations -- Tolerations to be applied on all containers
+tolerations: {}
+
+# installCRDs -- Installs CRDs as part of the release
+installCRDs: true
+
+namespace:
+  # namespace.create -- create the namespace (default: true)
+  create: false
+
+prometheus:
+  # prometheus.enabled -- enables the prometheus metrics scraping (default: false)
+  enabled: false
+
+authProxy:
+  # authProxy.enabled -- enables the protection of /metrics endpoint. (https://github.com/brancz/kube-rbac-proxy)
+  enabled: true
+  image:
+    # authProxy.image.registry
+    registry: gcr.io
+    # authProxy.image.repository -- rbac-proxy image repository
+    repository: kubebuilder/kube-rbac-proxy
+    # authProxy.image.tag -- rbac-proxy image tag
+    tag: v0.15.0
+    # authProxy.image.pullPolicy -- pull policy for the image can be Always, Never, IfNotPresent (default: IfNotPresent)
+    pullPolicy: IfNotPresent
+  # authProxy.resources -- rbac-proxy resource limitation/request
+  resources: {}
+  # authProxy.livenessProbe -- Liveness probe in Probe format
+  livenessProbe: {}
+  # authProxy.readinessProbe -- Readiness probe in Probe format
+  readinessProbe: {}
+  # authProxy.containerSecurityContext -- A security context defines privileges and access control settings for the container.
+  containerSecurityContext: {}
+
+manager:
+  # manager.replicas -- number of controller-manager replicas (default: 1)
+  replicas: 1
+  serviceAccount:
+    # manager.serviceAccount.name -- kubernetes service account for the k6 manager
+    name: k6-operator-controller
+    # manager.serviceAccount.create -- create the service account (default: true)
+    create: true
+  image:
+    # manager.image.registry
+    registry: ghcr.io
+    # manager.image.repository -- controller-manager image repository
+    repository: grafana/k6-operator
+    # manager.image.tag -- controller-manager image tag
+    tag: controller-v0.0.16
+    # manager.image.pullPolicy -- pull policy for the image possible values Always, Never, IfNotPresent (default: IfNotPresent)
+    pullPolicy: IfNotPresent
+  # manager.livenessProbe -- Liveness probe in Probe format
+  livenessProbe: {}
+  # manager.readinessProbe -- Readiness probe in Probe format
+  readinessProbe: {}
+  # manager.env -- Environment variables to be applied on the controller
+  env: {}
+  # manager.resources -- controller-manager Resources definition
+  resources:
+    limits:
+      # manager.resources.limits.cpu -- controller-manager CPU limit (Max)
+      cpu: 100m
+      # manager.resources.limits.memory -- controller-manager Memory limit (Max)
+      memory: 100Mi
+    requests:
+      # manager.resources.requests.cpu -- controller-manager CPU request (Min)
+      cpu: 100m
+      # manager.resources.requests.memory -- controller-manager Memory request (Min)
+      memory: 50Mi
+  # manager.containerSecurityContext -- A security context defines privileges and access control settings for the container.
+  containerSecurityContext: {}
