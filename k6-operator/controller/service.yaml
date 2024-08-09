@@ -1,0 +1,23 @@
+# Source: k6-operator/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: k6-operator-controller-manager-metrics-service
+  namespace: dev-enablement
+  labels:
+    control-plane: "controller-manager"
+    app.kubernetes.io/component: controller
+    helm.sh/chart: k6-operator-3.8.0
+    app.kubernetes.io/name: k6-operator
+    app.kubernetes.io/instance: k6-operator
+    app.kubernetes.io/version: "0.0.16"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: k6-operator
+  annotations:
+spec:
+  ports:
+    - name: https
+      port: 8443
+      targetPort: https
+  selector:
+    control-plane: "controller-manager"
