@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: k6-operator-controller-manager
-  namespace: dev-enablement
+  namespace: sys-k6s
   labels:
     control-plane: "controller-manager"
     app.kubernetes.io/component: controller

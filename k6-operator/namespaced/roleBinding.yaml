@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/version: "0.0.16"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
-  namespace: dev-enablement
+  namespace: sys-k6s
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -19,4 +19,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: k6-operator-controller
-    namespace: dev-enablement
+    namespace: sys-k6s

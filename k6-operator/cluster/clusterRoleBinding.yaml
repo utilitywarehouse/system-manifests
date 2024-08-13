@@ -12,4 +12,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: k6-operator-controller
-    namespace: dev-enablement
+    namespace: sys-k6s

@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: k6-operator-leader-election-role
-  namespace: dev-enablement
+  namespace: sys-k6s
   labels:
     app.kubernetes.io/component: controller
     helm.sh/chart: k6-operator-3.8.0
