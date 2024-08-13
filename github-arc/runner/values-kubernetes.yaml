@@ -33,5 +33,5 @@ template:
             value: "false"
 
 controllerServiceAccount:
-  namespace: dev-enablement
+  namespace: sys-actions
   name: arc-gha-rs-controller

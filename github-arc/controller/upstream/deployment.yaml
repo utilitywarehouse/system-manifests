@@ -3,23 +3,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: arc-gha-rs-controller
-  namespace: dev-enablement
+  namespace: sys-actions
   labels:
     helm.sh/chart: gha-rs-controller-0.9.3
     app.kubernetes.io/name: gha-rs-controller
-    app.kubernetes.io/namespace: dev-enablement
+    app.kubernetes.io/namespace: sys-actions
     app.kubernetes.io/instance: arc
     app.kubernetes.io/version: "0.9.3"
     app.kubernetes.io/part-of: gha-rs-controller
     app.kubernetes.io/managed-by: Helm
-    actions.github.com/controller-service-account-namespace: dev-enablement
+    actions.github.com/controller-service-account-namespace: sys-actions
     actions.github.com/controller-service-account-name: arc-gha-rs-controller
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: gha-rs-controller
-      app.kubernetes.io/namespace: dev-enablement
+      app.kubernetes.io/namespace: sys-actions
       app.kubernetes.io/instance: arc
   template:
     metadata:
@@ -30,7 +30,7 @@ spec:
         app.kubernetes.io/component: controller-manager
         app.kubernetes.io/version: 0.9.3
         app.kubernetes.io/name: gha-rs-controller
-        app.kubernetes.io/namespace: dev-enablement
+        app.kubernetes.io/namespace: sys-actions
         app.kubernetes.io/instance: arc
     spec:
       serviceAccountName: arc-gha-rs-controller

@@ -86,5 +86,5 @@ template:
         emptyDir: {}
 
 controllerServiceAccount:
-  namespace: dev-enablement
+  namespace: sys-actions
   name: arc-gha-rs-controller

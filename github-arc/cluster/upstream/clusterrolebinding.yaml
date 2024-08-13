@@ -10,4 +10,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: arc-gha-rs-controller
-    namespace: dev-enablement
+    namespace: sys-actions

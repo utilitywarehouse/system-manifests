@@ -17,5 +17,5 @@ template:
         command: ["/home/runner/run.sh"]
 
 controllerServiceAccount:
-  namespace: dev-enablement
+  namespace: sys-actions
   name: arc-gha-rs-controller

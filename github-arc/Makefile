@@ -9,7 +9,7 @@ get-upstream:
 	curl -Ls -O --output-dir cluster/upstream https://raw.githubusercontent.com/actions/actions-runner-controller/gha-runner-scale-set-$(VERSION)/charts/gha-runner-scale-set-controller/crds/actions.github.com_ephemeralrunners.yaml
 	curl -Ls -O --output-dir cluster/upstream https://raw.githubusercontent.com/actions/actions-runner-controller/gha-runner-scale-set-$(VERSION)/charts/gha-runner-scale-set-controller/crds/actions.github.com_ephemeralrunnersets.yaml
 
-	helm template arc --namespace dev-enablement -f controller/values.yaml oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller --version $(VERSION) > /tmp/ark-controller.yaml
+	helm template arc --namespace sys-actions -f controller/values.yaml oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller --version $(VERSION) > /tmp/ark-controller.yaml
 
 	yq 'select(.kind=="ClusterRole")' /tmp/ark-controller.yaml > cluster/upstream/clusterrole.yaml
 	yq 'select(.kind=="ClusterRoleBinding")' /tmp/ark-controller.yaml > cluster/upstream/clusterrolebinding.yaml

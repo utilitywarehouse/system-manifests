@@ -3,7 +3,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: arc-gha-rs-controller-listener
-  namespace: dev-enablement
+  namespace: sys-actions
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -11,4 +11,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: arc-gha-rs-controller
-    namespace: dev-enablement
+    namespace: sys-actions

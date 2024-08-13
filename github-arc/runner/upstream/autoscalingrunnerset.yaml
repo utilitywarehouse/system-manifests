@@ -14,7 +14,7 @@ metadata:
     actions.github.com/scale-set-name: cluster-os-kubernetes
     actions.github.com/scale-set-namespace: default
   annotations:
-    actions.github.com/values-hash: bb37bea11cbcbb175f968ec8556e54b0f7153acc190d6359e77853f7a9cbe16
+    actions.github.com/values-hash: ec0af35f1e64fba41fa12a3c7c3728f7d20f9694f5fed74d9928a3c915bce1b
     actions.github.com/cleanup-manager-role-binding: cluster-os-kubernetes-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: cluster-os-kubernetes-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: cluster-os-kubernetes-gha-rs-kube-mode
