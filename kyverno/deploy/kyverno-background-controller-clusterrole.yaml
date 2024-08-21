@@ -19,6 +19,17 @@ rules:
     verbs:
       - get
       - update
+  # allow management of certificates to generate automatically the ones for kafka clients
+  - apiGroups:
+      - cert-manager.io
+    resources:
+      - certificates
+    verbs:
+      - delete
+      - get
+      - list
+      - update
+      - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
