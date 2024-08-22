@@ -14,6 +14,7 @@ patches:
   - path: kyverno-admission-controller-replicas-patch.yaml
   - path: kyverno-background-controller-args-patch.yaml
   - path: kyverno-background-controller-metrics-svc-patch.yaml
+  - path: kyverno-background-controller-resources-patch.yaml
   - path: kyverno-cleanup-controller-args-patch.yaml
   - path: kyverno-cleanup-controller-metrics-svc-patch.yaml
   - path: kyverno-config-patch.yaml
