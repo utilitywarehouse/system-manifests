@@ -1,2 +1,2 @@
 localize:
-	kustomize localize "https://github.com/traefik/traefik-helm-chart//traefik/crds?ref=62d7a9be592b552965fb690681b6f4f8865ce792" # valid for v2.10.3
+	kustomize localize "https://github.com/traefik/traefik-helm-chart//traefik/crds?ref=v28.3.0" # Should be the last valid version for v3.0. Migrating to v3.1 comes with breaking changes
