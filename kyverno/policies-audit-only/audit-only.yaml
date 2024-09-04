@@ -44,13 +44,6 @@ metadata:
 spec:
   validationFailureAction: Audit
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: disallow-deprecated-traefik-apis
-spec:
-  validationFailureAction: Audit
----
 # namespaces
 ---
 apiVersion: kyverno.io/v1
