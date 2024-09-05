@@ -175,7 +175,7 @@ metadata:
     actions.github.com/scale-set-name: infra-exp
     actions.github.com/scale-set-namespace: default
   annotations:
-    actions.github.com/values-hash: 384e6f7a8adc5e342d637df39ccb6493e09ef6ecd4faeeb6aaa4f2089a01e04
+    actions.github.com/values-hash: 9e9b87287c4c5c833fe389a482d217638ded5814fe5a9e45ea7287d7109d396
     actions.github.com/cleanup-manager-role-binding: infra-exp-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: infra-exp-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: infra-exp-gha-rs-kube-mode
@@ -185,8 +185,6 @@ spec:
   githubConfigUrl: https://github.com/utilitywarehouse
   githubConfigSecret: arc-auth
   runnerScaleSetName: infra-exp
-  maxRunners: 3
-  minRunners: 1
 
   template:
     spec:

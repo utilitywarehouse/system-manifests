@@ -1,6 +1,5 @@
 VERSION=0.9.3
 CONTROLLER_NAMESPACE=sys-actions
-NAMESPACE=sys-actions
 
 .DEFAULT_GOAL := generate-manifests
 .PHONY: generate-manifests
@@ -31,6 +30,12 @@ runners:
 		| sd "^\s*namespace: default\n" "" > runner/$(RUNNER)/generated-manifests.yaml
 
 	$(eval RUNNER=infra-dev)
+	helm template \
+		oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version $(VERSION) \
+		--values runner/common-values.yaml --values runner/$(RUNNER)/values.yaml  \
+		| sd "^\s*namespace: default\n" "" > runner/$(RUNNER)/generated-manifests.yaml
+
+	$(eval RUNNER=labs-exp)
 	helm template \
 		oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version $(VERSION) \
 		--values runner/common-values.yaml --values runner/$(RUNNER)/values.yaml  \

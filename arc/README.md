@@ -14,9 +14,9 @@ RunnerSets living on the same namespace along the controller.
     update a values.yaml file, changing at least the `runnerScaleSetName`
     value, to the new runner name.
   * On the Makefile, duplicate an existing generator code and update the RUNNER name.
-  * If the runner is deployed in a different namespace, update the NAMESPACE
-    variable on the makefile, and copy the github secret to the new namespace if
-    needed (which will give the team owning the namespace full self-hosted permissions).
+  * If the runner is deployed in a new namespace, copy the github secret to the
+    new namespace (which will give the team owning the namespace full self-hosted
+    permissions).
 
 ## ARC vs static runners
 * PRO: ARC runner pods do not expose credentials to modify Github's runners (our
