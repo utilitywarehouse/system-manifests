@@ -212,12 +212,3 @@ metadata:
   name: mirror-name-length
 spec:
   validationFailureAction: Audit
----
-# Middlewares
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: ensure-prisma-and-onprem-vpn-ip-whitelist
-spec:
-  validationFailureAction: Audit
----
