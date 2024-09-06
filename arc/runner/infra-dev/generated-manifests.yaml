@@ -4,6 +4,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: infra-dev-gha-rs-kube-mode
+  namespace: sys-actions
   finalizers:
     - actions.github.com/cleanup-protection
   labels:
@@ -14,7 +15,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: infra-dev
-    actions.github.com/scale-set-namespace: default
+    actions.github.com/scale-set-namespace: sys-actions
 ---
 # Source: gha-runner-scale-set/templates/kube_mode_role.yaml
 # default permission for runner pod service account in kubernetes mode (container hook)
@@ -22,6 +23,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: infra-dev-gha-rs-kube-mode
+  namespace: sys-actions
   finalizers:
     - actions.github.com/cleanup-protection
 rules:
@@ -46,6 +48,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: infra-dev-gha-rs-manager
+  namespace: sys-actions
   labels:
     helm.sh/chart: gha-rs-0.9.3
     app.kubernetes.io/name: infra-dev
@@ -54,7 +57,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: infra-dev
-    actions.github.com/scale-set-namespace: default
+    actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role
   finalizers:
     - actions.github.com/cleanup-protection
@@ -121,6 +124,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: infra-dev-gha-rs-kube-mode
+  namespace: sys-actions
   finalizers:
     - actions.github.com/cleanup-protection
 roleRef:
@@ -130,12 +134,14 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: infra-dev-gha-rs-kube-mode
+  namespace: sys-actions
 ---
 # Source: gha-runner-scale-set/templates/manager_role_binding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: infra-dev-gha-rs-manager
+  namespace: sys-actions
   labels:
     helm.sh/chart: gha-rs-0.9.3
     app.kubernetes.io/name: infra-dev
@@ -144,7 +150,7 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: infra-dev
-    actions.github.com/scale-set-namespace: default
+    actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role-binding
   finalizers:
     - actions.github.com/cleanup-protection
@@ -164,6 +170,7 @@ apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
   name: infra-dev
+  namespace: sys-actions
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
     helm.sh/chart: gha-rs-0.9.3
@@ -173,9 +180,9 @@ metadata:
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: infra-dev
-    actions.github.com/scale-set-namespace: default
+    actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 4704c2843416250aafea5ad4a1bdcbf6fc3d998ade2243b2acd82adf69d5fb0
+    actions.github.com/values-hash: 5c28737103eee77d3b5333f6371f3781e638b575a672678f4aa666bff63d474
     actions.github.com/cleanup-manager-role-binding: infra-dev-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: infra-dev-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: infra-dev-gha-rs-kube-mode
@@ -185,6 +192,7 @@ spec:
   githubConfigUrl: https://github.com/utilitywarehouse
   githubConfigSecret: arc-auth
   runnerScaleSetName: infra-dev
+  minRunners: 1
 
   template:
     spec:

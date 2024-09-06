@@ -2,6 +2,8 @@ githubConfigUrl: "https://github.com/utilitywarehouse"
 
 githubConfigSecret: arc-auth
 
+minRunners: 1
+
 containerMode:
   type: "kubernetes"
   kubernetesModeWorkVolumeClaim:
