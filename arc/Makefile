@@ -13,10 +13,7 @@ controller:
 	yq 'select(.kind=="ClusterRole")' /tmp/arc-controller.yaml > controller/cluster/clusterrole.yaml
 	yq 'select(.kind=="ClusterRoleBinding")' /tmp/arc-controller.yaml > controller/cluster/clusterrolebinding.yaml
 
-	yq 'select(.kind=="Deployment")' /tmp/arc-controller.yaml > controller/namespaced/deployment.yaml
-	yq 'select(.kind=="Role")' /tmp/arc-controller.yaml > controller/namespaced/role.yaml
-	yq 'select(.kind=="RoleBinding")' /tmp/arc-controller.yaml > controller/namespaced/rolebinding.yaml
-	yq 'select(.kind=="ServiceAccount")' /tmp/arc-controller.yaml > controller/namespaced/serviceaccount.yaml
+	yq 'select(.kind!="CustomResourceDefinition" and .kind!="ClusterRole" and .kind!="ClusterRoleBinding")' /tmp/arc-controller.yaml > controller/namespaced/generated-manifests.yaml
 
 .PHONY: runners
 runners:
