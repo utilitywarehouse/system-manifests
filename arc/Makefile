@@ -13,7 +13,9 @@ controller:
 	yq 'select(.kind=="ClusterRole")' /tmp/arc-controller.yaml > controller/cluster/clusterrole.yaml
 	yq 'select(.kind=="ClusterRoleBinding")' /tmp/arc-controller.yaml > controller/cluster/clusterrolebinding.yaml
 
-	yq 'select(.kind!="CustomResourceDefinition" and .kind!="ClusterRole" and .kind!="ClusterRoleBinding")' /tmp/arc-controller.yaml > controller/namespaced/generated-manifests.yaml
+	yq 'select(.kind!="CustomResourceDefinition" and .kind!="ClusterRole" and .kind!="ClusterRoleBinding")' /tmp/arc-controller.yaml > /tmp/arc-controller-namespaced.yaml
+	# Remove empty yaml documents by generated a unified yaml document and splitting it back
+	yq ea '[.]' /tmp/arc-controller-namespaced.yaml | yq '.[] | split_doc' > controller/namespaced/generated-manifests.yaml
 
 .PHONY: runners
 runners:

@@ -1,10 +1,3 @@
-
----
-
----
-
----
-# Source: gha-runner-scale-set-controller/templates/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
