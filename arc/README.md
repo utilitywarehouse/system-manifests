@@ -1,19 +1,13 @@
 # Github's ARC
 https://github.com/actions/actions-runner-controller
 
-We chose to run it with a single controller per cluster, with one or several
-RunnerSets living on the same namespace, all managed by @system.
+We run the controller and the runners on the same namespace, all managed by
+@system.
 
 ## Instructions
 * To update the manifests, update the VERSION variable in the Makefile and run `make`.
 * To change controller settings, update the controller/values.yaml file (ref: https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set-controller/values.yaml)
 * To change runner settings, update the runner/common-values.yaml and/or the runner/<runner>/values.yaml (ref: https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set/values.yaml). The common-values will be overriden by the specific runner values.
-* To create a new runner:
-  * Create a new dir inside `runner` with the new runner name.
-  * Copy a kustomization.yaml file from another runner, and also copy and
-    update a values.yaml file, changing at least the `runnerScaleSetName`
-    value, to the new runner name.
-  * On the Makefile, duplicate an existing generator code and update the RUNNER name.
 
 ## ARC vs static runners
 * PRO: ARC runner pods do not expose credentials to modify Github's runners (our
@@ -28,7 +22,7 @@ RunnerSets living on the same namespace, all managed by @system.
 * CON: ARC deployment involves helm templating, with CRDs, roles... while
   static runners require very small manifests
 
-## Team-managed runners
+## Team runners
 Teams may want to self-manage dedicated runners to give them access to
 team-owned private resources.
 
@@ -43,10 +37,20 @@ self-hosted runners.
 The github credentials can be used to hijack other runners and steal the
 credentials that are sent to the compromised runners.
 
-An alternative for teams is to let @systems operate a dedicated runner set for
+Usually, configuring dedicated kubectl credentials on the github action is
+enough to meet team's access needs.
+
+Another alternative for teams is to let @systems operate a dedicated runner set for
 them and give their runners access to their team-private resources with network
 policies rules that select only their runners with pod name,label or annotation
 selectors.
+
+### Deploying team-dedicated runners
+* Create a new dir inside `runner` with the new runner name.
+* Copy a kustomization.yaml file from another runner, and also copy and
+  update a values.yaml file, changing at least the `runnerScaleSetName`
+  value, to the new runner name.
+* On the Makefile, duplicate an existing generator code and update the RUNNER name.
 
 ### Deploying team-managed runners
 If teams need a team-managed ARC deployment, the easiest approach would be to
