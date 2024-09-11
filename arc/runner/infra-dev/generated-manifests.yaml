@@ -5,8 +5,6 @@ kind: ServiceAccount
 metadata:
   name: infra-dev-gha-rs-kube-mode
   namespace: sys-actions
-  finalizers:
-    - actions.github.com/cleanup-protection
   labels:
     helm.sh/chart: gha-rs-0.9.3
     app.kubernetes.io/name: infra-dev
@@ -24,24 +22,22 @@ kind: Role
 metadata:
   name: infra-dev-gha-rs-kube-mode
   namespace: sys-actions
-  finalizers:
-    - actions.github.com/cleanup-protection
 rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "list", "create", "delete"]
-- apiGroups: [""]
-  resources: ["pods/exec"]
-  verbs: ["get", "create"]
-- apiGroups: [""]
-  resources: ["pods/log"]
-  verbs: ["get", "list", "watch",]
-- apiGroups: ["batch"]
-  resources: ["jobs"]
-  verbs: ["get", "list", "create", "delete"]
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "list", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["get", "create"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "create", "delete"]
 ---
 # Source: gha-runner-scale-set/templates/manager_role.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -59,65 +55,63 @@ metadata:
     actions.github.com/scale-set-name: infra-dev
     actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role
-  finalizers:
-    - actions.github.com/cleanup-protection
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - create
-  - delete
-  - get
-- apiGroups:
-  - ""
-  resources:
-  - pods/status
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  resources:
-  - secrets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-- apiGroups:
-  - ""
-  resources:
-  - serviceaccounts
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
-  - rolebindings
-  verbs:
-  - create
-  - delete
-  - get
-  - patch
-  - update
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
-  - roles
-  verbs:
-  - create
-  - delete
-  - get
-  - patch
-  - update
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - rolebindings
+    verbs:
+      - create
+      - delete
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+    verbs:
+      - create
+      - delete
+      - get
+      - patch
+      - update
 ---
 # Source: gha-runner-scale-set/templates/kube_mode_role_binding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -125,16 +119,14 @@ kind: RoleBinding
 metadata:
   name: infra-dev-gha-rs-kube-mode
   namespace: sys-actions
-  finalizers:
-    - actions.github.com/cleanup-protection
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: infra-dev-gha-rs-kube-mode
 subjects:
-- kind: ServiceAccount
-  name: infra-dev-gha-rs-kube-mode
-  namespace: sys-actions
+  - kind: ServiceAccount
+    name: infra-dev-gha-rs-kube-mode
+    namespace: sys-actions
 ---
 # Source: gha-runner-scale-set/templates/manager_role_binding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -152,18 +144,14 @@ metadata:
     actions.github.com/scale-set-name: infra-dev
     actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role-binding
-  finalizers:
-    - actions.github.com/cleanup-protection
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: infra-dev-gha-rs-manager
 subjects:
-- kind: ServiceAccount
-  name: 
-    arc-gha-rs-controller
-  namespace: 
-    sys-actions
+  - kind: ServiceAccount
+    name: arc-gha-rs-controller
+    namespace: sys-actions
 ---
 # Source: gha-runner-scale-set/templates/autoscalingrunnerset.yaml
 apiVersion: actions.github.com/v1alpha1
@@ -193,43 +181,37 @@ spec:
   githubConfigSecret: arc-auth
   runnerScaleSetName: infra-dev
   minRunners: 1
-
   template:
     spec:
-      securityContext: 
+      securityContext:
         fsGroup: 123
       restartPolicy: Never
       serviceAccountName: infra-dev-gha-rs-kube-mode
       containers:
-      - name: runner
-        
-        command: 
-          - /home/runner/run.sh
-        image: 
-          ghcr.io/actions/actions-runner:latest
-        env:
-          - 
-            name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
-            value: "false"
-          - name: ACTIONS_RUNNER_CONTAINER_HOOKS
-            value: /home/runner/k8s/index.js
-          - name: ACTIONS_RUNNER_POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-        volumeMounts:
-          - name: work
-            mountPath: /home/runner/_work
-      
+        - name: runner
+          command:
+            - /home/runner/run.sh
+          image: ghcr.io/actions/actions-runner:latest
+          env:
+            - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+              value: "false"
+            - name: ACTIONS_RUNNER_CONTAINER_HOOKS
+              value: /home/runner/k8s/index.js
+            - name: ACTIONS_RUNNER_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: work
+              mountPath: /home/runner/_work
       volumes:
-      
-      - name: work
-        ephemeral:
-          volumeClaimTemplate:
-            spec:
-              accessModes:
-              - ReadWriteOnce
-              resources:
-                requests:
-                  storage: 5Gi
-              storageClassName: netapp-ontap-san-ext4
+        - name: work
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 5Gi
+                storageClassName: netapp-ontap-san-ext4
