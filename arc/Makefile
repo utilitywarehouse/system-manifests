@@ -23,14 +23,14 @@ runners:
 	# clean them up when the pod is killed, and we have argocd to take care
 	# of cleanup anyway.
 
-	$(eval RUNNER=infra-exp)
+	$(eval RUNNER=system-exp-merit)
 	helm template \
 		oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version $(VERSION) \
 		--namespace $(NAMESPACE) \
 		--values runner/common-values.yaml --values runner/$(RUNNER)/values.yaml | yq 'del(.metadata.finalizers)' \
 		> runner/$(RUNNER)/generated-manifests.yaml
 
-	$(eval RUNNER=infra-dev)
+	$(eval RUNNER=system-dev-merit)
 	helm template \
 		oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version $(VERSION) \
 		--namespace $(NAMESPACE) \

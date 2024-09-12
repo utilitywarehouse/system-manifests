@@ -3,16 +3,16 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: infra-dev-gha-rs-kube-mode
+  name: system-exp-merit-gha-rs-kube-mode
   namespace: sys-actions
   labels:
     helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: infra-dev
-    app.kubernetes.io/instance: infra-dev
+    app.kubernetes.io/name: system-exp-merit
+    app.kubernetes.io/instance: system-exp-merit
     app.kubernetes.io/version: "0.9.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: infra-dev
+    actions.github.com/scale-set-name: system-exp-merit
     actions.github.com/scale-set-namespace: sys-actions
 ---
 # Source: gha-runner-scale-set/templates/kube_mode_role.yaml
@@ -20,7 +20,7 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: infra-dev-gha-rs-kube-mode
+  name: system-exp-merit-gha-rs-kube-mode
   namespace: sys-actions
 rules:
   - apiGroups: [""]
@@ -43,16 +43,16 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: infra-dev-gha-rs-manager
+  name: system-exp-merit-gha-rs-manager
   namespace: sys-actions
   labels:
     helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: infra-dev
-    app.kubernetes.io/instance: infra-dev
+    app.kubernetes.io/name: system-exp-merit
+    app.kubernetes.io/instance: system-exp-merit
     app.kubernetes.io/version: "0.9.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: infra-dev
+    actions.github.com/scale-set-name: system-exp-merit
     actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role
 rules:
@@ -117,37 +117,37 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: infra-dev-gha-rs-kube-mode
+  name: system-exp-merit-gha-rs-kube-mode
   namespace: sys-actions
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: infra-dev-gha-rs-kube-mode
+  name: system-exp-merit-gha-rs-kube-mode
 subjects:
   - kind: ServiceAccount
-    name: infra-dev-gha-rs-kube-mode
+    name: system-exp-merit-gha-rs-kube-mode
     namespace: sys-actions
 ---
 # Source: gha-runner-scale-set/templates/manager_role_binding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: infra-dev-gha-rs-manager
+  name: system-exp-merit-gha-rs-manager
   namespace: sys-actions
   labels:
     helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: infra-dev
-    app.kubernetes.io/instance: infra-dev
+    app.kubernetes.io/name: system-exp-merit
+    app.kubernetes.io/instance: system-exp-merit
     app.kubernetes.io/version: "0.9.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: infra-dev
+    actions.github.com/scale-set-name: system-exp-merit
     actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: infra-dev-gha-rs-manager
+  name: system-exp-merit-gha-rs-manager
 subjects:
   - kind: ServiceAccount
     name: arc-gha-rs-controller
@@ -157,36 +157,36 @@ subjects:
 apiVersion: actions.github.com/v1alpha1
 kind: AutoscalingRunnerSet
 metadata:
-  name: infra-dev
+  name: system-exp-merit
   namespace: sys-actions
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
     helm.sh/chart: gha-rs-0.9.3
-    app.kubernetes.io/name: infra-dev
-    app.kubernetes.io/instance: infra-dev
+    app.kubernetes.io/name: system-exp-merit
+    app.kubernetes.io/instance: system-exp-merit
     app.kubernetes.io/version: "0.9.3"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
-    actions.github.com/scale-set-name: infra-dev
+    actions.github.com/scale-set-name: system-exp-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 5c28737103eee77d3b5333f6371f3781e638b575a672678f4aa666bff63d474
-    actions.github.com/cleanup-manager-role-binding: infra-dev-gha-rs-manager
-    actions.github.com/cleanup-manager-role-name: infra-dev-gha-rs-manager
-    actions.github.com/cleanup-kubernetes-mode-role-binding-name: infra-dev-gha-rs-kube-mode
-    actions.github.com/cleanup-kubernetes-mode-role-name: infra-dev-gha-rs-kube-mode
-    actions.github.com/cleanup-kubernetes-mode-service-account-name: infra-dev-gha-rs-kube-mode
+    actions.github.com/values-hash: 93c1ac8beb785ce209ff9234392c06c187b5dcc623a6008079a301389b47e83
+    actions.github.com/cleanup-manager-role-binding: system-exp-merit-gha-rs-manager
+    actions.github.com/cleanup-manager-role-name: system-exp-merit-gha-rs-manager
+    actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-exp-merit-gha-rs-kube-mode
+    actions.github.com/cleanup-kubernetes-mode-role-name: system-exp-merit-gha-rs-kube-mode
+    actions.github.com/cleanup-kubernetes-mode-service-account-name: system-exp-merit-gha-rs-kube-mode
 spec:
   githubConfigUrl: https://github.com/utilitywarehouse
   githubConfigSecret: arc-auth
-  runnerScaleSetName: infra-dev
+  runnerScaleSetName: system-exp-merit
   minRunners: 1
   template:
     spec:
       securityContext:
         fsGroup: 123
       restartPolicy: Never
-      serviceAccountName: infra-dev-gha-rs-kube-mode
+      serviceAccountName: system-exp-merit-gha-rs-kube-mode
       containers:
         - name: runner
           command:
