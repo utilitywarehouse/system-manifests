@@ -1,0 +1,32 @@
+githubConfigUrl: "https://github.com/utilitywarehouse"
+
+githubConfigSecret: arc-auth
+
+minRunners: 1
+
+containerMode:
+  type: "kubernetes"
+  kubernetesModeWorkVolumeClaim:
+    accessModes: ["ReadWriteOnce"]
+    storageClassName: "netapp-ontap-san-ext4"
+    resources:
+      requests:
+        storage: 5Gi
+
+template:
+  spec:
+    # https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/troubleshooting-actions-runner-controller-errors#error-access-to-the-path-homerunner_work_tool-is-denied
+    securityContext:
+      fsGroup: 123
+    containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner:latest
+        command: ["/home/runner/run.sh"]
+        env:
+            # Avoid forcing jobs to have a `container` section
+          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+            value: "false"
+
+controllerServiceAccount:
+  namespace: sys-actions
+  name: arc-gha-rs-controller
