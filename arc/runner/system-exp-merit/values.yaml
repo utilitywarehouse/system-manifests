@@ -1,1 +1,10 @@
-runnerScaleSetName: "system-exp-merit"
+runnerScaleSetName: system-exp-merit
+
+containerMode:
+  type: kubernetes
+  kubernetesModeWorkVolumeClaim:
+    accessModes: [ReadWriteOnce]
+    storageClassName: netapp-ontap-san-ext4
+    resources:
+      requests:
+        storage: 5Gi
