@@ -1,4 +1,4 @@
-runnerScaleSetName: system-exp-merit
+runnerScaleSetName: system-exp-aws
 
 containerMode:
   type: kubernetes
