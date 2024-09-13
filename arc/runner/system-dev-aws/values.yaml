@@ -1,10 +1,10 @@
-runnerScaleSetName: system-dev-merit
+runnerScaleSetName: system-dev-aws
 
 containerMode:
   type: kubernetes
   kubernetesModeWorkVolumeClaim:
     accessModes: [ReadWriteOnce]
-    storageClassName: netapp-ontap-san-ext4
+    storageClassName: ebs-gp3-encrypted
     resources:
       requests:
         storage: 5Gi
