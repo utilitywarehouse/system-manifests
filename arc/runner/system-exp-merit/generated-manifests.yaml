@@ -170,7 +170,7 @@ metadata:
     actions.github.com/scale-set-name: system-exp-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 93c1ac8beb785ce209ff9234392c06c187b5dcc623a6008079a301389b47e83
+    actions.github.com/values-hash: d43ca6569c885977da33f4adb1d11c19c13decbc8ae2fa38f193a2cc8fc7373
     actions.github.com/cleanup-manager-role-binding: system-exp-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-exp-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-exp-merit-gha-rs-kube-mode
@@ -213,5 +213,5 @@ spec:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 5Gi
+                    storage: 50Gi
                 storageClassName: netapp-ontap-san-ext4

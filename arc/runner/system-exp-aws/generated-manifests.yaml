@@ -170,7 +170,7 @@ metadata:
     actions.github.com/scale-set-name: system-exp-aws
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: a9dd12a1c7303056300a421e6987801952a93694c03d3d87d7fcf21aeb5b37c
+    actions.github.com/values-hash: 02aed8dae36d9564ccad54b0997152912751f2abd85943fb4b97100cbf55848
     actions.github.com/cleanup-manager-role-binding: system-exp-aws-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-exp-aws-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-exp-aws-gha-rs-kube-mode
@@ -213,5 +213,5 @@ spec:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 5Gi
+                    storage: 50Gi
                 storageClassName: ebs-gp3-encrypted

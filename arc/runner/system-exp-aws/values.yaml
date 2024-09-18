@@ -7,4 +7,4 @@ containerMode:
     storageClassName: ebs-gp3-encrypted
     resources:
       requests:
-        storage: 5Gi
+        storage: 50Gi

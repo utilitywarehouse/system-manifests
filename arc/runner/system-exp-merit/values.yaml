@@ -7,4 +7,4 @@ containerMode:
     storageClassName: netapp-ontap-san-ext4
     resources:
       requests:
-        storage: 5Gi
+        storage: 50Gi
