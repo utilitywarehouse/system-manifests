@@ -170,7 +170,7 @@ metadata:
     actions.github.com/scale-set-name: system-dev-aws
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: c44c200449b01e7e113995a26f2ce173037ccf08978a03c36edf17e1afa73e1
+    actions.github.com/values-hash: afb0a32162da7cf0462c974c587829cfec8303bdc7b1242e3350e03b8b05f3a
     actions.github.com/cleanup-manager-role-binding: system-dev-aws-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-dev-aws-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-dev-aws-gha-rs-kube-mode
@@ -214,4 +214,3 @@ spec:
                 resources:
                   requests:
                     storage: 50Gi
-                storageClassName: ebs-gp3-encrypted
