@@ -170,7 +170,7 @@ metadata:
     actions.github.com/scale-set-name: system-dev-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 69fe225fb232d6b440937ad54e2d6e63ea8b99839f4ee514ccc625d3ae13284
+    actions.github.com/values-hash: b4cb49eaea6151748bf4a2b15294738896ee6c003bdb6f4612fe67c2df40338
     actions.github.com/cleanup-manager-role-binding: system-dev-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-dev-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-dev-merit-gha-rs-kube-mode
@@ -213,5 +213,4 @@ spec:
                   - ReadWriteOnce
                 resources:
                   requests:
-                    storage: 5Gi
-                storageClassName: netapp-ontap-san-ext4
+                    storage: 50Gi

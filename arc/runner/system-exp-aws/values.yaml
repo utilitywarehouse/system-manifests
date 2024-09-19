@@ -1,10 +1,1 @@
 runnerScaleSetName: system-exp-aws
-
-containerMode:
-  type: kubernetes
-  kubernetesModeWorkVolumeClaim:
-    accessModes: [ReadWriteOnce]
-    storageClassName: ebs-gp3-encrypted
-    resources:
-      requests:
-        storage: 5Gi
