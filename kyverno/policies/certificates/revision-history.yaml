@@ -13,6 +13,9 @@ spec:
           kinds:
           - Certificate
     mutate:
+      targets:
+      - apiVersion: cert-manager.io/v1
+        kind: Certificate
       patchStrategicMerge:
         spec:
           # +(...) This is the clever syntax for if not already set
