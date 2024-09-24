@@ -1,7 +1,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: mutate-certificates-revisionHistoryLimit
+  name: mutate-certificates-revision-history-limit
 spec:
   mutateExistingOnPolicyUpdate: true
   rules:
