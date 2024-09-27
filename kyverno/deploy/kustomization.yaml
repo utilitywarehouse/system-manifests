@@ -18,6 +18,7 @@ patches:
   - path: kyverno-cleanup-controller-args-patch.yaml
   - path: kyverno-cleanup-controller-metrics-svc-patch.yaml
   - path: kyverno-config-patch.yaml
+  - path: kyverno-cronjobs-patch.yaml
   - path: kyverno-reports-controller-args-patch.yaml
   - path: kyverno-reports-controller-metrics-svc-patch.yaml
   - path: kyverno-svc-metrics-patch.yaml
