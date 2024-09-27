@@ -1,8 +1,8 @@
-data_dir: /vector-data-dir
 sources:
   kubernetes_logs:
     type: kubernetes_logs
     extra_namespace_label_selector: "name!=sys-falco"
+    use_apiserver_cache: true
 
 transforms:
   drop_exclude:
@@ -54,6 +54,9 @@ sinks:
     path: /loki/api/v1/push
     encoding:
       codec: text
+    batch:
+      # under loki's "max entry size" of 262144
+      max_bytes: 250000
     labels:
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"
