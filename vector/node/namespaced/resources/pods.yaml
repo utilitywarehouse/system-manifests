@@ -2,6 +2,7 @@ sources:
   kubernetes_logs:
     type: kubernetes_logs
     extra_namespace_label_selector: "name!=sys-falco"
+    use_apiserver_cache: true
 
 transforms:
   drop_exclude:

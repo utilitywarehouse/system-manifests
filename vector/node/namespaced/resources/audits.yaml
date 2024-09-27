@@ -2,6 +2,7 @@ sources:
   kubernetes_events:
     type: kubernetes_logs
     extra_namespace_label_selector: "name=sys-falco"
+    use_apiserver_cache: true
   kubernetes_apiserver:
     type: file
     include:
