@@ -49,15 +49,12 @@ spec:
                   fieldPath: metadata.namespace
           volumeMounts:
             - name: data
-              mountPath: "/vector-data-dir"
+              mountPath: /var/lib/vector
             - name: config
-              mountPath: "/etc/vector/"
+              mountPath: /etc/vector
               readOnly: true
-            - mountPath: /var/log/
-              name: var-log
-              readOnly: true
-            - mountPath: /var/lib
-              name: var-lib
+            - name: var-log
+              mountPath: /var/log
               readOnly: true
           resources:
             requests:
@@ -76,9 +73,6 @@ spec:
         - name: data
           hostPath:
             path: /var/lib/vector
-        - hostPath:
-            path: /var/log/
-          name: var-log
-        - hostPath:
-            path: /var/lib/
-          name: var-lib
+        - name: var-log
+          hostPath:
+            path: /var/log

@@ -1,4 +1,3 @@
-data_dir: /vector-data-dir
 sources:
   kubernetes_events:
     type: kubernetes_logs
