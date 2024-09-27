@@ -28,10 +28,10 @@ spec:
       serviceAccountName: vector-node
       containers:
         - name: vector
-          image: "timberio/vector:0.39.X-debian"
+          image: "timberio/vector:0.41.X-debian"
           args:
             - --config-dir
-            - /etc/vector/
+            - /etc/vector
           env:
             - name: VECTOR_LOG
               value: "info"
