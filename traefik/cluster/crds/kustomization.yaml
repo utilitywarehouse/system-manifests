@@ -1,4 +1,4 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - localized-crds-v28.3.0/traefik/crds/
+  - localized-crds-v32.0.0/traefik/crds/

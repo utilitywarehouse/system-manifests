@@ -1,12 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+- gateway-standard-install-v1.1.0.yaml
 - hub.traefik.io_accesscontrolpolicies.yaml
 - hub.traefik.io_apiaccesses.yaml
 - hub.traefik.io_apiportals.yaml
 - hub.traefik.io_apiratelimits.yaml
 - hub.traefik.io_apis.yaml
 - hub.traefik.io_apiversions.yaml
+- hub.traefik.io_apiplans.yaml
+- hub.traefik.io_apibundles.yaml
 - traefik.io_ingressroutes.yaml
 - traefik.io_ingressroutetcps.yaml
 - traefik.io_ingressrouteudps.yaml
