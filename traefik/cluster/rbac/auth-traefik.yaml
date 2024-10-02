@@ -9,11 +9,18 @@ rules:
       - ""
     resources:
       - services
-      - endpoints
+      - endpoints # Allow during v3.0->v3.1 migration, should be removed after.
       - secrets
       - nodes
     verbs:
       - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
       - list
       - watch
   - apiGroups:
