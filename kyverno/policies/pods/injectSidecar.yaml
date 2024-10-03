@@ -77,6 +77,10 @@ spec:
                 volumeMounts:
                   - name: vault-tls
                     mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                    value: "http://127.0.0.1:8098/credentials"
             containers:
               - (name): "*"
                 env:
@@ -188,6 +192,14 @@ spec:
                 volumeMounts:
                   - name: vault-tls
                     mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                    value: "http://127.0.0.1:8098/credentials"
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8198"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8198"
             containers:
               - (name): "*"
                 env:
@@ -269,6 +281,12 @@ spec:
                 volumeMounts:
                   - name: vault-tls
                     mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
             containers:
               - (name): "*"
                 env:
