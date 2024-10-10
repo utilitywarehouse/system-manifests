@@ -14,6 +14,8 @@ spec:
     metadata:
       labels:
         app: node.csi.trident.netapp.io
+      annotations:
+        openshift.io/required-scc: trident-node-linux
     spec:
       serviceAccount: trident-node-linux
       hostNetwork: true
@@ -31,7 +33,7 @@ spec:
             - all
             add:
             - SYS_ADMIN
-        image: netapp/trident:24.02.0
+        image: netapp/trident:24.06.1
         imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
