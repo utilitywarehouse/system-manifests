@@ -328,10 +328,11 @@ spec:
                 startupProbe:
                   exec:
                     command:
-                      - /bin/sh
-                      - -c
-                      - |
-                        while ! test -f ${GOOGLE_APPLICATION_CREDENTIALS}; do sleep 1; done
+                      - test
+                      - -e
+                      - ${GOOGLE_APPLICATION_CREDENTIALS}
+                  failureThreshold: 5
+                  periodSeconds: 15
                 args:
                   - sidecar
                   - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
