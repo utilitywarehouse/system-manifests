@@ -155,7 +155,7 @@ spec:
                   - name: vault-tls
                     mountPath: /etc/tls
               - name: vault-credentials-agent-gcp
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.0
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -166,8 +166,7 @@ spec:
                         while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                 args:
                   - sidecar
-                  - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
-                  - -secret-type=access_token
+                  - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
                   - -listen-address=127.0.0.1:8198
                   - -operational-address=:8199
                 env:
@@ -211,6 +210,92 @@ spec:
                   - name: GCE_METADATA_ROOT
                     value: "127.0.0.1:8198"
             volumes:
+              - name: vault-tls
+                configMap:
+                  name: vault-tls
+    - name: inject-vault-credentials-agent-gcp
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                injector.tumblr.com/request: "vault-sidecar-gcp"
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp"
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              injector.tumblr.com/status: "injected"
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            initContainers:
+              - name: vault-credentials-agent
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                restartPolicy: Always
+                startupProbe:
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                args:
+                  - sidecar
+                  - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                env:
+                  - name: GOOGLE_APPLICATION_CREDENTIALS
+                    value: "/gcp/sa.json"
+                  - name: VAULT_CACERT
+                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+                volumeMounts:
+                  - name: gcp
+                    mountPath: /gcp
+                  - name: vault-tls
+                    mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: GOOGLE_APPLICATION_CREDENTIALS
+                    value: "/gcp/sa.json"
+            containers:
+              - (name): "*"
+                env:
+                  - name: GOOGLE_APPLICATION_CREDENTIALS
+                    value: "/gcp/sa.json"
+                volumeMounts:
+                  - name: gcp
+                    mountPath: /gcp
+            volumes:
+              - name: gcp
+                emptyDir: {}
               - name: vault-tls
                 configMap:
                   name: vault-tls
