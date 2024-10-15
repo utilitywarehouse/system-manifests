@@ -364,6 +364,9 @@ spec:
                 env:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
                     value: "/gcp/sa.json"
+                volumeMounts:
+                  - name: gcp
+                    mountPath: /gcp
             containers:
               - (name): "*"
                 env:
