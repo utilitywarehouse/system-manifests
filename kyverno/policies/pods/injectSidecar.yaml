@@ -310,13 +310,6 @@ spec:
         any:
           - resources:
               annotations:
-                injector.tumblr.com/request: "vault-sidecar-gcp-key"
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-          - resources:
-              annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-key"
               kinds:
                 - Pod
@@ -395,13 +388,6 @@ spec:
             jmesPath: request.object.spec.serviceAccountName
       match:
         any:
-          - resources:
-              annotations:
-                injector.tumblr.com/request: "vault-sidecar-gcp-token"
-              kinds:
-                - Pod
-              operations:
-                - CREATE
           - resources:
               annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-token"
