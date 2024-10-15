@@ -259,8 +259,10 @@ spec:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
                 env:
-                  - name: GOOGLE_APPLICATION_CREDENTIALS
-                    value: "/gcp/sa.json"
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
                   - name: VAULT_CACERT
                     value: "/etc/tls/ca.crt"
                   - name: VAULT_ADDR
@@ -277,25 +279,22 @@ spec:
                     cpu: 1000m
                     memory: 100Mi
                 volumeMounts:
-                  - name: gcp
-                    mountPath: /gcp
                   - name: vault-tls
                     mountPath: /etc/tls
               - (name): "*"
                 env:
-                  - name: GOOGLE_APPLICATION_CREDENTIALS
-                    value: "/gcp/sa.json"
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
             containers:
               - (name): "*"
                 env:
-                  - name: GOOGLE_APPLICATION_CREDENTIALS
-                    value: "/gcp/sa.json"
-                volumeMounts:
-                  - name: gcp
-                    mountPath: /gcp
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
             volumes:
-              - name: gcp
-                emptyDir: {}
               - name: vault-tls
                 configMap:
                   name: vault-tls
