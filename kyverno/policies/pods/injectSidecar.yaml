@@ -319,7 +319,6 @@ spec:
         patchStrategicMerge:
           metadata:
             annotations:
-              injector.tumblr.com/status: "injected"
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
             initContainers:
@@ -332,7 +331,7 @@ spec:
                       - /bin/sh
                       - -c
                       - |
-                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                        while ! test -f ${GOOGLE_APPLICATION_CREDENTIALS}; do sleep 1; done
                 args:
                   - sidecar
                   - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -399,7 +398,6 @@ spec:
         patchStrategicMerge:
           metadata:
             annotations:
-              injector.tumblr.com/status: "injected"
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
             initContainers:
