@@ -298,6 +298,167 @@ spec:
               - name: vault-tls
                 configMap:
                   name: vault-tls
+    - name: inject-vault-credentials-agent-gcp-key
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-key"
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            initContainers:
+              - name: vault-credentials-agent
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.0
+                restartPolicy: Always
+                startupProbe:
+                  exec:
+                    command:
+                      - test
+                      - -e
+                      - ${GOOGLE_APPLICATION_CREDENTIALS}
+                  failureThreshold: 5
+                  periodSeconds: 15
+                args:
+                  - sidecar
+                  - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                  - -secret-type=service_account_key
+                env:
+                  - name: GOOGLE_APPLICATION_CREDENTIALS
+                    value: "/gcp/sa.json"
+                  - name: VAULT_CACERT
+                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+                volumeMounts:
+                  - name: gcp
+                    mountPath: /gcp
+                  - name: vault-tls
+                    mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: GOOGLE_APPLICATION_CREDENTIALS
+                    value: "/gcp/sa.json"
+                volumeMounts:
+                  - name: gcp
+                    mountPath: /gcp
+            containers:
+              - (name): "*"
+                env:
+                  - name: GOOGLE_APPLICATION_CREDENTIALS
+                    value: "/gcp/sa.json"
+                volumeMounts:
+                  - name: gcp
+                    mountPath: /gcp
+            volumes:
+              - name: gcp
+                emptyDir: {}
+              - name: vault-tls
+                configMap:
+                  name: vault-tls
+    - name: inject-vault-credentials-agent-gcp-token
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-token"
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            initContainers:
+              - name: vault-credentials-agent
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.0
+                restartPolicy: Always
+                startupProbe:
+                  exec:
+                    command:
+                      - /bin/sh
+                      - -c
+                      - |
+                        while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                args:
+                  - sidecar
+                  - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                  - -secret-type=access_token
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
+                  - name: VAULT_CACERT
+                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+                volumeMounts:
+                  - name: vault-tls
+                    mountPath: /etc/tls
+              - (name): "*"
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
+            containers:
+              - (name): "*"
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
+            volumes:
+              - name: vault-tls
+                configMap:
+                  name: vault-tls
     - name: inject-vault-init-container-aws
       context:
         - name: POD_NAMESPACE
