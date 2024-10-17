@@ -42,8 +42,8 @@ transforms:
       - kubernetes_remap
     type: throttle
     key_field: '{{ limit_key }}'
-    threshold: 10
-    window_secs: 1
+    threshold: 100
+    window_secs: 10
 
 sinks:
   loki_kubernetes:
