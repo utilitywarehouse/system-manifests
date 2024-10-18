@@ -1,0 +1,24 @@
+name: test-canary-rules
+policies:
+  - ../canary.yaml
+resources:
+  - test-canary.yaml
+variables: values.yaml
+results:
+  - policy: canary-resources
+    rule: detect-canary-configmap
+    kind: ConfigMap
+    resource: kyverno-canary-resource
+    result: fail
+
+  - policy: canary-resources
+    rule: detect-canary-configmap
+    kind: ConfigMap
+    resource: argocd-cmd-params-cm
+    result: skip
+
+  - policy: canary-resources
+    rule: detect-canary-configmap
+    kind: ServiceAccount
+    resource: kyverno-canary-resource
+    result: skip
