@@ -1,0 +1,24 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: canary-resources
+  annotations:
+    policies.kyverno.io/title: Canary rule to detect canary resources
+    policies.kyverno.io/category: Canary
+    policies.kyverno.io/description: >-
+      This is the canary rule which detects canary resources in the cluster.
+      This is to alert on stopped or missing background scan report alerts.
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+    - name: detect-canary-configmap
+      match:
+        resources:
+          kinds:
+            - ConfigMap
+          names:
+            - kyverno-canary-resource
+      validate:
+        message: "Found kyverno canary configMap in the cluster"
+        deny: {}
