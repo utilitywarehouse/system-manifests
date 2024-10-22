@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kyverno-canary-resource
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-cmd-params-cm
+data:
+  application.namespaces: "*"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kyverno-canary-resource
