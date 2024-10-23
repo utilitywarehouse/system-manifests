@@ -21,6 +21,7 @@ patches:
   - path: kyverno-cronjobs-patch.yaml
   - path: kyverno-reports-controller-args-patch.yaml
   - path: kyverno-reports-controller-metrics-svc-patch.yaml
+  - path: kyverno-reports-controller-resources-patch.yaml
   - path: kyverno-svc-metrics-patch.yaml
   # Patch cleanup-controller to allow access to secret names generated for
   # kube-system namespace, since we deploy Kyverno there.
