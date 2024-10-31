@@ -72,4 +72,4 @@ data:
     - apiGroups:
       - crd.projectcalico.org
       kinds:
-      - NetworkPolicy
+      - "*"
