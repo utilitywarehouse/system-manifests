@@ -66,3 +66,10 @@ data:
   resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
     - field: spec.duration
       type: meta/v1/Duration
+
+  # Configuration to completely ignore entire classes of resource group/kinds (optional)
+  resource.exclusions: |
+    - apiGroups:
+      - crd.projectcalico.org
+      kinds:
+      - NetworkPolicy
