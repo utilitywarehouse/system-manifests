@@ -46,7 +46,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.8.10
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.1
                 restartPolicy: Always
                 startupProbe:
                   exec:
