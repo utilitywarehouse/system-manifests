@@ -8,3 +8,9 @@ resources:
 patchesStrategicMerge:
   - clusterrolebinding-patch.yaml
   - deployment-patch.yaml
+
+# should be removed once this issue is fixed in next version
+# https://github.com/stakater/Reloader/issues/753
+images:
+  - name: ghcr.io/stakater/reloader
+    newTag: v1.1.0
