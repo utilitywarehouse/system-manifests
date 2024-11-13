@@ -9,5 +9,3 @@ resources:
   - pods/
   - serviceaccounts/
   - services/
-
-  - canary-resource.yaml
