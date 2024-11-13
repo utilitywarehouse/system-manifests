@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploy-with-argocd-tracking
+  labels:
+    app: test
+  annotations:
+    argocd.argoproj.io/tracking-id: "not-matched"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test:1.14.2
+          ports:
+            - containerPort: 80
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: without-argo-tracking
+spec:
+  selector:
+    matchLabels:
+      app: test
+  serviceName: "test"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: with-argocd-tracking
+  namespace: kube-system
+  labels:
+    k8s-app: test
+  annotations:
+    argocd.argoproj.io/tracking-id: "not-matched"
+spec:
+  selector:
+    matchLabels:
+      name: test
+  template:
+    metadata:
+      labels:
+        name: test
+    spec:
+      containers:
+        - name: test
+          image: quay.io/test:v2.5.2
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: with-argocd-tracking
+  annotations:
+    argocd.argoproj.io/tracking-id: "not-matched"
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: test
+              image: busybox:1.28
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    argocd.argoproj.io/tracking-id: not-matched
+  labels:
+    app: test
+  name: with-argocd-tracking-and-update-ignore-annotation
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      annotations:
+        argocd.argoproj.io/ignore-resource-updates: "true"
+      labels:
+        app: test
+    spec:
+      containers:
+        - image: test:1.14.2
+          name: test
+          ports:
+            - containerPort: 80
