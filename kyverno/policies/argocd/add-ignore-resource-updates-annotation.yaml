@@ -1,7 +1,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: add-ignore-resource-updates-annotation
+  name: argocd-add-ignore-resource-updates-annotation
   annotations:
     policies.kyverno.io/title: Add Ignore Update Annotations On Child Resources
     policies.kyverno.io/category: Argo
