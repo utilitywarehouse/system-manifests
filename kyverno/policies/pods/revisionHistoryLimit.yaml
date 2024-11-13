@@ -1,0 +1,30 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: mutate-deployment-revision-history-limit
+  annotations:
+    policies.kyverno.io/description: >-
+      The default revisionHistoryLimit for Deployments is 10:
+      https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#revision-history-limit.
+      This is there to allow users to manually undo rollouts when they need by
+      scaling the previous ReplicaSet up and the latest down to 0 replicas. In
+      environments where GitOps drive the CI/CD and effectively Deployment
+      rollouts, the default of 10 is wasteful as there is no intention to use
+      older ReplicaSets. Setting this to 0 means that we effectively disable
+      this manual rollback method and clear all ReplicaSets from ETCDs.
+spec:
+  mutateExistingOnPolicyUpdate: true
+  rules:
+    - match:
+        any:
+          - resources:
+              kinds:
+                - Deployment
+      mutate:
+        patchStrategicMerge:
+          spec:
+            +(revisionHistoryLimit): 0 # +() will allow user to overide by setting this attribute
+        targets:
+          - apiVersion: apps/v1
+            kind: Deployment
+      name: default-deployment-revisionHistoryLimit
