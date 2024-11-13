@@ -331,7 +331,7 @@ spec:
                     command:
                       - test
                       - -e
-                      - ${GOOGLE_APPLICATION_CREDENTIALS}
+                      - /gcp/sa.json
                   failureThreshold: 5
                   periodSeconds: 15
                 args:
