@@ -56,30 +56,30 @@ results:
     result: fail
 
   # Test Add Ignore Update Annotations On Child Resources
-  - policy: add-ignore-resource-updates-annotation
+  - policy: argocd-add-ignore-resource-updates-annotation
     rule: add-ignore-resource-updates-annotations-pods
     kind: Deployment
     resources: [deploy-with-argocd-tracking]
     patchedResource: patched-add-ignore-resource-updates-annotation.yaml
     result: pass
-  - policy: add-ignore-resource-updates-annotation
+  - policy: argocd-add-ignore-resource-updates-annotation
     rule: add-ignore-resource-updates-annotations-pods
     kind: DaemonSet
     resources: [with-argocd-tracking]
     patchedResource: patched-add-ignore-resource-updates-annotation.yaml
     result: pass
-  - policy: add-ignore-resource-updates-annotation
+  - policy: argocd-add-ignore-resource-updates-annotation
     rule: add-ignore-resource-updates-annotations-cronjob
     kind: CronJob
     resources: [with-argocd-tracking]
     patchedResource: patched-add-ignore-resource-updates-annotation.yaml
     result: pass
-  - policy: add-ignore-resource-updates-annotation
+  - policy: argocd-add-ignore-resource-updates-annotation
     rule: add-ignore-resource-updates-annotations-pods
     kind: StatefulSet
     resources: [without-argo-tracking]
     result: skip
-  - policy: add-ignore-resource-updates-annotation
+  - policy: argocd-add-ignore-resource-updates-annotation
     rule: add-ignore-resource-updates-annotations-pods
     kind: Deployment
     resources: [with-argocd-tracking-and-update-ignore-annotation]
