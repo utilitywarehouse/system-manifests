@@ -21,11 +21,9 @@ spec:
         any:
           - resources:
               kinds:
-                - Pods
+                - Pod
               namespaces:
                 - do-not-exit # should be patched in cluster with list of argocd managed NS
-              annotations:
-                argocd.argoproj.io/tracking-id: "?*"
       mutate:
         patchStrategicMerge:
           metadata:
