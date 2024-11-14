@@ -1,0 +1,31 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: argocd-add-ignore-resource-updates-annotation-pods
+  annotations:
+    policies.kyverno.io/title: Add Ignore Update Annotations On Child Resources
+    policies.kyverno.io/category: Argo
+    policies.kyverno.io/description: >-
+      This is extension to "argocd-add-ignore-resource-updates-annotation" policy
+      original policy updates parent resources and adds annotations to the templates
+      since that results in restarts of the pod, background scan is disabled.
+
+      This policy adds annotation directly to the pods hence there is no restarts
+      but since there is no way to know if parent object is tracked by ArgoCD this 
+      policy should be restricted to known ArgoCD managed namespace only.
+spec:
+  background: true
+  rules:
+    - name: add-ignore-resource-updates-annotations-pods
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - do-not-exit # should be patched in cluster with list of argocd managed NS
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              +(argocd.argoproj.io/ignore-resource-updates): "true"
