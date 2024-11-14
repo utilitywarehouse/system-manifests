@@ -10,8 +10,10 @@ metadata:
       scaling the previous ReplicaSet up and the latest down to 0 replicas. In
       environments where GitOps drive the CI/CD and effectively Deployment
       rollouts, the default of 10 is wasteful as there is no intention to use
-      older ReplicaSets. Setting this to 0 means that we effectively disable
-      this manual rollback method and clear all ReplicaSets from ETCDs.
+      older ReplicaSets. Setting this to 2 so that we keep offering users the
+      ability of manual rollbacks of a couple of versions, while helping store
+      80% less ReplicaSets in our ETCD store. User's should be able to override
+      if needed.
 spec:
   mutateExistingOnPolicyUpdate: true
   rules:
@@ -23,7 +25,7 @@ spec:
       mutate:
         patchStrategicMerge:
           spec:
-            +(revisionHistoryLimit): 0 # +() will allow user to overide by setting this attribute
+            +(revisionHistoryLimit): 2 # +() will allow user to override by setting this attribute
         targets:
           - apiVersion: apps/v1
             kind: Deployment
