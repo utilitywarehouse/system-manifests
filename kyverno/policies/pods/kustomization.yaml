@@ -13,7 +13,6 @@ resources:
   - privileged.yaml
   - privilege-escalation.yaml
   - procMount.yaml
-  - revisionHistoryLimit.yaml
   - Seccomp.yaml
   - SELinux.yaml
   - sysctls.yaml
