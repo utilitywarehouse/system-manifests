@@ -14,7 +14,7 @@ metadata:
       but since there is no way to know if parent object is tracked by ArgoCD this 
       policy should be restricted to known ArgoCD managed namespace only.
 spec:
-  background: false # only update resource via webhook to avoid unnecessary restarts
+  background: true
   rules:
     - name: add-ignore-resource-updates-annotations-pods
       match:
