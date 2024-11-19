@@ -531,6 +531,8 @@ spec:
                   - sidecar
                   - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
                   - -secret-type=service_account_key
+                  - -listen-address=127.0.0.1:8198
+                  - -operational-address=:8199
                 env:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
                     value: "/gcp/sa.json"
