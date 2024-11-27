@@ -46,7 +46,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.1
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.2
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -123,7 +123,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent-aws
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.1
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.2
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -155,7 +155,7 @@ spec:
                   - name: vault-tls
                     mountPath: /etc/tls
               - name: vault-credentials-agent-gcp
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.1
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.2
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -324,7 +324,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.1
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.2
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -407,7 +407,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.1
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.2
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -485,7 +485,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent-aws
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.1
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.2
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -517,7 +517,7 @@ spec:
                   - name: vault-tls
                     mountPath: /etc/tls
               - name: vault-credentials-agent-gcp
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.1
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.2
                 restartPolicy: Always
                 startupProbe:
                   exec:
