@@ -5,13 +5,9 @@ metadata:
 policies:
   - ../application-field-validation.yaml
   - ../application-prevent-default-project.yaml
-  - ../add-ignore-resource-updates-annotation.yaml
-  - ../add-ignore-resource-updates-annotation-pods.yaml
 resources:
   - test-application-prevent-default-project.yaml
   - test-application-field-validation.yaml
-  - test-add-ignore-resource-updates-annotation.yaml
-  - test-add-ignore-resource-updates-annotation-pod.yaml
 results:
   # Test default-project
   - policy: argocd-application-prevent-default-project
@@ -56,18 +52,3 @@ results:
     kind: Application
     resource: test-missing-destination-namespace
     result: fail
-
-  # Test Add Ignore Update Annotations On Child Resources
-  - policy: argocd-add-ignore-resource-updates-annotation-pods
-    rule: add-ignore-resource-updates-annotations-pods
-    kind: Pod
-    resources: [in-valid-ns]
-    patchedResource: patched-test-add-ignore-resource-updates-annotation-pod.yaml
-    result: pass
-  - policy: argocd-add-ignore-resource-updates-annotation-pods
-    rule: add-ignore-resource-updates-annotations-pods
-    kind: Pod
-    resources:
-      - with-annotation
-      - non-tracked-ns
-    result: skip
