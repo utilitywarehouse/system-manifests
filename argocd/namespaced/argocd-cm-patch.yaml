@@ -63,6 +63,10 @@ data:
     jsonPointers:
       - /status
 
+  # add all ignored differences customizations to ignore resource updates as well.
+  resource.compareoptions: |
+    ignoreDifferencesOnResourceUpdates: true
+
   resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
     - field: spec.duration
       type: meta/v1/Duration
