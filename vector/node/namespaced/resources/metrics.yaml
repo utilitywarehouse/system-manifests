@@ -1,9 +1,55 @@
 sources:
   vector_metrics:
     type: internal_metrics
+
+transforms:
+  # Reroute the metrics that have pod_name labels, so they can be aggregated before being exported
+  expensive_metrics_router:
+    type: route
+    inputs:
+      - vector_metrics
+    route:
+      received_bytes: .tags.component_type == "kubernetes_logs" && .name == "component_received_event_bytes_total"
+      received_events: .tags.component_type == "kubernetes_logs" && .name == "component_received_events_total"
+
+  # Agreggate metrics by removing pod_name and pod_namespace labels
+  expensive_metrics_aggregator:
+    type: lua
+    version: "2"
+    inputs:
+      - expensive_metrics_router.received_bytes
+      - expensive_metrics_router.received_events
+    source: "require('metrics')" # sources the file `metrics.lua`
+    hooks:
+      init: init
+      process: on_event
+      shutdown: on_timer
+    timers:
+      - handler: on_timer
+        interval_seconds: 5
+
+  # Split the generated metrics and the potential error logs, since they go to different sinks
+  expensive_metrics_aggregator_router:
+    type: route
+    inputs:
+      - expensive_metrics_aggregator
+    route:
+      logs:
+        type: is_log
+      metrics:
+        type: is_metric
+
 sinks:
   prometheus:
     type: prometheus_exporter
     address: 0.0.0.0:8080
     inputs:
-      - vector_metrics
+      - expensive_metrics_router._unmatched
+      - expensive_metrics_aggregator_router.metrics
+
+  expensive_metrics_aggregator_logger:
+    type: console
+    encoding:
+      codec: text
+    inputs:
+      - expensive_metrics_aggregator_router.logs
