@@ -9,7 +9,6 @@ rules:
       - ""
     resources:
       - services
-      - endpoints # Allow during v3.0->v3.1 migration, should be removed after.
       - secrets
       - nodes
     verbs:
