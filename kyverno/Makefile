@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := get-upstream
 .PHONY: get-upstream
 
-VERSION=v1.12.5
+VERSION=v1.13.1
 
 get-upstream:
 	curl -LOs https://github.com/kyverno/kyverno/releases/download/${VERSION}/install.yaml
