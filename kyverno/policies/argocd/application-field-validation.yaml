@@ -88,6 +88,7 @@ spec:
               kinds:
                 - Application
       validate:
+        allowExistingViolations: true
         message: >-
           `spec.destination.namespace` should not be empty.
         pattern:
