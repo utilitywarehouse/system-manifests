@@ -10,7 +10,9 @@ spec:
         - args:
             - --metricsPort=8000 # Default, but leaving for visibility since we need to patch Prometheus annotations on Service level.
             - --admissionReports=false
+            - --aggregateReports=false
             - --policyReports=false
+            - --backgroundScan=false
             - --validatingAdmissionPolicyReports=false # Already default, but guarding future changes by explicitly setting
             - -v=0
           name: controller
