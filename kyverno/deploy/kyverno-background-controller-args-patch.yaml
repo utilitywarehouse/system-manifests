@@ -20,4 +20,5 @@ spec:
             - --v=0
             - --omitEvents=PolicyApplied,PolicySkipped
             - --enablePolicyException=false
+            - --maxBackgroundReports=0 # Do not allow background controller to create ephemeral reports
           name: controller
