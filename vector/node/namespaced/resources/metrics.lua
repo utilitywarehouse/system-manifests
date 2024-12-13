@@ -1,32 +1,26 @@
 function init()
-	-- Initialize the global Data table
-	Data = {
-		inactive = {
-			component_received_events_total = 0,
-			component_received_event_bytes_total = 0,
-		},
-		active = {
-			component_received_events_total = {},
-			component_received_event_bytes_total = {},
-		},
+	-- Initialize the global LastValue table
+	LastValue = {
+		component_received_events_total = {},
+		component_received_event_bytes_total = {},
 	}
 end
 
 function on_event(event, emit)
-	if not pcall(upsert_metric, event) then
-		emit(generate_log("ERROR on upsert_metric", event))
+	if not pcall(process_event, event, emit) then
+		emit(generate_log("ERROR on process_event", event))
 		error() -- delegates on vector generating and increasing the error metric
 	end
 end
 
 function on_timer(emit)
-	if not pcall(emit_metrics, emit) then
-		emit(generate_log("ERROR on emit_metrics", Data))
+	if not pcall(cleanup_inactive_pods) then
+		emit(generate_log("ERROR on cleanup_inactive_pods", LastValue))
 		error() -- delegates on vector generating and increasing the error metric
 	end
 end
 
-function upsert_metric(event)
+function process_event(event, emit)
 	-- ensure that we don't mess with custom kube sources like "kubernetes_events"
 	if event.metric.tags.component_id ~= "kubernetes_logs" then
 		error()
@@ -42,23 +36,21 @@ function upsert_metric(event)
 		error()
 	end
 
-	Data["active"][name][ns .. "__" .. pod] = value
-end
+	local last_value = LastValue[name][ns .. "__" .. pod] or 0
+	local inc = value - last_value
 
-function emit_metrics(emit)
-	cleanup_inactive_pods()
-	emit(generate_metric("component_received_events_total"))
-	emit(generate_metric("component_received_event_bytes_total"))
+	emit(generate_metric(name, ns, inc))
+
+	LastValue[name][ns .. "__" .. pod] = value
 end
 
 function cleanup_inactive_pods()
 	active = active_pods()
 
-	for metric, pods in pairs(Data.active) do
-		for pod, value in pairs(pods) do
+	for metric, pods in pairs(LastValue) do
+		for pod, _ in pairs(pods) do
 			if not active[pod] then
-				Data["inactive"][metric] = Data["inactive"][metric] + value
-				Data["active"][metric][pod] = nil
+				LastValue[metric][pod] = nil
 			end
 		end
 	end
@@ -82,6 +74,7 @@ function active_pods()
 end
 
 function generate_log(message, payload)
+	payload = payload or {}
 	local json = '{"timestamp":"'
 		.. os.date("%Y-%m-%dT%H:%M:%S")
 		.. '","message":"'
@@ -98,12 +91,7 @@ function generate_log(message, payload)
 	}
 end
 
-function generate_metric(name)
-	local active = 0
-	for _, value in pairs(Data["active"][name]) do
-		active = active + tostring(value)
-	end
-	local total = active + Data["inactive"][name]
+function generate_metric(name, namespace, value)
 	return {
 		metric = {
 			name = name,
@@ -112,10 +100,11 @@ function generate_metric(name)
 				component_id = "kubernetes_logs",
 				component_kind = "source",
 				component_type = "kubernetes_logs",
+				pod_namespace = namespace,
 			},
-			kind = "absolute",
+			kind = "incremental",
 			counter = {
-				value = total,
+				value = value,
 			},
 			timestamp = os.date("!*t"),
 		},
