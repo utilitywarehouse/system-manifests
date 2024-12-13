@@ -29,7 +29,6 @@ spec:
               kinds:
                 - Application
       validate:
-        allowExistingViolations: true
         message: >-
           `spec.project` should not be empty.
         pattern:
@@ -43,7 +42,6 @@ spec:
               kinds:
                 - Application
       validate:
-        allowExistingViolations: true
         message: >-
           `spec.source.path` should be specified
         pattern:
@@ -58,7 +56,6 @@ spec:
               kinds:
                 - Application
       validate:
-        allowExistingViolations: true
         message: >-
           `spec.source.chart` should not use helm chart.
         pattern:
@@ -73,7 +70,6 @@ spec:
 #              kinds:
 #                - Application
 #      validate:
-#        allowExistingViolations: true
 #        message: >-
 #          `spec.destination.name` should not be empty.
 #        pattern:
@@ -88,7 +84,6 @@ spec:
               kinds:
                 - Application
       validate:
-        allowExistingViolations: true
         message: >-
           `spec.destination.namespace` should not be empty.
         pattern:
