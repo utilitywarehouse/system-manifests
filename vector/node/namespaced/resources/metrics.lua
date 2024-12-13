@@ -21,11 +21,6 @@ function on_timer(emit)
 end
 
 function process_event(event, emit)
-	-- ensure that we don't mess with custom kube sources like "kubernetes_events"
-	if event.metric.tags.component_id ~= "kubernetes_logs" then
-		error()
-	end
-
 	local name = event.metric.name
 	local ns = event.metric.tags.pod_namespace
 	local pod = event.metric.tags.pod_name

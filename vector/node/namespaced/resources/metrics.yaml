@@ -9,8 +9,8 @@ transforms:
     inputs:
       - vector_metrics
     route:
-      received_bytes: .tags.component_type == "kubernetes_logs" && .name == "component_received_event_bytes_total"
-      received_events: .tags.component_type == "kubernetes_logs" && .name == "component_received_events_total"
+      received_bytes: .tags.component_id == "kubernetes_logs" && .name == "component_received_event_bytes_total"
+      received_events: .tags.component_id == "kubernetes_logs" && .name == "component_received_events_total"
 
   # Agreggate metrics by removing pod_name and pod_namespace labels
   expensive_metrics_aggregator:
