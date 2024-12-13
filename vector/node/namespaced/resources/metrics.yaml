@@ -26,7 +26,7 @@ transforms:
       shutdown: on_timer
     timers:
       - handler: on_timer
-        interval_seconds: 5
+        interval_seconds: 60
 
   # Split the generated metrics and the potential error logs, since they go to different sinks
   expensive_metrics_aggregator_router:
