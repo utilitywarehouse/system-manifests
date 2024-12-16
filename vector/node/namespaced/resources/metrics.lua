@@ -7,6 +7,8 @@ function init()
 end
 
 function on_event(event, emit)
+	--TODO: remove
+	emit(event)
 	if not pcall(process_event, event, emit) then
 		emit(generate_log("ERROR on process_event", event))
 		error() -- delegates on vector generating and increasing the error metric
@@ -90,7 +92,8 @@ function generate_metric(name, namespace, value)
 	return {
 		metric = {
 			name = name,
-			namespace = "vector",
+			--TODO: change to vector
+			namespace = "hh",
 			tags = {
 				component_id = "kubernetes_logs",
 				component_kind = "source",
