@@ -1,6 +1,6 @@
 .PHONY: get-upstream
 
-version=v0.14.5
+version=v0.14.9
 cluster_resources=ClusterRole|ClusterRoleBinding|CustomResourceDefinition|ValidatingWebhookConfiguration
 namespaced_resources=DaemonSet|Deployment|Role|RoleBinding|Secret|Service|ServiceAccount
 
