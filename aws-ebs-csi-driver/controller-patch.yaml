@@ -1,3 +1,5 @@
+# VolumeAttributesClass feature gate patched based on:
+# https://github.com/kubernetes-sigs/aws-ebs-csi-driver/pull/2240/files
 kind: Deployment
 apiVersion: apps/v1
 metadata:
@@ -27,7 +29,19 @@ spec:
             - --csi-address=$(ADDRESS)
             - --v=2
             - --feature-gates=Topology=true
-            - --feature-gates=CrossNamespaceVolumeDataSource=true
+            - --feature-gates=CrossNamespaceVolumeDataSource=true,VolumeAttributesClass=true
             - --extra-create-metadata
             - --leader-election=true
             - --default-fstype=ext4
+        - name: csi-resizer
+          args:
+            - --timeout=60s
+            - --csi-address=$(ADDRESS)
+            - --v=2
+            - --handle-volume-inuse-error=false
+            - --leader-election=true
+            - --kube-api-qps=20
+            - --kube-api-burst=100
+            - --workers=100
+            - --retry-interval-max=30m
+            - --feature-gates=VolumeAttributesClass=true
