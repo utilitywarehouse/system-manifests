@@ -4,6 +4,10 @@ function init()
 		component_received_events_total = {},
 		component_received_event_bytes_total = {},
 	}
+	-- since vector by default keeps these metrics, global config flag `
+	-- expire_metrics_secs` must be set
+	-- this interval should be higher then `expire_metrics_secs`
+	ExpireMetricSecs = 900
 end
 
 function on_event(event, emit)
@@ -16,33 +20,61 @@ function on_event(event, emit)
 end
 
 function on_timer(emit)
-	if not pcall(cleanup_inactive_pods) then
-		emit(generate_log("ERROR on cleanup_inactive_pods", LastValue))
+	if not pcall(cleanup_inactive_metrics) then
+		emit(generate_log("ERROR on cleanup_inactive_metrics", LastValue))
 		error() -- delegates on vector generating and increasing the error metric
 	end
 end
 
 function process_event(event, emit)
-	local name = event.metric.name
-	local ns = event.metric.tags.pod_namespace
-	local pod = event.metric.tags.pod_name
-	local value = event.metric.counter.value
-
 	-- ensure that the metric type hasn't changed
 	if event.metric.kind ~= "absolute" then
 		error()
 	end
 
+
+	local name = event.metric.name
+	local ns = event.metric.tags.pod_namespace
+	local pod = event.metric.tags.pod_name
+	local newValue = event.metric.counter.value
+	local key = ns .. "__" .. pod
+
 	if ns == "labs" then
 		emit(generate_log("ERROR received labs event", event))
 	end
 
-	local last_value = LastValue[name][ns .. "__" .. pod] or 0
-	local inc = value - last_value
+	if LastValue[name][key] == nil then
+		LastValue[name][key] = { value = 0, updatedAt = os.time() }
+	end
 
-	emit(generate_metric(name, ns, inc))
+	local inc = newValue - LastValue[name][key].value
 
-	LastValue[name][ns .. "__" .. pod] = value
+	if inc > 0 then
+		emit(generate_metric(name, ns, inc))
+	elseif inc < 0 then
+		emit(generate_log("ERROR negative inc value inc:" .. inc .. ", oldValue:" .. LastValue[name][key].value, event))
+	end
+
+	-- since vector by default persists inactive metrics, global config flag
+	-- `expire_metrics_secs` must be set to expire stale metrics.
+	-- since vector will remove these metrics based on last updated time
+	-- script needs to maintain its own timestamp for clean up
+	if LastValue[name][key].value ~= newValue then
+		LastValue[name][key].value = newValue
+		LastValue[name][key].updatedAt = os.time()
+	end
+end
+
+function cleanup_inactive_metrics()
+	local currentTime = os.time()
+
+	for metric, pods in pairs(LastValue) do
+		for pod, _ in pairs(pods) do
+			if (currentTime - pod.updatedAt) > ExpireMetricSecs then
+				LastValue[metric][pod] = nil
+			end
+		end
+	end
 end
 
 function cleanup_inactive_pods()
