@@ -33,6 +33,10 @@ function process_event(event, emit)
 		error()
 	end
 
+	if ns == "labs" then
+		emit(generate_log("ERROR received labs event", event))
+	end
+
 	local last_value = LastValue[name][ns .. "__" .. pod] or 0
 	local inc = value - last_value
 
