@@ -23,10 +23,12 @@ transforms:
     hooks:
       init: init
       process: on_event
-      shutdown: on_timer
     timers:
       - handler: on_timer
-        interval_seconds: 60
+        # on_timer func cleans up inactive pod's metrics
+        # since vector by default keeps these metrics, global config flag `expire_metrics_secs` must be set
+        # and 'on_timer' interval should be higher then `expire_metrics_secs`
+        interval_seconds: 900
 
   # Split the generated metrics and the potential error logs, since they go to different sinks
   expensive_metrics_aggregator_router:
