@@ -7,21 +7,24 @@ function init()
 	-- since vector by default keeps these metrics, global config flag `
 	-- expire_metrics_secs` must be set
 	-- this interval should be higher then `expire_metrics_secs`
-	ExpireMetricSecs = 900
+	ExpireMetricSecs = 600
 end
 
 function on_event(event, emit)
 	--TODO: remove
-	emit(event)
-	if not pcall(process_event, event, emit) then
-		emit(generate_log("ERROR on process_event", event))
+	-- emit(event)
+
+	local status, err = pcall(process_event, event, emit)
+	if not status then
+		emit(generate_log("ERROR on process_event" .. err, event))
 		error() -- delegates on vector generating and increasing the error metric
 	end
 end
 
 function on_timer(emit)
-	if not pcall(cleanup_inactive_metrics) then
-		emit(generate_log("ERROR on cleanup_inactive_metrics", LastValue))
+	local status, err = pcall(cleanup_inactive_metrics, emit)
+	if not status then
+		emit(generate_log("ERROR on cleanup_inactive_metrics" .. err, LastValue))
 		error() -- delegates on vector generating and increasing the error metric
 	end
 end
@@ -29,18 +32,24 @@ end
 function process_event(event, emit)
 	-- ensure that the metric type hasn't changed
 	if event.metric.kind ~= "absolute" then
+		emit(generate_log("ERROR only absolute events can be aggregated", event))
 		error()
 	end
 
-
 	local name = event.metric.name
-	local ns = event.metric.tags.pod_namespace
-	local pod = event.metric.tags.pod_name
+	local ns = event.metric.tags.pod_namespace or ""
+	local pod = event.metric.tags.pod_name or ""
 	local newValue = event.metric.counter.value
 	local key = ns .. "__" .. pod
 
-	if ns == "labs" then
-		emit(generate_log("ERROR received labs event", event))
+	if ns == "" then
+		emit(generate_log("ERROR empty namespace not allowed", event))
+		error()
+	end
+
+	if pod == "" then
+		emit(generate_log("ERROR empty pod name not allowed", event))
+		error()
 	end
 
 	if LastValue[name][key] == nil then
@@ -52,7 +61,12 @@ function process_event(event, emit)
 	if inc > 0 then
 		emit(generate_metric(name, ns, inc))
 	elseif inc < 0 then
-		emit(generate_log("ERROR negative inc value inc:" .. inc .. ", oldValue:" .. LastValue[name][key].value, event))
+		emit(generate_log("ERROR adjusting negative diff inc:" .. inc .. ", old:" .. table_to_json(LastValue[name][key]),
+			event))
+		-- since metrics are counters if new value is < old value then we can
+		-- assume metrics has been expired on vector end.
+		-- hence we can take newValue as "new" initial value
+		emit(generate_metric(name, ns, newValue))
 	end
 
 	-- since vector by default persists inactive metrics, global config flag
@@ -65,52 +79,23 @@ function process_event(event, emit)
 	end
 end
 
-function cleanup_inactive_metrics()
+function cleanup_inactive_metrics(emit)
 	local currentTime = os.time()
 
 	for metric, pods in pairs(LastValue) do
 		for pod, _ in pairs(pods) do
-			if (currentTime - pod.updatedAt) > ExpireMetricSecs then
+			if (currentTime - LastValue[metric][pod].updatedAt) > ExpireMetricSecs then
 				LastValue[metric][pod] = nil
 			end
 		end
 	end
-end
-
-function cleanup_inactive_pods()
-	active = active_pods()
-
-	for metric, pods in pairs(LastValue) do
-		for pod, _ in pairs(pods) do
-			if not active[pod] then
-				LastValue[metric][pod] = nil
-			end
-		end
-	end
-end
-
-function active_pods()
-	local ls_handle = io.popen("ls /var/log/containers")
-	local containers
-	if ls_handle then
-		containers = ls_handle:read("*a")
-		ls_handle:close()
-	end
-
-	local pods = {}
-	for container in string.gmatch(containers, "[^\n]+") do
-		local pod, ns = string.match(container, "([^_]+)_([^_]+)")
-		local id = ns .. "__" .. pod
-		pods[id] = true
-	end
-	return pods
 end
 
 function generate_log(message, payload)
 	payload = payload or {}
 	local json = '{"timestamp":"'
 		.. os.date("%Y-%m-%dT%H:%M:%S")
-		.. '","message":"'
+		.. '","message":" [metrics.lua] '
 		.. message
 		.. '","payload":'
 		.. table_to_json(payload)
@@ -146,6 +131,10 @@ function generate_metric(name, namespace, value)
 end
 
 function table_to_json(t)
+	if t == nil then
+		return "null"
+	end
+
 	local contents = {}
 	for key, value in pairs(t) do
 		if type(value) == "table" then

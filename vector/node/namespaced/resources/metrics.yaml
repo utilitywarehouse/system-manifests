@@ -25,7 +25,7 @@ transforms:
       process: on_event
     timers:
       - handler: on_timer
-        interval_seconds: 300
+        interval_seconds: 30
 
   # Split the generated metrics and the potential error logs, since they go to different sinks
   expensive_metrics_aggregator_router:
@@ -43,8 +43,16 @@ sinks:
     type: prometheus_exporter
     address: 0.0.0.0:8080
     inputs:
-      - expensive_metrics_router._unmatched
+      - vector_metrics
+      # - expensive_metrics_router._unmatched
       - expensive_metrics_aggregator_router.metrics
+
+  expensive_metrics_prometheus:
+    type: prometheus_exporter
+    address: 0.0.0.0:8090
+    inputs:
+      - expensive_metrics_router.received_bytes
+      - expensive_metrics_router.received_events
 
   expensive_metrics_aggregator_logger:
     type: console

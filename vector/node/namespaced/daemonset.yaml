@@ -17,8 +17,6 @@ spec:
         app.kubernetes.io/instance: vector-node
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/path: /metrics
-        prometheus.io/port: "8080"
     spec:
       tolerations:
         - key: node-role.kubernetes.io/master
@@ -56,6 +54,10 @@ spec:
             - name: var-log
               mountPath: /var/log
               readOnly: true
+          ports:
+            - name: metrics
+              containerPort: 8080
+              protocol: TCP
           resources:
             requests:
               cpu: 0m
