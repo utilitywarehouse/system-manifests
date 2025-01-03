@@ -77,3 +77,21 @@ data:
       - crd.projectcalico.org
       kinds:
       - "*"
+    - apiGroups:
+      - kyverno.io
+      - reports.kyverno.io
+      kinds:
+      - AdmissionReport
+      - BackgroundScanReport
+      - ClusterAdmissionReport
+      - ClusterBackgroundScanReport
+      - ClusterCleanupPolicy
+      - ClusterEphemeralReport
+      - ClusterPolicy
+      - ClusterReportChangeRequest
+      - EphemeralReport
+      - GenerateRequest
+      - GlobalContextEntry
+      - PolicyException
+      - ReportChangeRequest
+      - UpdateRequest
