@@ -11,3 +11,4 @@ configMapGenerator:
       - metrics.yaml=resources/metrics.yaml
       - pods.yaml=resources/pods.yaml
       - systemd.yaml=resources/systemd.yaml
+      - resources/global.yaml
