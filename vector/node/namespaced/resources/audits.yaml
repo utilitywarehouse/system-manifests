@@ -31,11 +31,8 @@ sinks:
     endpoint: http://loki-audits.sys-log.svc.cluster.aws:3100
     encoding:
       codec: text
-    batch:
-      # under loki's "max entry size" of 262144
-      max_bytes: 250000
     labels:
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"
-      log_source: '{{ log_source }}'
+      log_source: "{{ log_source }}"
