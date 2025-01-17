@@ -41,7 +41,7 @@ transforms:
     inputs:
       - kubernetes_remap
     type: throttle
-    key_field: '{{ limit_key }}'
+    key_field: "{{ limit_key }}"
     threshold: 100
     window_secs: 10
 
@@ -54,15 +54,12 @@ sinks:
     path: /loki/api/v1/push
     encoding:
       codec: text
-    batch:
-      # under loki's "max entry size" of 262144
-      max_bytes: 250000
     labels:
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"
-      app: '{{ app }}'
-      app_kubernetes_io_name: '{{ app }}'
-      kubernetes_namespace: '{{ kubernetes.pod_namespace }}'
-      kubernetes_pod_name: '{{ kubernetes.pod_name }}'
-      kubernetes_container: '{{ kubernetes.container_name }}'
+      app: "{{ app }}"
+      app_kubernetes_io_name: "{{ app }}"
+      kubernetes_namespace: "{{ kubernetes.pod_namespace }}"
+      kubernetes_pod_name: "{{ kubernetes.pod_name }}"
+      kubernetes_container: "{{ kubernetes.container_name }}"
