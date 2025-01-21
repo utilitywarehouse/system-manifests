@@ -92,3 +92,7 @@ data:
       - GlobalContextEntry
       - ReportChangeRequest
       - UpdateRequest
+    - apiGroups:
+      - apps
+      kinds:
+      - ReplicaSet
