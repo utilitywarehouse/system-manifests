@@ -46,7 +46,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.3
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -59,8 +59,8 @@ spec:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
                 env:
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 ports:
@@ -74,9 +74,6 @@ spec:
                   limits:
                     cpu: 1000m
                     memory: 100Mi
-                volumeMounts:
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - (name): "*"
                 env:
                   - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
@@ -86,10 +83,6 @@ spec:
                 env:
                   - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
                     value: "http://127.0.0.1:8098/credentials"
-            volumes:
-              - name: vault-tls
-                configMap:
-                  name: vault-tls
     - name: inject-vault-credentials-agent-aws-gcp
       context:
         - name: POD_NAMESPACE
@@ -123,7 +116,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent-aws
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.3
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -136,8 +129,8 @@ spec:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
                 env:
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 ports:
@@ -151,11 +144,8 @@ spec:
                   limits:
                     cpu: 1000m
                     memory: 100Mi
-                volumeMounts:
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - name: vault-credentials-agent-gcp
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.3
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -175,8 +165,8 @@ spec:
                     value: "127.0.0.1:8198"
                   - name: GCE_METADATA_ROOT
                     value: "127.0.0.1:8198"
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 ports:
@@ -190,9 +180,6 @@ spec:
                   limits:
                     cpu: 1000m
                     memory: 100Mi
-                volumeMounts:
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - (name): "*"
                 env:
                   - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
@@ -210,10 +197,6 @@ spec:
                     value: "127.0.0.1:8198"
                   - name: GCE_METADATA_ROOT
                     value: "127.0.0.1:8198"
-            volumes:
-              - name: vault-tls
-                configMap:
-                  name: vault-tls
     - name: inject-vault-credentials-agent-gcp
       context:
         - name: POD_NAMESPACE
@@ -264,8 +247,8 @@ spec:
                     value: "127.0.0.1:8098"
                   - name: GCE_METADATA_ROOT
                     value: "127.0.0.1:8098"
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 ports:
@@ -279,9 +262,6 @@ spec:
                   limits:
                     cpu: 1000m
                     memory: 100Mi
-                volumeMounts:
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - (name): "*"
                 env:
                   - name: GCE_METADATA_HOST
@@ -295,10 +275,6 @@ spec:
                     value: "127.0.0.1:8098"
                   - name: GCE_METADATA_ROOT
                     value: "127.0.0.1:8098"
-            volumes:
-              - name: vault-tls
-                configMap:
-                  name: vault-tls
     - name: inject-vault-credentials-agent-gcp-key
       context:
         - name: POD_NAMESPACE
@@ -324,7 +300,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.3
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -341,8 +317,8 @@ spec:
                 env:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
                     value: "/gcp/sa.json"
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 ports:
@@ -359,8 +335,6 @@ spec:
                 volumeMounts:
                   - name: gcp
                     mountPath: /gcp
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - (name): "*"
                 env:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -379,9 +353,6 @@ spec:
             volumes:
               - name: gcp
                 emptyDir: {}
-              - name: vault-tls
-                configMap:
-                  name: vault-tls
     - name: inject-vault-credentials-agent-gcp-token
       context:
         - name: POD_NAMESPACE
@@ -407,7 +378,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.3
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -425,8 +396,8 @@ spec:
                     value: "127.0.0.1:8098"
                   - name: GCE_METADATA_ROOT
                     value: "127.0.0.1:8098"
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 ports:
@@ -440,9 +411,6 @@ spec:
                   limits:
                     cpu: 1000m
                     memory: 100Mi
-                volumeMounts:
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - (name): "*"
                 env:
                   - name: GCE_METADATA_HOST
@@ -456,10 +424,6 @@ spec:
                     value: "127.0.0.1:8098"
                   - name: GCE_METADATA_ROOT
                     value: "127.0.0.1:8098"
-            volumes:
-              - name: vault-tls
-                configMap:
-                  name: vault-tls
     - name: inject-vault-credentials-agent-aws-gcp-key
       context:
         - name: POD_NAMESPACE
@@ -485,7 +449,7 @@ spec:
           spec:
             initContainers:
               - name: vault-credentials-agent-aws
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.3
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -498,8 +462,8 @@ spec:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
                 env:
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 ports:
@@ -513,11 +477,8 @@ spec:
                   limits:
                     cpu: 1000m
                     memory: 100Mi
-                volumeMounts:
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - name: vault-credentials-agent-gcp
-                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.3
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
                 restartPolicy: Always
                 startupProbe:
                   exec:
@@ -536,8 +497,8 @@ spec:
                 env:
                   - name: GOOGLE_APPLICATION_CREDENTIALS
                     value: "/gcp/sa.json"
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 ports:
@@ -554,8 +515,6 @@ spec:
                 volumeMounts:
                   - name: gcp
                     mountPath: /gcp
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - (name): "*"
                 env:
                   - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
@@ -578,9 +537,6 @@ spec:
             volumes:
               - name: gcp
                 emptyDir: {}
-              - name: vault-tls
-                configMap:
-                  name: vault-tls
     - name: inject-vault-init-container-aws
       context:
         - name: POD_NAMESPACE
@@ -661,15 +617,13 @@ spec:
                 env:
                   - name: AWS_SHARED_CREDENTIALS_FILE
                     value: "/etc/aws/credentials"
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 volumeMounts:
                   - name: vault-aws-credentials
                     mountPath: /etc/aws
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - (name): "*"
                 env:
                   - name: AWS_SHARED_CREDENTIALS_FILE
@@ -688,6 +642,3 @@ spec:
             volumes:
               - name: vault-aws-credentials
                 emptyDir: {}
-              - name: vault-tls
-                configMap:
-                  name: vault-tls
