@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+helm template opencost \
+  --repo https://opencost.github.io/opencost-helm-chart opencost \
+  --set opencost.cloudCost.enabled=true \
+  --set opencost.prometheus.internal.namespaceName=sys-prom \
+  --set opencost.prometheus.internal.serviceName=prometheus-system \
+  --set opencost.prometheus.internal.port=9090 \
+  --namespace sys-opencost > temp.yaml
+
+
+# cluster resources
+yq 'select(.kind=="ClusterRole" or .kind=="ClusterRoleBinding")' temp.yaml > cluster/upstream.yaml
+
+# namespace resources
+yq 'select(.kind != "ClusterRole" and .kind != "ClusterRoleBinding")' temp.yaml > namespaced/upstream.yaml
+
+rm temp.yaml

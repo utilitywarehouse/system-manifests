@@ -1,0 +1,107 @@
+# Source: opencost/templates/clusterrole.yaml
+# Cluster role giving opencost to get, list, watch required resources
+# No write permissions are required
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: opencost
+  labels:
+    helm.sh/chart: opencost-1.43.2
+    app.kubernetes.io/name: opencost
+    app.kubernetes.io/instance: opencost
+    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/part-of: opencost
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups: [""]
+    resources:
+      - configmaps
+      - deployments
+      - nodes
+      - pods
+      - services
+      - resourcequotas
+      - replicationcontrollers
+      - limitranges
+      - persistentvolumeclaims
+      - persistentvolumes
+      - namespaces
+      - endpoints
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - daemonsets
+      - deployments
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - statefulsets
+      - deployments
+      - daemonsets
+      - replicasets
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - cronjobs
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - policy
+    resources:
+      - poddisruptionbudgets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - storageclasses
+    verbs:
+      - get
+      - list
+      - watch
+---
+# Source: opencost/templates/clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: opencost
+  labels:
+    helm.sh/chart: opencost-1.43.2
+    app.kubernetes.io/name: opencost
+    app.kubernetes.io/instance: opencost
+    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/part-of: opencost
+    app.kubernetes.io/managed-by: Helm
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: opencost
+subjects:
+  - kind: ServiceAccount
+    name: opencost
+    namespace: sys-opencost

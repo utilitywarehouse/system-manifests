@@ -1,0 +1,167 @@
+---
+# Source: opencost/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opencost
+  namespace: sys-opencost
+  labels:
+    helm.sh/chart: opencost-1.43.2
+    app.kubernetes.io/name: opencost
+    app.kubernetes.io/instance: opencost
+    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/part-of: opencost
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: opencost/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: opencost
+  namespace: sys-opencost
+  labels:
+    helm.sh/chart: opencost-1.43.2
+    app.kubernetes.io/name: opencost
+    app.kubernetes.io/instance: opencost
+    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/part-of: opencost
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    app.kubernetes.io/name: opencost
+    app.kubernetes.io/instance: opencost
+  type: "ClusterIP"
+  ports:
+    - name: http
+      port: 9003
+      targetPort: 9003
+    - name: http-ui
+      port: 9090
+      targetPort: 9090
+---
+# Source: opencost/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opencost
+  namespace: sys-opencost
+  labels:
+    helm.sh/chart: opencost-1.43.2
+    app.kubernetes.io/name: opencost
+    app.kubernetes.io/instance: opencost
+    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/part-of: opencost
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opencost
+      app.kubernetes.io/instance: opencost
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: opencost
+        app.kubernetes.io/instance: opencost
+    spec:
+      serviceAccountName: opencost
+      containers:
+        - name: opencost
+          image: ghcr.io/opencost/opencost:1.113.0@sha256:b313d6d320058bbd3841a948fb636182f49b46df2368d91e2ae046ed03c0f83c
+          imagePullPolicy: IfNotPresent
+          args:
+          ports:
+            - containerPort: 9003
+              name: http
+          resources:
+            limits:
+              cpu: 999m
+              memory: 1Gi
+            requests:
+              cpu: 10m
+              memory: 55Mi
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 9003
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9003
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9003
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          env:
+            - name: LOG_LEVEL
+              value: info
+            - name: CUSTOM_COST_ENABLED
+              value: "false"
+            - name: KUBECOST_NAMESPACE
+              value: sys-opencost
+            - name: API_PORT
+              value: "9003"
+            - name: PROMETHEUS_SERVER_ENDPOINT
+              value: "http://prometheus-system.sys-prom.svc.cluster.local:9090"
+            - name: CLUSTER_ID
+              value: "default-cluster"
+            - name: DATA_RETENTION_DAILY_RESOLUTION_DAYS
+              value: "15"
+            - name: CLOUD_COST_ENABLED
+              value: "true"
+            - name: CLOUD_COST_MONTH_TO_DATE_INTERVAL
+              value: "6"
+            - name: CLOUD_COST_REFRESH_RATE_HOURS
+              value: "6"
+            - name: CLOUD_COST_QUERY_WINDOW_DAYS
+              value: "7"
+            - name: CLOUD_COST_RUN_WINDOW_DAYS
+              value: "3"
+              # Add any additional provided variables
+        - name: opencost-ui
+          image: ghcr.io/opencost/opencost-ui:1.113.0@sha256:4f408cf765217f889f4cb5cfcc97356e09892045a6ec951b27817a42ecb6748d
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9090
+              name: http-ui
+          env:
+            - name: API_PORT
+              value: "9003"
+            - name: UI_PORT
+              value: "9090"
+          resources:
+            limits:
+              cpu: 999m
+              memory: 1Gi
+            requests:
+              cpu: 10m
+              memory: 55Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
