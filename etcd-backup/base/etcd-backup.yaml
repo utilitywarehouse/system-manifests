@@ -18,7 +18,7 @@ spec:
           labels:
             app.kubernetes.io/name: etcd-backup
           annotations:
-            injector.tumblr.com/request: vault-init-container-aws
+            uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws"
         spec:
           serviceAccountName: etcd-backup
           initContainers:
