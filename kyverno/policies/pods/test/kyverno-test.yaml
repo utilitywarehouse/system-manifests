@@ -1,14 +1,19 @@
-name: disallow-privileged-containers
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: pods-policies
 policies:
   - ../hostIPC.yaml
   - ../hostNetwork.yaml
   - ../privilege-escalation.yaml
+  - ../replace-annotation.yaml
 resources:
   - test-hostIPC.yaml
   - test-hostNetwork.yaml
   - test-privilege-escalation.yaml
+  - test-replace-annotation.yaml
 results:
-# Test hostIPC
+  # Test hostIPC
   - policy: disallow-host-ipc-pods
     rule: default
     resource: test-hostIPC-not-set
@@ -24,7 +29,7 @@ results:
     resource: test-hostIPC-set-to-true
     kind: Pod
     result: fail
-# Test hostNetwork
+  # Test hostNetwork
   - policy: disallow-host-network-pods
     rule: default
     resource: test-hostNetwork-not-set
@@ -40,7 +45,7 @@ results:
     resource: test-hostNetwork-set-to-true
     kind: Pod
     result: fail
-# Test privilege escalation
+  # Test privilege escalation
   - policy: disallow-privilege-escalation
     rule: default
     resource: test-privilege-escalation-not-set
@@ -56,3 +61,28 @@ results:
     resource: test-privilege-escalation-set-to-true
     kind: Pod
     result: fail
+  # Test Replace Annotation
+  - policy: replace-annotations
+    rule: replace-injector-tumblr-com-request
+    resource: test-with-injector-tumblr-com-request-aws
+    patchedResource: patched-replace-annotation.yaml
+    kind: Pod
+    result: pass
+  - policy: replace-annotations
+    rule: replace-injector-tumblr-com-request
+    resource: test-with-injector-tumblr-com-request-gcp
+    patchedResource: patched-replace-annotation.yaml
+    kind: Pod
+    result: pass
+  - policy: replace-annotations
+    rule: replace-injector-tumblr-com-request
+    resource: test-without-injector-tumblr-com-request
+    patchedResource: patched-replace-annotation.yaml
+    kind: Pod
+    result: pass
+  - policy: replace-annotations
+    rule: replace-injector-tumblr-com-request
+    resource: test-old-new-annotation
+    patchedResource: patched-replace-annotation.yaml
+    kind: Pod
+    result: pass

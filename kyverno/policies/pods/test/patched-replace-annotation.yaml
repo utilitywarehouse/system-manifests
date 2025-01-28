@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-with-injector-tumblr-com-request-aws
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws"
+  namespace: default
+spec:
+  containers:
+    - name: test
+      image: test
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-with-injector-tumblr-com-request-gcp
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp"
+  namespace: default
+spec:
+  containers:
+    - name: test
+      image: test
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-without-injector-tumblr-com-request
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws"
+  namespace: default
+spec:
+  containers:
+    - name: test
+      image: test
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws
+  name: test-old-new-annotation
+  namespace: default
+spec:
+  containers:
+    - image: test
+      name: test

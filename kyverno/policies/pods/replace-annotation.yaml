@@ -1,0 +1,33 @@
+# https://kyverno.io/policies/other/inject-sidecar-deployment/inject-sidecar-deployment/
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: replace-annotations
+  annotations:
+    policies.kyverno.io/title: Replace Annotation
+    policies.kyverno.io/category: Sample
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      This policy replaces deprecated annotations.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    # injector.tumblr.com/request => uw.systems/kyverno-inject-sidecar-request
+    - name: replace-injector-tumblr-com-request
+      match:
+        any:
+          - resources:
+              annotations:
+                injector.tumblr.com/request: "?*"
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      mutate:
+        patchesJson6902: |-
+          - op: add
+            path: /metadata/annotations/uw.systems~1kyverno-inject-sidecar-request
+            value: '{{request.object.metadata.annotations."injector.tumblr.com/request"}}'
+          - op: remove
+            path: /metadata/annotations/injector.tumblr.com~1request

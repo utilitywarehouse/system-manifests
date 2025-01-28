@@ -7,3 +7,6 @@ build:
 
 test: build
 	docker run -v "${PWD}":"${PWD}" --workdir="${PWD}" kyverno-test kyverno test ./../../
+
+gen: build
+	docker run -v "${PWD}":"${PWD}" --workdir="${PWD}" kyverno-test kyverno apply pods/replace-annotation.yaml --resource pods/test/test-replace-annotation.yaml --output gen
