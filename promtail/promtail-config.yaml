@@ -25,11 +25,6 @@ scrape_configs:
           selector: '{fluentbit_io_exclude="true"}'
           action: drop
           drop_counter_reason: "fluentbit_io_exclude"
-      # https://github.com/projectcalico/calico/issues/7988
-      - match:
-          selector: '{kubernetes_pod_name=~"calico-apiserver.+"} |~ "level=info|called with key"'
-          action: drop
-          drop_counter_reason: promtail_noisy_error
       # Traefik logs all broken config - repeatedly. We have no control over
       # this as team's create and manage IngressRoute/Service/Middleware. We
       # can chase fixes but broken config returns before long. This only
