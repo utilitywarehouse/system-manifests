@@ -14,6 +14,8 @@ data:
 
   ## Controller Properties
   controller.log.level: "warn"
+  # Specifies a sync timeout for applications.
+  controller.sync.timeout.seconds: "600"
 
   ## Repo-server properties
   # Set the logging level. One of: debug|info|warn|error (default "info")
