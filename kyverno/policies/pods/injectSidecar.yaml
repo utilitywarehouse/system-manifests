@@ -535,19 +535,17 @@ spec:
                     EOT
                     }
                     ' > config.hcl
-                    /usr/bin/dumb-init -- vault agent -config=config.hcl
+                    /usr/bin/dumb-init -- wget -qO ca.crt $VAULT_CAURL && vault agent -ca-cert ca.crt -config=config.hcl
                 env:
                   - name: AWS_SHARED_CREDENTIALS_FILE
                     value: "/etc/aws/credentials"
-                  - name: VAULT_CACERT
-                    value: "/etc/tls/ca.crt"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
                   - name: VAULT_ADDR
                     value: "https://vault.sys-vault:8200"
                 volumeMounts:
                   - name: vault-aws-credentials
                     mountPath: /etc/aws
-                  - name: vault-tls
-                    mountPath: /etc/tls
               - (name): "*"
                 env:
                   - name: AWS_SHARED_CREDENTIALS_FILE
@@ -566,6 +564,3 @@ spec:
             volumes:
               - name: vault-aws-credentials
                 emptyDir: {}
-              - name: vault-tls
-                configMap:
-                  name: vault-tls
