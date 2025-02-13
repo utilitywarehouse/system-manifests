@@ -2,7 +2,7 @@
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: inject-sidecar
+  name: inject-vault-sidecar
   annotations:
     policies.kyverno.io/title: Inject Sidecar
     policies.kyverno.io/category: Sample
@@ -25,13 +25,6 @@ spec:
         any:
           - resources:
               annotations:
-                injector.tumblr.com/request: "vault-sidecar-aws"
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-          - resources:
-              annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws"
               kinds:
                 - Pod
@@ -41,7 +34,6 @@ spec:
         patchStrategicMerge:
           metadata:
             annotations:
-              injector.tumblr.com/status: "injected"
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
             initContainers:
@@ -95,13 +87,6 @@ spec:
         any:
           - resources:
               annotations:
-                injector.tumblr.com/request: "vault-sidecar-aws-gcp"
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-          - resources:
-              annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp"
               kinds:
                 - Pod
@@ -111,7 +96,6 @@ spec:
         patchStrategicMerge:
           metadata:
             annotations:
-              injector.tumblr.com/status: "injected"
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
             initContainers:
@@ -471,13 +455,6 @@ spec:
         any:
           - resources:
               annotations:
-                injector.tumblr.com/request: "vault-init-container-aws"
-              kinds:
-                - Pod
-              operations:
-                - CREATE
-          - resources:
-              annotations:
                 uw.systems/kyverno-inject-sidecar-request: "vault-init-container-aws"
               kinds:
                 - Pod
@@ -487,7 +464,6 @@ spec:
         patchStrategicMerge:
           metadata:
             annotations:
-              injector.tumblr.com/status: "injected"
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
             initContainers:

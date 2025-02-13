@@ -1,0 +1,42 @@
+# inject-vault-credentials-agent-aws
+- op: replace
+  path: /spec/rules/0/match/any/0/resources/annotations
+  value:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-fail-open"
+- op: remove
+  path: /spec/rules/0/mutate/patchStrategicMerge/spec/initContainers/0/startupProbe
+# inject-vault-credentials-agent-aws-gcp
+- op: replace
+  path: /spec/rules/1/match/any/0/resources/annotations
+  value:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp-fail-open"
+- op: remove
+  path: /spec/rules/1/mutate/patchStrategicMerge/spec/initContainers/0/startupProbe
+- op: remove
+  path: /spec/rules/1/mutate/patchStrategicMerge/spec/initContainers/1/startupProbe
+# inject-vault-credentials-agent-gcp-key
+- op: replace
+  path: /spec/rules/2/match/any/0/resources/annotations
+  value:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-key-fail-open"
+- op: remove
+  path: /spec/rules/2/mutate/patchStrategicMerge/spec/initContainers/0/startupProbe
+# inject-vault-credentials-agent-gcp-token
+- op: replace
+  path: /spec/rules/3/match/any/0/resources/annotations
+  value:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-token-fail-open"
+- op: remove
+  path: /spec/rules/3/mutate/patchStrategicMerge/spec/initContainers/0/startupProbe
+# inject-vault-credentials-agent-aws-gcp-key
+- op: replace
+  path: /spec/rules/4/match/any/0/resources/annotations
+  value:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp-key-fail-open"
+- op: remove
+  path: /spec/rules/4/mutate/patchStrategicMerge/spec/initContainers/0/startupProbe
+- op: remove
+  path: /spec/rules/4/mutate/patchStrategicMerge/spec/initContainers/1/startupProbe
+# inject-vault-init-container-aws
+- op: remove
+  path: /spec/rules/5

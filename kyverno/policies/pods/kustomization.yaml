@@ -8,7 +8,6 @@ resources:
   - hostPaths.yaml
   - hostPID.yaml
   - hostPorts.yaml
-  - injectSidecar.yaml
   - pod-node-restriction.yaml
   - privileged.yaml
   - privilege-escalation.yaml
@@ -16,3 +15,6 @@ resources:
   - Seccomp.yaml
   - SELinux.yaml
   - sysctls.yaml
+
+  - vault-sidecar/legacy
+  - vault-sidecar/fail-open

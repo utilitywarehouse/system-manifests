@@ -1,0 +1,42 @@
+# inject-vault-credentials-agent-aws
+- op: add
+  path: /spec/rules/0/match/any/-
+  value:
+    resources:
+      annotations:
+        injector.tumblr.com/request: "vault-sidecar-aws"
+      kinds:
+        - Pod
+      operations:
+        - CREATE
+- op: add
+  path: /spec/rules/0/mutate/patchStrategicMerge/metadata/annotations/injector.tumblr.com~1status
+  value: "injected"
+# inject-vault-credentials-agent-aws-gcp
+- op: add
+  path: /spec/rules/1/match/any/-
+  value:
+    resources:
+      annotations:
+        injector.tumblr.com/request: "vault-sidecar-aws-gcp"
+      kinds:
+        - Pod
+      operations:
+        - CREATE
+- op: add
+  path: /spec/rules/1/mutate/patchStrategicMerge/metadata/annotations/injector.tumblr.com~1status
+  value: "injected"
+# inject-vault-init-container-aws
+- op: add
+  path: /spec/rules/5/match/any/-
+  value:
+    resources:
+      annotations:
+        injector.tumblr.com/request: "vault-init-container-aws"
+      kinds:
+        - Pod
+      operations:
+        - CREATE
+- op: add
+  path: /spec/rules/5/mutate/patchStrategicMerge/metadata/annotations/injector.tumblr.com~1status
+  value: "injected"
