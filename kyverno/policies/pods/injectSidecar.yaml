@@ -564,3 +564,189 @@ spec:
             volumes:
               - name: vault-aws-credentials
                 emptyDir: {}
+    - name: inject-vault-credentials-agent-aws-fail-open
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-fail-open"
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            containers:
+              - name: vault-credentials-agent
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
+                args:
+                  - sidecar
+                  - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                env:
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+              - (name): "*"
+                env:
+                  - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                    value: "http://127.0.0.1:8098/credentials"
+    - name: inject-vault-credentials-agent-aws-gcp-fail-open
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp-fail-open"
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            containers:
+              - name: vault-credentials-agent-aws
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
+                args:
+                  - sidecar
+                  - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                env:
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+              - name: vault-credentials-agent-gcp
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
+                args:
+                  - sidecar
+                  - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                  - -secret-type=access_token
+                  - -listen-address=127.0.0.1:8198
+                  - -operational-address=:8199
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8198"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8198"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8199
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+              - (name): "*"
+                env:
+                  - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                    value: "http://127.0.0.1:8098/credentials"
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8198"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8198"
+    - name: inject-vault-credentials-agent-gcp-token-fail-open
+      context:
+        - name: POD_NAMESPACE
+          variable:
+            jmesPath: request.object.metadata.namespace
+        - name: POD_SERVICE_ACCOUNT
+          variable:
+            jmesPath: request.object.spec.serviceAccountName
+      match:
+        any:
+          - resources:
+              annotations:
+                uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-token-fail-open"
+              kinds:
+                - Pod
+              operations:
+                - CREATE
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              uw.systems/kyverno-inject-sidecar-status: "injected"
+          spec:
+            containers:
+              - name: vault-credentials-agent
+                image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.4
+                args:
+                  - sidecar
+                  - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
+                  - -secret-type=access_token
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
+                  - name: VAULT_CAURL
+                    value: "http://vault-ca-cert.sys-vault:8100"
+                  - name: VAULT_ADDR
+                    value: "https://vault.sys-vault:8200"
+                ports:
+                  - name: metrics
+                    containerPort: 8099
+                    protocol: TCP
+                resources:
+                  requests:
+                    cpu: 0m
+                    memory: 25Mi
+                  limits:
+                    cpu: 1000m
+                    memory: 100Mi
+              - (name): "*"
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
