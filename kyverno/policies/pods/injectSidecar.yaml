@@ -587,9 +587,10 @@ spec:
             annotations:
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
-            containers:
+            initContainers:
               - name: vault-credentials-agent
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.5
+                restartPolicy: Always
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -609,6 +610,11 @@ spec:
                   limits:
                     cpu: 1000m
                     memory: 100Mi
+              - (name): "*"
+                env:
+                  - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                    value: "http://127.0.0.1:8098/credentials"
+            containers:
               - (name): "*"
                 env:
                   - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
@@ -636,9 +642,10 @@ spec:
             annotations:
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
-            containers:
+            initContainers:
               - name: vault-credentials-agent-aws
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.5
+                restartPolicy: Always
                 args:
                   - sidecar
                   - -vault-role={{ VKAC_ENVIRONMENT }}_aws_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -660,6 +667,7 @@ spec:
                     memory: 100Mi
               - name: vault-credentials-agent-gcp
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.5
+                restartPolicy: Always
                 args:
                   - sidecar
                   - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -694,6 +702,15 @@ spec:
                     value: "127.0.0.1:8198"
                   - name: GCE_METADATA_ROOT
                     value: "127.0.0.1:8198"
+            containers:
+              - (name): "*"
+                env:
+                  - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                    value: "http://127.0.0.1:8098/credentials"
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8198"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8198"
     - name: inject-vault-credentials-agent-gcp-token-fail-open
       context:
         - name: POD_NAMESPACE
@@ -717,9 +734,10 @@ spec:
             annotations:
               uw.systems/kyverno-inject-sidecar-status: "injected"
           spec:
-            containers:
+            initContainers:
               - name: vault-credentials-agent
                 image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.5
+                restartPolicy: Always
                 args:
                   - sidecar
                   - -vault-static-account={{ VKAC_ENVIRONMENT }}_gcp_{{ POD_NAMESPACE }}_{{ POD_SERVICE_ACCOUNT }}
@@ -744,6 +762,13 @@ spec:
                   limits:
                     cpu: 1000m
                     memory: 100Mi
+              - (name): "*"
+                env:
+                  - name: GCE_METADATA_HOST
+                    value: "127.0.0.1:8098"
+                  - name: GCE_METADATA_ROOT
+                    value: "127.0.0.1:8098"
+            containers:
               - (name): "*"
                 env:
                   - name: GCE_METADATA_HOST
