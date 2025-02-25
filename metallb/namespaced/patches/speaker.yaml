@@ -25,9 +25,12 @@ spec:
               name: monitoring
             - $patch: replace
           resources:
-            limits:
+            requests:
               cpu: 100m
-              memory: 100Mi
+              memory: 64Mi
+            limits:
+              cpu: 6000m
+              memory: 256Mi
           volumeMounts:
             - $patch: delete
               name: memberlist

@@ -1,0 +1,22 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: mutate-certificates-revision-history-limit
+spec:
+  mutateExistingOnPolicyUpdate: true
+  rules:
+  # Set a sane default for the history field if not already present
+  - name: set-revisionHistoryLimit
+    match:
+      any:
+      - resources:
+          kinds:
+          - Certificate
+    mutate:
+      targets:
+      - apiVersion: cert-manager.io/v1
+        kind: Certificate
+      patchStrategicMerge:
+        spec:
+          # +(...) This is the clever syntax for if not already set
+          +(revisionHistoryLimit): 2

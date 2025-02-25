@@ -1,0 +1,216 @@
+---
+# Source: gha-runner-scale-set/templates/kube_mode_serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: system-prod-merit-gha-rs-kube-mode
+  namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.9.3
+    app.kubernetes.io/name: system-prod-merit
+    app.kubernetes.io/instance: system-prod-merit
+    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-prod-merit
+    actions.github.com/scale-set-namespace: sys-actions
+---
+# Source: gha-runner-scale-set/templates/kube_mode_role.yaml
+# default permission for runner pod service account in kubernetes mode (container hook)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: system-prod-merit-gha-rs-kube-mode
+  namespace: sys-actions
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["get", "create"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "create", "delete"]
+---
+# Source: gha-runner-scale-set/templates/manager_role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: system-prod-merit-gha-rs-manager
+  namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.9.3
+    app.kubernetes.io/name: system-prod-merit
+    app.kubernetes.io/instance: system-prod-merit
+    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-prod-merit
+    actions.github.com/scale-set-namespace: sys-actions
+    app.kubernetes.io/component: manager-role
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - rolebindings
+    verbs:
+      - create
+      - delete
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+    verbs:
+      - create
+      - delete
+      - get
+      - patch
+      - update
+---
+# Source: gha-runner-scale-set/templates/kube_mode_role_binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: system-prod-merit-gha-rs-kube-mode
+  namespace: sys-actions
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: system-prod-merit-gha-rs-kube-mode
+subjects:
+  - kind: ServiceAccount
+    name: system-prod-merit-gha-rs-kube-mode
+    namespace: sys-actions
+---
+# Source: gha-runner-scale-set/templates/manager_role_binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: system-prod-merit-gha-rs-manager
+  namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.9.3
+    app.kubernetes.io/name: system-prod-merit
+    app.kubernetes.io/instance: system-prod-merit
+    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-prod-merit
+    actions.github.com/scale-set-namespace: sys-actions
+    app.kubernetes.io/component: manager-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: system-prod-merit-gha-rs-manager
+subjects:
+  - kind: ServiceAccount
+    name: arc-gha-rs-controller
+    namespace: sys-actions
+---
+# Source: gha-runner-scale-set/templates/autoscalingrunnerset.yaml
+apiVersion: actions.github.com/v1alpha1
+kind: AutoscalingRunnerSet
+metadata:
+  name: system-prod-merit
+  namespace: sys-actions
+  labels:
+    app.kubernetes.io/component: "autoscaling-runner-set"
+    helm.sh/chart: gha-rs-0.9.3
+    app.kubernetes.io/name: system-prod-merit
+    app.kubernetes.io/instance: system-prod-merit
+    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-prod-merit
+    actions.github.com/scale-set-namespace: sys-actions
+  annotations:
+    actions.github.com/values-hash: 4a022b2c189d2e0973e19406f6b463b7d3afee1938204aa7c5aee5643c9e1b2
+    actions.github.com/cleanup-manager-role-binding: system-prod-merit-gha-rs-manager
+    actions.github.com/cleanup-manager-role-name: system-prod-merit-gha-rs-manager
+    actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-prod-merit-gha-rs-kube-mode
+    actions.github.com/cleanup-kubernetes-mode-role-name: system-prod-merit-gha-rs-kube-mode
+    actions.github.com/cleanup-kubernetes-mode-service-account-name: system-prod-merit-gha-rs-kube-mode
+spec:
+  githubConfigUrl: https://github.com/utilitywarehouse
+  githubConfigSecret: arc-auth
+  runnerScaleSetName: system-prod-merit
+  minRunners: 1
+  template:
+    spec:
+      securityContext:
+        fsGroup: 123
+      restartPolicy: Never
+      serviceAccountName: system-prod-merit-gha-rs-kube-mode
+      containers:
+        - name: runner
+          command:
+            - /home/runner/run.sh
+          image: ghcr.io/actions/actions-runner:latest
+          env:
+            - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+              value: "false"
+            - name: ACTIONS_RUNNER_CONTAINER_HOOKS
+              value: /home/runner/k8s/index.js
+            - name: ACTIONS_RUNNER_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: work
+              mountPath: /home/runner/_work
+      volumes:
+        - name: work
+          ephemeral:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 50Gi

@@ -14,11 +14,13 @@ patches:
   - path: kyverno-admission-controller-replicas-patch.yaml
   - path: kyverno-background-controller-args-patch.yaml
   - path: kyverno-background-controller-metrics-svc-patch.yaml
+  - path: kyverno-background-controller-resources-patch.yaml
   - path: kyverno-cleanup-controller-args-patch.yaml
   - path: kyverno-cleanup-controller-metrics-svc-patch.yaml
   - path: kyverno-config-patch.yaml
   - path: kyverno-reports-controller-args-patch.yaml
   - path: kyverno-reports-controller-metrics-svc-patch.yaml
+  - path: kyverno-reports-controller-resources-patch.yaml
   - path: kyverno-svc-metrics-patch.yaml
   # Patch cleanup-controller to allow access to secret names generated for
   # kube-system namespace, since we deploy Kyverno there.

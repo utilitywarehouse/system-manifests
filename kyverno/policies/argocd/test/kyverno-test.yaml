@@ -1,4 +1,7 @@
-name: test-ingress-and-traefik-resources
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-argocd-policies
 policies:
   - ../application-field-validation.yaml
   - ../application-prevent-default-project.yaml
@@ -22,6 +25,7 @@ results:
     kind: Application
     resource: test-missing-project-name
     result: fail
+
   # Test Application Fields validation
   - policy: argocd-application-field-validation
     rule: empty-project
@@ -43,11 +47,6 @@ results:
     kind: Application
     resource: test-source-path-chart-specified
     result: fail
-#  - policy: argocd-application-field-validation
-#    rule: destination-server-name
-#    kind: Application
-#    resource: test-missing-destination-server
-#    result: fail
   - policy: argocd-application-field-validation
     rule: empty-destination-namespace
     kind: Application

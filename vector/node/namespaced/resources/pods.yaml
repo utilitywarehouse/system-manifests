@@ -1,8 +1,8 @@
-data_dir: /vector-data-dir
 sources:
   kubernetes_logs:
     type: kubernetes_logs
     extra_namespace_label_selector: "name!=sys-falco"
+    use_apiserver_cache: true
 
 transforms:
   drop_exclude:
@@ -41,9 +41,9 @@ transforms:
     inputs:
       - kubernetes_remap
     type: throttle
-    key_field: '{{ limit_key }}'
-    threshold: 10
-    window_secs: 1
+    key_field: "{{ limit_key }}"
+    threshold: 100
+    window_secs: 10
 
 sinks:
   loki_kubernetes:
@@ -58,8 +58,8 @@ sinks:
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"
-      app: '{{ app }}'
-      app_kubernetes_io_name: '{{ app }}'
-      kubernetes_namespace: '{{ kubernetes.pod_namespace }}'
-      kubernetes_pod_name: '{{ kubernetes.pod_name }}'
-      kubernetes_container: '{{ kubernetes.container_name }}'
+      app: "{{ app }}"
+      app_kubernetes_io_name: "{{ app }}"
+      kubernetes_namespace: "{{ kubernetes.pod_namespace }}"
+      kubernetes_pod_name: "{{ kubernetes.pod_name }}"
+      kubernetes_container: "{{ kubernetes.container_name }}"

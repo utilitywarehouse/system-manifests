@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - registry.yaml
 
-  - https://github.com/utilitywarehouse/registry-browser//manifests/base?ref=v0.1.4
+  - https://github.com/utilitywarehouse/registry-browser//manifests/base?ref=v0.2.0
 configMapGenerator:
   - files:
       - resources/config.yml

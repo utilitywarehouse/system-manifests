@@ -63,6 +63,32 @@ data:
     jsonPointers:
       - /status
 
+  # add all ignored differences customizations to ignore resource updates as well.
+  resource.compareoptions: |
+    ignoreDifferencesOnResourceUpdates: true
+
   resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
     - field: spec.duration
       type: meta/v1/Duration
+
+  # Configuration to completely ignore entire classes of resource group/kinds (optional)
+  resource.exclusions: |
+    - apiGroups:
+      - crd.projectcalico.org
+      kinds:
+      - "*"
+    - apiGroups:
+      - kyverno.io
+      - reports.kyverno.io
+      kinds:
+      - AdmissionReport
+      - BackgroundScanReport
+      - ClusterAdmissionReport
+      - ClusterBackgroundScanReport
+      - ClusterEphemeralReport
+      - ClusterReportChangeRequest
+      - EphemeralReport
+      - GenerateRequest
+      - GlobalContextEntry
+      - ReportChangeRequest
+      - UpdateRequest

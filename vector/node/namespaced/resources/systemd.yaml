@@ -1,4 +1,3 @@
-data_dir: /vector-data-dir
 sources:
   systemd_logs:
     type: journald
@@ -29,6 +28,6 @@ sinks:
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"
       log_source: "systemd"
-      systemd_unit: '{{ systemd_unit }}'
-      hostname: '{{ hostname }}'
-      syslog_identifier: '{{ syslog_identifier }}'
+      systemd_unit: "{{ systemd_unit }}"
+      hostname: "{{ hostname }}"
+      syslog_identifier: "{{ syslog_identifier }}"

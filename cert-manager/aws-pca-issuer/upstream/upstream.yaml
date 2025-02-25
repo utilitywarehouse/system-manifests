@@ -6,10 +6,10 @@ metadata:
   name: aws-privateca-issuer
   namespace: kube-system
   labels:
-    helm.sh/chart: aws-privateca-issuer-v1.2.7
+    helm.sh/chart: aws-privateca-issuer-v1.4.0
     app.kubernetes.io/name: aws-privateca-issuer
-    app.kubernetes.io/instance: v1.2.7
-    app.kubernetes.io/version: "v1.2.7"
+    app.kubernetes.io/instance: v1.4.0
+    app.kubernetes.io/version: "v1.4.0"
     app.kubernetes.io/managed-by: Helm
 ---
 # Source: aws-privateca-issuer/templates/rbac.yaml
@@ -18,10 +18,10 @@ kind: ClusterRole
 metadata:
   name: aws-privateca-issuer
   labels:
-    helm.sh/chart: aws-privateca-issuer-v1.2.7
+    helm.sh/chart: aws-privateca-issuer-v1.4.0
     app.kubernetes.io/name: aws-privateca-issuer
-    app.kubernetes.io/instance: v1.2.7
-    app.kubernetes.io/version: "v1.2.7"
+    app.kubernetes.io/instance: v1.4.0
+    app.kubernetes.io/version: "v1.4.0"
     app.kubernetes.io/managed-by: Helm
 rules:
   - apiGroups:
@@ -130,10 +130,10 @@ kind: ClusterRole
 metadata:
   name: cert-manager-controller-approve:awspca-cert-manager-io
   labels:
-    helm.sh/chart: aws-privateca-issuer-v1.2.7
+    helm.sh/chart: aws-privateca-issuer-v1.4.0
     app.kubernetes.io/name: aws-privateca-issuer
-    app.kubernetes.io/instance: v1.2.7
-    app.kubernetes.io/version: "v1.2.7"
+    app.kubernetes.io/instance: v1.4.0
+    app.kubernetes.io/version: "v1.4.0"
     app.kubernetes.io/managed-by: Helm
 rules:
   - apiGroups:
@@ -152,10 +152,10 @@ kind: ClusterRoleBinding
 metadata:
   name: aws-privateca-issuer
   labels:
-    helm.sh/chart: aws-privateca-issuer-v1.2.7
+    helm.sh/chart: aws-privateca-issuer-v1.4.0
     app.kubernetes.io/name: aws-privateca-issuer
-    app.kubernetes.io/instance: v1.2.7
-    app.kubernetes.io/version: "v1.2.7"
+    app.kubernetes.io/instance: v1.4.0
+    app.kubernetes.io/version: "v1.4.0"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -174,10 +174,10 @@ kind: ClusterRoleBinding
 metadata:
   name: cert-manager-controller-approve:awspca-cert-manager-io
   labels:
-    helm.sh/chart: aws-privateca-issuer-v1.2.7
+    helm.sh/chart: aws-privateca-issuer-v1.4.0
     app.kubernetes.io/name: aws-privateca-issuer
-    app.kubernetes.io/instance: v1.2.7
-    app.kubernetes.io/version: "v1.2.7"
+    app.kubernetes.io/instance: v1.4.0
+    app.kubernetes.io/version: "v1.4.0"
     app.kubernetes.io/managed-by: Helm
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -195,10 +195,10 @@ metadata:
   name: aws-privateca-issuer
   namespace: kube-system
   labels:
-    helm.sh/chart: aws-privateca-issuer-v1.2.7
+    helm.sh/chart: aws-privateca-issuer-v1.4.0
     app.kubernetes.io/name: aws-privateca-issuer
-    app.kubernetes.io/instance: v1.2.7
-    app.kubernetes.io/version: "v1.2.7"
+    app.kubernetes.io/instance: v1.4.0
+    app.kubernetes.io/version: "v1.4.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   type: ClusterIP
@@ -209,7 +209,7 @@ spec:
       name: http
   selector:
     app.kubernetes.io/name: aws-privateca-issuer
-    app.kubernetes.io/instance: v1.2.7
+    app.kubernetes.io/instance: v1.4.0
 ---
 # Source: aws-privateca-issuer/templates/deployment.yaml
 apiVersion: apps/v1
@@ -218,10 +218,10 @@ metadata:
   name: aws-privateca-issuer
   namespace: kube-system
   labels:
-    helm.sh/chart: aws-privateca-issuer-v1.2.7
+    helm.sh/chart: aws-privateca-issuer-v1.4.0
     app.kubernetes.io/name: aws-privateca-issuer
-    app.kubernetes.io/instance: v1.2.7
-    app.kubernetes.io/version: "v1.2.7"
+    app.kubernetes.io/instance: v1.4.0
+    app.kubernetes.io/version: "v1.4.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   replicas: 1
@@ -229,12 +229,12 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: aws-privateca-issuer
-      app.kubernetes.io/instance: v1.2.7
+      app.kubernetes.io/instance: v1.4.0
   template:
     metadata:
       labels:
         app.kubernetes.io/name: aws-privateca-issuer
-        app.kubernetes.io/instance: v1.2.7
+        app.kubernetes.io/instance: v1.4.0
     spec:
       serviceAccountName: aws-privateca-issuer
       securityContext:
@@ -243,7 +243,7 @@ spec:
         - name: aws-privateca-issuer
           securityContext:
             allowPrivilegeEscalation: false
-          image: "public.ecr.aws/k1n1h4h4/cert-manager-aws-privateca-issuer:v1.2.7"
+          image: "public.ecr.aws/k1n1h4h4/cert-manager-aws-privateca-issuer:v1.4.0"
           imagePullPolicy: IfNotPresent
           command:
             - /manager

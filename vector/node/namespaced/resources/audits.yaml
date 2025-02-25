@@ -1,8 +1,8 @@
-data_dir: /vector-data-dir
 sources:
   kubernetes_events:
     type: kubernetes_logs
     extra_namespace_label_selector: "name=sys-falco"
+    use_apiserver_cache: true
   kubernetes_apiserver:
     type: file
     include:
@@ -35,4 +35,4 @@ sinks:
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"
-      log_source: '{{ log_source }}'
+      log_source: "{{ log_source }}"

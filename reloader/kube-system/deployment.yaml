@@ -16,9 +16,20 @@ spec:
         app: reloader-reloader
     spec:
       containers:
-        - image: "ghcr.io/stakater/reloader:v1.0.93"
+        - image: "ghcr.io/stakater/reloader:v1.2.0"
           imagePullPolicy: IfNotPresent
           name: reloader-reloader
+          env:
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+                  divisor: '1'
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+                  divisor: '1'
           ports:
             - name: http
               containerPort: 9090
@@ -41,6 +52,13 @@ spec:
             successThreshold: 1
             initialDelaySeconds: 10
           securityContext: {}
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+            requests:
+              cpu: 10m
+              memory: 512Mi
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534

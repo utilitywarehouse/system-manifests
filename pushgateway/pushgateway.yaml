@@ -1,0 +1,57 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: prometheus-pushgateway
+  labels:
+    app.kubernetes.io/name: prometheus-pushgateway
+    app.kubernetes.io/version: v1.10.0
+spec:
+  clusterIP: None
+  ports:
+    - port: 9091
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: prometheus-pushgateway
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: prometheus-pushgateway-shared
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-pushgateway
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9091"
+      labels:
+        app.kubernetes.io/name: prometheus-pushgateway
+    spec:
+      containers:
+        - name: prometheus-pushgateway
+          image: prom/pushgateway:v1.10.0
+          args:
+            - "--log.level=warn"
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9091
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9091
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+          ports:
+            - containerPort: 9091
+              name: metrics
+      securityContext:
+        fsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534

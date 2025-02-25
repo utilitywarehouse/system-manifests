@@ -16,8 +16,11 @@ spec:
               name: METALLB_ML_SECRET_NAME  # only required for L2/ARP mode
           name: controller
           resources:
-            limits:
+            requests:
               cpu: 100m
-              memory: 100Mi
+              memory: 128Mi
+            limits:
+              cpu: 6000m
+              memory: 512Mi
           livenessProbe:
             initialDelaySeconds: 30 # needed to init in larger clusters with many resources like dev-merit
