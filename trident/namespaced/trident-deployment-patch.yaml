@@ -15,7 +15,6 @@ spec:
             - --csi-address=$(ADDRESS)
             - --retry-interval-start=8s
             - --retry-interval-max=30s
-            - --feature-gates=Topology=True
             - --feature-gates=CrossNamespaceVolumeDataSource=true
       tolerations:
         # Mark the pod so it can be scheduled on master nodes, to avoid being
