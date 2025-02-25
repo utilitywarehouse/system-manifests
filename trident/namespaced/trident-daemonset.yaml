@@ -33,7 +33,7 @@ spec:
             - all
             add:
             - SYS_ADMIN
-        image: netapp/trident:24.06.1
+        image: netapp/trident:24.10.1
         imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
@@ -62,15 +62,15 @@ spec:
             scheme: HTTPS
             port: 17546
           failureThreshold: 5
-          timeoutSeconds: 1
-          periodSeconds: 5
+          timeoutSeconds: 5
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /liveness
             scheme: HTTPS
             port: 17546
-          failureThreshold: 3
-          timeoutSeconds: 1
+          failureThreshold: 5
+          timeoutSeconds: 5
           periodSeconds: 10
         readinessProbe:
           httpGet:
@@ -78,8 +78,9 @@ spec:
             scheme: HTTPS
             port: 17546
           failureThreshold: 5
-          initialDelaySeconds: 10
+          timeoutSeconds: 5
           periodSeconds: 10
+          initialDelaySeconds: 15
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -115,7 +116,7 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: driver-registrar
-        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.10.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.12.0
         imagePullPolicy: IfNotPresent
         args:
         - "--v=2"
