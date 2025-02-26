@@ -24,7 +24,7 @@ nodeSelector: {}
 affinity: {}
 
 # tolerations -- Tolerations to be applied on all containers
-tolerations: {}
+tolerations: []
 
 # installCRDs -- Installs CRDs as part of the release
 installCRDs: true
@@ -80,7 +80,7 @@ manager:
   # manager.readinessProbe -- Readiness probe in Probe format
   readinessProbe: {}
   # manager.env -- Environment variables to be applied on the controller
-  env: {}
+  env: []
   # manager.resources -- controller-manager Resources definition
   resources:
     limits:

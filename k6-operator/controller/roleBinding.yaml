@@ -3,13 +3,13 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: k6-operator-leader-election-rolebinding
-  namespace: sys-k6s
+  namespace: sys-k6
   labels:
     app.kubernetes.io/component: controller
-    helm.sh/chart: k6-operator-3.8.0
+    helm.sh/chart: k6-operator-3.11.0
     app.kubernetes.io/name: k6-operator
     app.kubernetes.io/instance: k6-operator
-    app.kubernetes.io/version: "0.0.16"
+    app.kubernetes.io/version: "0.0.19"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
   annotations:
@@ -20,4 +20,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: k6-operator-controller
-    namespace: sys-k6s
+    namespace: sys-k6

@@ -4,14 +4,14 @@ kind: CustomResourceDefinition
 metadata:
   labels:
     app.kubernetes.io/component: controller
-    helm.sh/chart: k6-operator-3.8.0
+    helm.sh/chart: k6-operator-3.11.0
     app.kubernetes.io/name: k6-operator
     app.kubernetes.io/instance: k6-operator
-    app.kubernetes.io/version: "0.0.16"
+    app.kubernetes.io/version: "0.0.19"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.1
   name: privateloadzones.k6.io
 spec:
   group: k6.io
@@ -40,6 +40,7 @@ spec:
                   items:
                     properties:
                       name:
+                        default: ""
                         type: string
                     type: object
                     x-kubernetes-map-type: atomic
@@ -54,6 +55,8 @@ spec:
                       items:
                         properties:
                           name:
+                            type: string
+                          request:
                             type: string
                         required:
                           - name
@@ -131,9 +134,3 @@ spec:
       storage: true
       subresources:
         status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []

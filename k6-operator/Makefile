@@ -1,16 +1,13 @@
 .DEFAULT_GOAL := gen-manifests
 
-CHART_VERSION=3.8.0
-APP_VERSION=0.0.16
-
+CHART_VERSION=3.11.0
 
 .PHONY: gen-manifests
 gen-manifests:
 	helm repo list | grep grafana || helm repo add grafana https://grafana.github.io/helm-charts
 	helm repo update
-	helm template k6-operator --namespace sys-k6s -f values.yaml grafana/k6-operator --version $(CHART_VERSION) > /tmp/k6-operator.yaml
+	helm template k6-operator --namespace sys-k6 -f values.yaml grafana/k6-operator --version $(CHART_VERSION) > /tmp/k6-operator.yaml
 
-	yq 'select(.kind=="CustomResourceDefinition" and .metadata.name=="k6s.k6.io")' /tmp/k6-operator.yaml > cluster/k6.yaml
 	yq 'select(.kind=="CustomResourceDefinition" and .metadata.name=="privateloadzones.k6.io")' /tmp/k6-operator.yaml > cluster/privateLoadZones.yaml
 	yq 'select(.kind=="CustomResourceDefinition" and .metadata.name=="testruns.k6.io")' /tmp/k6-operator.yaml > cluster/testRun.yaml
 	yq 'select(.kind=="ClusterRole" and .metadata.name!="k6-operator-manager-role")' /tmp/k6-operator.yaml > cluster/clusterRole.yaml

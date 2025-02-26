@@ -5,10 +5,10 @@ metadata:
   name: k6-operator-manager-role
   labels:
     app.kubernetes.io/component: controller
-    helm.sh/chart: k6-operator-3.8.0
+    helm.sh/chart: k6-operator-3.11.0
     app.kubernetes.io/name: k6-operator
     app.kubernetes.io/instance: k6-operator
-    app.kubernetes.io/version: "0.0.16"
+    app.kubernetes.io/version: "0.0.19"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
   namespace: sys-k6s

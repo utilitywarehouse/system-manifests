@@ -3,14 +3,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: k6-operator-controller-manager
-  namespace: sys-k6s
+  namespace: sys-k6
   labels:
     control-plane: "controller-manager"
     app.kubernetes.io/component: controller
-    helm.sh/chart: k6-operator-3.8.0
+    helm.sh/chart: k6-operator-3.11.0
     app.kubernetes.io/name: k6-operator
     app.kubernetes.io/instance: k6-operator
-    app.kubernetes.io/version: "0.0.16"
+    app.kubernetes.io/version: "0.0.19"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
   annotations:
@@ -41,7 +41,6 @@ spec:
           command:
             - /manager
           args:
-            - --enable-leader-election
             - --metrics-addr=127.0.0.1:8080
         - name: kube-rbac-proxy
           image: "gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0"
