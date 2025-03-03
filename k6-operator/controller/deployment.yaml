@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: manager
-          image: "ghcr.io/grafana/k6-operator:controller-v0.0.16"
+          image: "ghcr.io/grafana/k6-operator:controller-v0.0.19"
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -43,7 +43,7 @@ spec:
           args:
             - --metrics-addr=127.0.0.1:8080
         - name: kube-rbac-proxy
-          image: "gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0"
+          image: "quay.io/brancz/kube-rbac-proxy:v0.18.2"
           imagePullPolicy: IfNotPresent
           args:
             - --secure-listen-address=0.0.0.0:8443
