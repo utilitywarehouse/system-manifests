@@ -4,3 +4,6 @@ kind: Kustomization
 resources:
   - upstream-crds.yaml
   - upstream.yaml
+
+patches:
+  - path: deployment-patch.yaml
