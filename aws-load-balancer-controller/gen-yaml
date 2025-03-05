@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Get CRDs
+curl -s https://raw.githubusercontent.com/aws/eks-charts/refs/heads/master/stable/aws-load-balancer-controller/crds/crds.yaml > upstream-crds.yaml
 # Generate Deployment based on helm charts
 # Not using IAM Roles for service account, instead we wull patch to deploy on
 # master nodes
