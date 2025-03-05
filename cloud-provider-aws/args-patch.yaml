@@ -12,5 +12,6 @@ spec:
             - --allocate-node-cidrs=false
             - --cloud-provider=aws
             - --cluster-cidr=10.2.0.0/16
+            - --controllers=*,-service,-route # list of controllers to enable. '*' enables all on-by-default controllers, 'foo' enables the controller named 'foo', '-foo' disables
             - --configure-cloud-routes=false
             - --v=2

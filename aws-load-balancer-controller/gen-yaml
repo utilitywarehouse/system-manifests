@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Generate Deployment based on helm charts
+# Not using IAM Roles for service account, instead we wull patch to deploy on
+# master nodes
+helm repo add eks https://aws.github.io/eks-charts
+helm template aws-load-balancer-controller eks/aws-load-balancer-controller \
+  --set clusterName=aws \
+  --set webhookConfig.disableIngressValidation=true \
+  --set enableCertManager=true \
+  -n kube-system > upstream.yaml
