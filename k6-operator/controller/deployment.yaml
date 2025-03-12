@@ -38,6 +38,9 @@ spec:
             requests:
               cpu: 100m
               memory: 50Mi
+          env:
+            - name: WATCH_NAMESPACE
+              value: sys-k6
           command:
             - /manager
           args:

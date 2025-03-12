@@ -80,7 +80,9 @@ manager:
   # manager.readinessProbe -- Readiness probe in Probe format
   readinessProbe: {}
   # manager.env -- Environment variables to be applied on the controller
-  env: []
+  env: 
+    - name: WATCH_NAMESPACE
+      value: "sys-k6"
   # manager.resources -- controller-manager Resources definition
   resources:
     limits:
