@@ -5,6 +5,6 @@ resources:
   - clusterrole.yaml
   - deployment.yaml
   - serviceaccount.yaml
-patchesStrategicMerge:
-  - clusterrolebinding-patch.yaml
-  - deployment-patch.yaml
+patches:
+  - path: clusterrolebinding-patch.yaml
+  - path: deployment-patch.yaml
