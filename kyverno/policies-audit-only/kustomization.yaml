@@ -7,5 +7,5 @@ resources:
 
 # Needs to migrate to new kyverno format, but to do that we'd have to split the
 # patches into multiple isolated files.
-patchesStrategicMerge:
-  - audit-only.yaml
+patches:
+  - path: audit-only.yaml
