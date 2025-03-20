@@ -30,9 +30,10 @@ spec:
         # Keeps upstream manifests and adds CrossNamespaceVolumeDataSource=true feature gate
         - name: csi-provisioner
           args:
-            - --v=2 # upstream is 5
+            - --v=2
             - --csi-address=/csi/csi.sock
             - --feature-gates=Topology=true
+            - --feature-gates=CrossNamespaceVolumeDataSource=true
             - --http-endpoint=:22011
             - --leader-election-namespace=$(PDCSI_NAMESPACE)
             - --timeout=250s
@@ -40,8 +41,6 @@ spec:
             - --leader-election
             - --default-fstype=ext4
             - --controller-publish-readonly=true
-            - --feature-gates=VolumeAttributesClass=true # end of upstream opts
-            - --feature-gates=CrossNamespaceVolumeDataSource=true
       volumes:
         - $patch: delete
           name: cloud-sa-volume
