@@ -1,0 +1,41 @@
+# https://github.com/grafana/k6-operator/tree/main/charts/k6-operator#values
+installCRDs: true
+namespace:
+  create: false
+prometheus:
+  enabled: false
+authProxy:
+  enabled: true
+  image:
+    registry: quay.io
+    repository: brancz/kube-rbac-proxy
+    tag: v0.18.2
+    pullPolicy: IfNotPresent
+  resources: {}
+  livenessProbe: {}
+  readinessProbe: {}
+  containerSecurityContext: {}
+
+manager:
+  replicas: 1
+  serviceAccount:
+    name: k6-operator-controller
+    create: true
+  image:
+    registry: ghcr.io
+    repository: grafana/k6-operator
+    tag: controller-v0.0.19
+    pullPolicy: IfNotPresent
+  livenessProbe: {}
+  readinessProbe: {}
+  env: 
+    - name: WATCH_NAMESPACE
+      value: "sys-k6"
+  resources:
+    limits:
+      cpu: 100m
+      memory: 100Mi
+    requests:
+      cpu: 100m
+      memory: 50Mi
+  containerSecurityContext: {}
