@@ -11,14 +11,13 @@ gen-manifests:
 	yq 'select(.kind=="CustomResourceDefinition" and .metadata.name=="privateloadzones.k6.io")' /tmp/k6-operator.yaml > cluster/privateLoadZones.yaml
 	yq 'select(.kind=="CustomResourceDefinition" and .metadata.name=="testruns.k6.io")' /tmp/k6-operator.yaml > cluster/testRun.yaml
 
-	yq 'select(.kind=="ClusterRole")' /tmp/k6-operator.yaml > namespaced/role.yaml
-	yq eval -i 'del(.metadata.annotations) | .kind = "Role" | .metadata.namespace = "sys-k6"' namespaced/role.yaml
+	yq 'select(.kind=="ClusterRole")' /tmp/k6-operator.yaml > namespaced/clusterRole.yaml
+	yq eval -i 'del(.metadata.annotations) | .kind = "Role" | .metadata.namespace = "sys-k6"' namespaced/clusterRole.yaml
+	yq 'select(.kind=="Role")' /tmp/k6-operator.yaml > namespaced/role.yaml
 
-	yq 'select(.kind=="ClusterRoleBinding")' /tmp/k6-operator.yaml > namespaced/roleBinding.yaml
-	yq eval -i 'del(.metadata.annotations) | .kind = "RoleBinding" | .metadata.namespace = "sys-k6" | .roleRef.kind = "Role"' namespaced/roleBinding.yaml
-
-	yq 'select(.kind=="Role")' /tmp/k6-operator.yaml >> namespaced/role.yaml
-	yq 'select(.kind=="RoleBinding")' /tmp/k6-operator.yaml >> namespaced/roleBinding.yaml
+	yq 'select(.kind=="ClusterRoleBinding")' /tmp/k6-operator.yaml > namespaced/clusterRoleBinding.yaml
+	yq eval -i 'del(.metadata.annotations) | .kind = "RoleBinding" | .metadata.namespace = "sys-k6" | .roleRef.kind = "Role"' namespaced/clusterRoleBinding.yaml
+	yq 'select(.kind=="RoleBinding")' /tmp/k6-operator.yaml > namespaced/roleBinding.yaml
 
 	yq 'select(.kind=="ServiceAccount")' /tmp/k6-operator.yaml > namespaced/serviceAccount.yaml
 	yq 'select(.kind=="Service")' /tmp/k6-operator.yaml > namespaced/service.yaml
