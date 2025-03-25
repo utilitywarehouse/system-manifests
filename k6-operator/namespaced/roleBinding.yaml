@@ -1,8 +1,9 @@
-# Source: k6-operator/templates/clusterRoleBinding.yaml
+# Source: k6-operator/templates/roleBinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: k6-operator-manager-rolebinding
+  name: k6-operator-leader-election-rolebinding
+  namespace: sys-k6
   labels:
     app.kubernetes.io/component: controller
     helm.sh/chart: k6-operator-3.11.0
@@ -11,11 +12,11 @@ metadata:
     app.kubernetes.io/version: "0.0.19"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
-  namespace: sys-k6
+  annotations:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: k6-operator-manager-role
+  name: k6-operator-leader-election-role
 subjects:
   - kind: ServiceAccount
     name: k6-operator-controller
