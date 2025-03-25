@@ -3,5 +3,3 @@ kind: Kustomization
 resources:
   - privateLoadZones.yaml
   - testRun.yaml
-  - clusterRole.yaml
-  - clusterRoleBinding.yaml
