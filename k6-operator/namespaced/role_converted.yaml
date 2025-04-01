@@ -150,25 +150,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: k6-operator-metrics-reader
-  labels:
-    helm.sh/chart: k6-operator-3.11.0
-    app.kubernetes.io/name: k6-operator
-    app.kubernetes.io/instance: k6-operator
-    app.kubernetes.io/version: "0.0.19"
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/part-of: k6-operator
-  namespace: sys-k6
-rules:
-  - nonResourceURLs:
-      - /metrics
-    verbs:
-      - get
----
-# Source: k6-operator/templates/clusterRole.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
-metadata:
   name: k6-operator-proxy-role
   labels:
     helm.sh/chart: k6-operator-3.11.0
