@@ -15,7 +15,7 @@ metadata:
       Argocd project 'Default' is a privileges project.
       This policy prevents the use of the default project in an Application.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: default-project
