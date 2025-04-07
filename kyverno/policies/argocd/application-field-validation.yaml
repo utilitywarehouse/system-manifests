@@ -18,7 +18,7 @@ metadata:
       destination.name or destination.server should be specified but never both.
       destination namespace should not be empty.
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
     - name: empty-project
@@ -62,20 +62,20 @@ spec:
           spec:
             source:
               X(chart):
-#    - name: destination-server-name
-#      skipBackgroundRequests: true
-#      match:
-#        any:
-#          - resources:
-#              kinds:
-#                - Application
-#      validate:
-#        message: >-
-#          `spec.destination.name` should not be empty.
-#        pattern:
-#          - spec:
-#              destination:
-#                name: "?*"
+    #    - name: destination-server-name
+    #      skipBackgroundRequests: true
+    #      match:
+    #        any:
+    #          - resources:
+    #              kinds:
+    #                - Application
+    #      validate:
+    #        message: >-
+    #          `spec.destination.name` should not be empty.
+    #        pattern:
+    #          - spec:
+    #              destination:
+    #                name: "?*"
     - name: empty-destination-namespace
       skipBackgroundRequests: true
       match:
