@@ -42,6 +42,8 @@ transforms:
       - kubernetes_remap
     type: throttle
     key_field: "{{ limit_key }}"
+    internal_metrics:
+      emit_events_discarded_per_key: true
     threshold: 100
     window_secs: 10
 
