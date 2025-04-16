@@ -1,1 +1,1 @@
-expire_metrics_secs: 600
+expire_metrics_secs: 43200 # 12h
