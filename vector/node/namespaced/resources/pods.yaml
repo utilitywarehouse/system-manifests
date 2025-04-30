@@ -11,15 +11,9 @@ transforms:
     type: filter
     condition: '.kubernetes.pod_labels.fluentbit_io_exclude != "true"'
 
-  drop_calico:
-    inputs:
-      - drop_exclude
-    type: filter
-    condition: '!(.kubernetes.pod_name == "calico-apiserver" && (contains(string!(.message), "level=info") || contains(string!(.message), "called with key")))'
-
   drop_traefik:
     inputs:
-      - drop_calico
+      - drop_exclude
     type: filter
     condition: '!(starts_with(string!(.kubernetes.pod_namespace), "sys-ingress-") && (contains(string!(.message), "kubernetes service not found") || contains(string!(.message), "subset not found for") || contains(string!(.message), "service port not found") || contains(string!(.message), "Cannot create service: service not found") || contains(string!(.message), "Skipping service: no endpoints found") || (contains(string!(.message), "middleware") && contains(string!(.message), "does not exist"))))'
 
