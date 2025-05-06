@@ -24,7 +24,7 @@ spec:
       serviceAccount: trident-controller
       containers:
       - name: trident-main
-        image: netapp/trident:24.10.1
+        image: netapp/trident:25.02.1
         imagePullPolicy: IfNotPresent
         securityContext:
           runAsNonRoot: false
@@ -90,7 +90,7 @@ spec:
           readOnly: true
         
       - name: trident-autosupport
-        image: docker.io/netapp/trident-autosupport:24.10
+        image: docker.io/netapp/trident-autosupport:25.02
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -116,7 +116,7 @@ spec:
         - name: asup-dir
           mountPath: /asup
       - name: csi-provisioner
-        image: registry.k8s.io/sig-storage/csi-provisioner:v5.1.0
+        image: registry.k8s.io/sig-storage/csi-provisioner:v5.2.0
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -136,7 +136,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: registry.k8s.io/sig-storage/csi-attacher:v4.7.0
+        image: registry.k8s.io/sig-storage/csi-attacher:v4.8.0
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -155,8 +155,12 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: registry.k8s.io/sig-storage/csi-resizer:v1.12.0
+        image: registry.k8s.io/sig-storage/csi-resizer:v1.13.1
         imagePullPolicy: IfNotPresent
+        securityContext:
+          capabilities:
+            drop:
+            - all
         args:
         - "--v=2"
         - "--timeout=300s"
@@ -169,7 +173,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.1.0
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.2.0
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
