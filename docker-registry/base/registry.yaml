@@ -80,6 +80,25 @@ spec:
               mountPath: /workdir/config
             - name: registry-auth-config-secret
               mountPath: /workdir/secret-config
+        - name: jwks-updater
+          image: alpine
+          restartPolicy: Always
+          command: ["/bin/sh", "/scripts/jwks-updater"]
+          env:
+            - name: TLS_KEY_FILE_PATH
+              value: /etc/tls/tls.key
+            - name: JWKS_FILE_PATH
+              value: /certs/jwks.json
+            - name: SLEEP_INTERVAL_SECONDS
+              value: "60"
+          volumeMounts:
+            - name: jwks-updater
+              mountPath: /scripts
+            - name: registry-auth-cert
+              mountPath: /etc/tls
+              readOnly: true
+            - name: jwks
+              mountPath: /certs
       containers:
         - name: docker-registry
           image: registry:3.0.0
@@ -87,6 +106,8 @@ spec:
             # Disable traces while we're not using them to avoid errors in logs
             - name: OTEL_TRACES_EXPORTER
               value: none
+            - name: REGISTRY_AUTH_TOKEN_JWKS
+              value: "/certs/jwks.json"
           resources:
             requests:
               cpu: 0m
@@ -101,6 +122,9 @@ spec:
             - name: registry-auth-cert
               mountPath: /etc/tls
               readOnly: true
+            - name: jwks
+              mountPath: /certs/jwks.json
+              subPath: jwks.json
           ports:
             - containerPort: 5000
           readinessProbe:
@@ -133,6 +157,11 @@ spec:
               path: /
               port: 5001
       volumes:
+        - name: jwks-updater
+          configMap:
+            name: jwks-updater
+        - name: jwks
+          emptyDir: {}
         - name: merged-auth-config
           emptyDir: {}
         - name: registry-auth-cert

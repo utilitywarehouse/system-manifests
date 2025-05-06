@@ -13,6 +13,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - github.com/utilitywarehouse/system-manifests/docker-registry/base
+components:
+  - github.com/utilitywarehouse/system-manifests/docker-registry/components/jwks-updater
 ```
 
 ## Example
@@ -29,35 +31,10 @@ kustomize build example/
 
 ## Generating JWKS
 
-1. Apply `registry-auth-cert` and save the contents of the secret resource to a file
-
-```
-$ kubectl -n example get secret registry-auth-cert -o yaml | yq '.data."ca.crt"' | base64 -d >> cert
-$ kubectl -n example get secret registry-auth-cert -o yaml | yq '.data."tls.crt"' | base64 -d >> cert
-$ kubectl -n example get secret registry-auth-cert -o yaml | yq '.data."tls.key"' | base64 -d >> cert
-```
-
-2. Get `bundle2jwks` from https://github.com/brandond/bundle2jwks
-3. Run `bundle2jwks` with the `cert` file to generate JWKS
-
-```
-$ bundle2jwks cert
-{
-  "keys": [
-    {
-      "kty": "RSA",
-      "kid": "4V6G:RPFT:5YP4:YHNF:WDEI:2F6F:JRPI:DXNT:JRDN:BEUB:4ZOO:VT4R",
-      "n": "oZpnAF1kemuUTTnWoxzX0bU6NXKTwMANcN6FU-mQSrtsfZXwK7cvM432gb...",
-      "e": "AQAB"
-    }
-  ]
-}
-```
-
-4. Create a new secret resource with the JWKS and mount it as a new volume in `docker-registry` container
-5. Add the `REGISTRY_AUTH_TOKEN_JWKS` env var pointing to the location of the JWKS file
-
-```
-- name: REGISTRY_AUTH_TOKEN_JWKS
-  value: "/certs/jwks.json"
-```
+In registry version 3 `libtrust` has been deprecated in favour of `go-jose`
+which adds a new requirement of generating JWKS in order to keep the auth
+working. To get this accomplished we added a `jwks-updater` initContainer which
+runs a script that you can find [here](https://github.com/utilitywarehouse/system-manifests/tree/master/docker-registry/components/jwks-updater).  
+This script automatically keeps the `jwks.json` up-to-date by watching the
+`registry-auth-cert` secret files and using them to generate new JWKS which is
+then passed to the `registry` container via the shared volume.

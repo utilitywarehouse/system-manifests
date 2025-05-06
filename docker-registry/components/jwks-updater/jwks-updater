@@ -1,0 +1,68 @@
+#!/bin/sh
+
+apk add --no-cache openssl coreutils
+
+log() {
+	echo "time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" "msg=$1"
+}
+
+update_jwks() {
+	# Generate the DER public key
+	openssl rsa -in ${TLS_KEY_FILE_PATH} -pubout -outform DER -out pubkey.der 2>/dev/null
+
+	# Extract modulus (n)
+	n=$(cat pubkey.der |
+		openssl rsa -pubin -modulus -noout |
+		cut -c9- |
+		xxd -r -p |
+		basenc --base64url -w 0 |
+		sed 's/=*$//')
+
+	# Extract exponent (e)
+	exp=$(openssl rsa -pubin -in pubkey.der -text -noout | grep Exponent | awk '{print $3}' | tr -d '()')
+	e=$(printf '%06x' $exp | xxd -r -p | basenc --base64url -w0)
+
+	# Create a 240-bit (30-byte) hash from the pubkey key data
+	# Then base32 encode and split into 12 groups of 4 chars
+	# https://www.rfc-editor.org/rfc/rfc7517#section-4.5
+	kid=$(openssl dgst -sha256 -binary pubkey.der |
+		head -c 30 |
+		base32 |
+		sed 's/.\{4\}/&:/g' |
+		sed 's/:$//')
+
+	# Output the JWKS
+	cat <<EOF >${JWKS_FILE_PATH}
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "kid": "$kid",
+      "n": "$n",
+      "e": "$e"
+    }
+  ]
+}
+EOF
+
+	if [ $? -eq 0 ]; then
+		log "JWKS updated successfully."
+	fi
+}
+
+update_jwks
+
+last_mod_time=$(stat -c %Y "${TLS_KEY_FILE_PATH}")
+
+# Check the file every X seconds and update JWKS if cert was modified
+while true; do
+	sleep ${SLEEP_INTERVAL_SECONDS}
+
+	current_mod_time=$(stat -c %Y "${TLS_KEY_FILE_PATH}")
+
+	if [ "$current_mod_time" -ne "$last_mod_time" ]; then
+		log "${TLS_KEY_FILE_PATH} changed. Updating JWKS..."
+		update_jwks
+		last_mod_time="$current_mod_time"
+	fi
+done
