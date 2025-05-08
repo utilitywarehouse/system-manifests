@@ -123,8 +123,7 @@ spec:
               mountPath: /etc/tls
               readOnly: true
             - name: jwks
-              mountPath: /certs/jwks.json
-              subPath: jwks.json
+              mountPath: /certs
           ports:
             - containerPort: 5000
           readinessProbe:
