@@ -1,6 +1,6 @@
 #!/bin/sh
 
-apk add --no-cache openssl coreutils
+apk add --no-cache --quiet openssl coreutils
 
 log() {
 	echo "time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" "msg=$1"
