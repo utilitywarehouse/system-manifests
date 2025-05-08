@@ -33,6 +33,12 @@ spec:
                   key: notificationscontroller.log.level
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_LOG_FORMAT_TIMESTAMP
+              valueFrom:
+                configMapKeyRef:
+                  key: log.format.timestamp
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_APPLICATION_NAMESPACES
               valueFrom:
                 configMapKeyRef:
@@ -51,7 +57,7 @@ spec:
                   key: notificationscontroller.repo.server.plaintext
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.14.9
+          image: quay.io/argoproj/argocd:v3.0.0
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -126,6 +132,7 @@ spec:
                 matchLabels:
                   app.kubernetes.io/name: argocd-redis-ha-haproxy
               topologyKey: kubernetes.io/hostname
+      automountServiceAccountToken: true
       containers:
         - env:
             - name: AUTH
@@ -133,17 +140,19 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/haproxy:2.6.17-alpine
+          image: public.ecr.aws/docker/library/haproxy:3.0.8-alpine
           imagePullPolicy: IfNotPresent
           lifecycle: {}
           livenessProbe:
             httpGet:
               path: /healthz
-              port: 8888
+              port: probe
             initialDelaySeconds: 5
             periodSeconds: 3
           name: haproxy
           ports:
+            - containerPort: 8888
+              name: probe
             - containerPort: 6379
               name: redis
             - containerPort: 9101
@@ -151,7 +160,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /healthz
-              port: 8888
+              port: probe
             initialDelaySeconds: 5
             periodSeconds: 3
           securityContext:
@@ -172,7 +181,7 @@ spec:
             - argocd
             - admin
             - redis-initial-password
-          image: quay.io/argoproj/argocd:v2.14.9
+          image: quay.io/argoproj/argocd:v3.0.0
           imagePullPolicy: IfNotPresent
           name: secret-init
           securityContext:
@@ -188,7 +197,7 @@ spec:
             - /readonly/haproxy_init.sh
           command:
             - sh
-          image: public.ecr.aws/docker/library/haproxy:2.6.17-alpine
+          image: public.ecr.aws/docker/library/haproxy:3.0.8-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
@@ -277,6 +286,12 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: reposerver.log.level
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_LOG_FORMAT_TIMESTAMP
+              valueFrom:
+                configMapKeyRef:
+                  key: log.format.timestamp
                   name: argocd-cmd-params-cm
                   optional: true
             - name: ARGOCD_REPO_SERVER_PARALLELISM_LIMIT
@@ -369,6 +384,12 @@ spec:
                   key: otlp.headers
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_REPO_SERVER_OTLP_ATTRS
+              valueFrom:
+                configMapKeyRef:
+                  key: otlp.attrs
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_REPO_SERVER_MAX_COMBINED_DIRECTORY_MANIFESTS_SIZE
               valueFrom:
                 configMapKeyRef:
@@ -459,7 +480,7 @@ spec:
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v2.14.9
+          image: quay.io/argoproj/argocd:v3.0.0
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -511,7 +532,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v2.14.9
+          image: quay.io/argoproj/argocd:v3.0.0
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -807,6 +828,12 @@ spec:
                   key: otlp.headers
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_SERVER_OTLP_ATTRS
+              valueFrom:
+                configMapKeyRef:
+                  key: otlp.attrs
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_APPLICATION_NAMESPACES
               valueFrom:
                 configMapKeyRef:
@@ -873,7 +900,13 @@ spec:
                   key: hydrator.enabled
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v2.14.9
+            - name: ARGOCD_SYNC_WITH_REPLACE_ALLOWED
+              valueFrom:
+                configMapKeyRef:
+                  key: server.sync.replace.allowed
+                  name: argocd-cmd-params-cm
+                  optional: true
+          image: quay.io/argoproj/argocd:v3.0.0
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
