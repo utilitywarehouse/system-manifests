@@ -58,15 +58,6 @@ data:
     hs.message = "Waiting for certificate"
     return hs
 
-  resource.ignoreResourceUpdatesEnabled: "true"
-  resource.customizations.ignoreResourceUpdates.all: |
-    jsonPointers:
-      - /status
-
-  # add all ignored differences customizations to ignore resource updates as well.
-  resource.compareoptions: |
-    ignoreDifferencesOnResourceUpdates: true
-
   resource.customizations.knownTypeFields.cert-manager.io_Certificate: |
     - field: spec.duration
       type: meta/v1/Duration
