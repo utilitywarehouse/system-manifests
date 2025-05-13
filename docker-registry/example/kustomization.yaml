@@ -6,6 +6,8 @@ resources:
   - registry-ingress.yaml
 
   - ../base/
+components:
+  - ../components/jwks-generator/
 secretGenerator:
   - envs:
       - secrets/credentials
