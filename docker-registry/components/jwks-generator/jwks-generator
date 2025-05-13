@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -euo pipefail
+
 apk add --no-cache --quiet openssl coreutils
 
 log() {
@@ -25,7 +27,7 @@ generate_jwks() {
 	# Create a 240-bit (30-byte) hash from the pubkey key data
 	# Then base32 encode and split into 12 groups of 4 chars
 	# https://www.rfc-editor.org/rfc/rfc7517#section-4.5
-        # https://github.com/docker/libtrust/blob/master/key.go#L20-L24
+	# https://github.com/docker/libtrust/blob/master/key.go#L20-L24
 	kid=$(openssl dgst -sha256 -binary pubkey.der |
 		head -c 30 |
 		base32 |
