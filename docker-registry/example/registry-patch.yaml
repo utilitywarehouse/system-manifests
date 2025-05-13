@@ -12,8 +12,6 @@ spec:
               value: "https://registry.example.com/auth"
             - name: REGISTRY_AUTH_TOKEN_ISSUER
               value: "example.com"
-            - name: REGISTRY_AUTH_TOKEN_JWKS
-              value: "/certs/jwks.json"
             - name: REGISTRY_STORAGE_S3_BUCKET
               value: "example-bucket"
             - name: REGISTRY_STORAGE_S3_REGION
@@ -33,11 +31,3 @@ spec:
                 secretKeyRef:
                   name: registry
                   key: registry_http_secret
-          volumeMounts:
-            - name: jwks
-              mountPath: /certs/jwks.json
-              subPath: jwks.json
-      volumes:
-        - name: jwks
-          secret:
-            secretName: registry-auth-jwks

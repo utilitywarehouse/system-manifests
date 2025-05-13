@@ -15,10 +15,6 @@ secretGenerator:
       - secrets/auth_config.yml
     name: registry-auth
     type: Opaque
-  - files:
-      - secrets/jwks.json
-    name: registry-auth-jwks
-    type: Opaque
   - envs:
       - secrets/registry-browser
     name: registry-browser
