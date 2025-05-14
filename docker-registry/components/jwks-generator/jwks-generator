@@ -5,7 +5,7 @@ set -euo pipefail
 apk add --no-cache --quiet openssl coreutils
 
 log() {
-	echo "time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" "msg=$1"
+	echo "time=\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"" "msg=\"$1\""
 }
 
 generate_jwks() {
@@ -49,7 +49,7 @@ generate_jwks() {
 EOF
 
 	if [ $? -eq 0 ]; then
-		log "JWKS updated successfully."
+		log "JWKS generated successfully."
 	fi
 }
 
