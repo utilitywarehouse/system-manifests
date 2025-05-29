@@ -57,7 +57,7 @@ spec:
                   key: notificationscontroller.repo.server.plaintext
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v3.0.1
+          image: quay.io/argoproj/argocd:v3.0.4
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -117,7 +117,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: e34e8124c38bcfd2f16e75620bbde30158686692b13bc449eecc44c51b207d54
+        checksum/config: cd6508bdf9819601c454d0cc491fb77a209e3a88761d92514d105b6681829953
         prometheus.io/path: /metrics
         prometheus.io/port: "9101"
         prometheus.io/scrape: "true"
@@ -181,7 +181,7 @@ spec:
             - argocd
             - admin
             - redis-initial-password
-          image: quay.io/argoproj/argocd:v3.0.1
+          image: quay.io/argoproj/argocd:v3.0.4
           imagePullPolicy: IfNotPresent
           name: secret-init
           securityContext:
@@ -480,7 +480,7 @@ spec:
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v3.0.1
+          image: quay.io/argoproj/argocd:v3.0.4
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -532,7 +532,7 @@ spec:
             - -n
             - /usr/local/bin/argocd
             - /var/run/argocd/argocd-cmp-server
-          image: quay.io/argoproj/argocd:v3.0.1
+          image: quay.io/argoproj/argocd:v3.0.4
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -906,7 +906,7 @@ spec:
                   key: server.sync.replace.allowed
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v3.0.1
+          image: quay.io/argoproj/argocd:v3.0.4
           imagePullPolicy: Always
           livenessProbe:
             httpGet:
