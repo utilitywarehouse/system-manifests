@@ -26,12 +26,48 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  name: test-multiple-source-path-specified
+spec:
+  sources:
+    - repoURL: git@github.com:utilitywarehouse/something
+      path: dev
+    - repoURL: git@github.com:utilitywarehouse/something_else
+      path: dev
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-source-and-sources-both-specified
+spec:
+  source:
+    repoURL: git@github.com:utilitywarehouse/something
+    path: dev
+  sources:
+    - repoURL: git@github.com:utilitywarehouse/something
+      path: dev
+    - repoURL: git@github.com:utilitywarehouse/something_else
+      path: dev
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
   name: test-source-path-chart-specified
 spec:
   source:
     repoURL: git@github.com:utilitywarehouse/something
     path: dev
     chart: dev
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-sources-chart-specified
+spec:
+  sources:
+    - repoURL: git@github.com:utilitywarehouse/something
+      path: dev
+    - repoURL: git@github.com:utilitywarehouse/something_else
+      chart: dev
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application

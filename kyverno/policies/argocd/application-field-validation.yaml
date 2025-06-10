@@ -45,11 +45,16 @@ spec:
       validate:
         allowExistingViolations: true
         message: >-
-          `spec.source.path` should be specified
-        pattern:
-          spec:
-            source:
-              path: "?*"
+          `spec.source.path` OR `spec.sources.path` should be specified but never both.
+        anyPattern:
+          - spec:
+              source:
+                path: "?*"
+              X(sources):
+          - spec:
+              X(source):
+              sources:
+                - path: "?*"
     - name: chart-should-not-be-used
       skipBackgroundRequests: true
       match:
@@ -61,10 +66,15 @@ spec:
         allowExistingViolations: true
         message: >-
           `spec.source.chart` should not use helm chart.
-        pattern:
-          spec:
-            source:
-              X(chart):
+        anyPattern:
+          - spec:
+              X(sources):
+              source:
+                X(chart):
+          - spec:
+              X(source):
+              sources:
+                - X(chart):
     - name: empty-destination-namespace
       skipBackgroundRequests: true
       match:
