@@ -32,6 +32,7 @@ results:
     kind: Application
     resource: test-missing-project-name
     result: fail
+
   - policy: argocd-application-field-validation
     rule: empty-source-path
     kind: Application
@@ -43,10 +44,37 @@ results:
     resource: test-source-path-specified
     result: pass
   - policy: argocd-application-field-validation
+    rule: empty-source-path
+    kind: Application
+    resource: test-multiple-source-path-specified
+    result: pass
+  - policy: argocd-application-field-validation
+    rule: empty-source-path
+    kind: Application
+    resource: test-source-and-sources-both-specified
+    result: fail
+
+  - policy: argocd-application-field-validation
+    rule: chart-should-not-be-used
+    kind: Application
+    resource: test-source-path-specified
+    result: pass
+  - policy: argocd-application-field-validation
+    rule: chart-should-not-be-used
+    kind: Application
+    resource: test-multiple-source-path-specified
+    result: pass
+  - policy: argocd-application-field-validation
     rule: chart-should-not-be-used
     kind: Application
     resource: test-source-path-chart-specified
     result: fail
+  - policy: argocd-application-field-validation
+    rule: chart-should-not-be-used
+    kind: Application
+    resource: test-sources-chart-specified
+    result: fail
+
   - policy: argocd-application-field-validation
     rule: empty-destination-namespace
     kind: Application
