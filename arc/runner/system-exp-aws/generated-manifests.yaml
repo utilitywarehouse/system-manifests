@@ -6,10 +6,10 @@ metadata:
   name: system-exp-aws-gha-rs-kube-mode
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.12.0
     app.kubernetes.io/name: system-exp-aws
     app.kubernetes.io/instance: system-exp-aws
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-exp-aws
@@ -22,6 +22,16 @@ kind: Role
 metadata:
   name: system-exp-aws-gha-rs-kube-mode
   namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.12.0
+    app.kubernetes.io/name: system-exp-aws
+    app.kubernetes.io/instance: system-exp-aws
+    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-exp-aws
+    actions.github.com/scale-set-namespace: sys-actions
+  annotations:
 rules:
   - apiGroups: [""]
     resources: ["pods"]
@@ -46,15 +56,16 @@ metadata:
   name: system-exp-aws-gha-rs-manager
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.12.0
     app.kubernetes.io/name: system-exp-aws
     app.kubernetes.io/instance: system-exp-aws
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-exp-aws
     actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role
+  annotations:
 rules:
   - apiGroups:
       - ""
@@ -119,6 +130,16 @@ kind: RoleBinding
 metadata:
   name: system-exp-aws-gha-rs-kube-mode
   namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.12.0
+    app.kubernetes.io/name: system-exp-aws
+    app.kubernetes.io/instance: system-exp-aws
+    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-exp-aws
+    actions.github.com/scale-set-namespace: sys-actions
+  annotations:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -135,15 +156,16 @@ metadata:
   name: system-exp-aws-gha-rs-manager
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.12.0
     app.kubernetes.io/name: system-exp-aws
     app.kubernetes.io/instance: system-exp-aws
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-exp-aws
     actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role-binding
+  annotations:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -161,16 +183,16 @@ metadata:
   namespace: sys-actions
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.12.0
     app.kubernetes.io/name: system-exp-aws
     app.kubernetes.io/instance: system-exp-aws
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-exp-aws
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 42c9654285c6be1ab42bd41af30f4b2cf64a38c8e4055e81a86f7e42d4477ad
+    actions.github.com/values-hash: cafb90b833398fdeff820e807574f9f2ce9ab65c519208fb41249476d284771
     actions.github.com/cleanup-manager-role-binding: system-exp-aws-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-exp-aws-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-exp-aws-gha-rs-kube-mode
@@ -190,7 +212,12 @@ spec:
       containers:
         - name: runner
           command:
-            - /home/runner/run.sh
+            - /bin/bash
+            - -c
+            - |
+              sudo apt-get update
+              sudo apt-get -y install make gettext-base
+              /home/runner/run.sh
           image: ghcr.io/actions/actions-runner:latest
           env:
             - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER

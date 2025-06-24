@@ -4,11 +4,11 @@ metadata:
   name: arc-gha-rs-controller
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-controller-0.9.3
+    helm.sh/chart: gha-rs-controller-0.12.0
     app.kubernetes.io/name: gha-rs-controller
     app.kubernetes.io/namespace: sys-actions
     app.kubernetes.io/instance: arc
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/part-of: gha-rs-controller
     app.kubernetes.io/managed-by: Helm
 ---
@@ -76,11 +76,11 @@ metadata:
   name: arc-gha-rs-controller
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-controller-0.9.3
+    helm.sh/chart: gha-rs-controller-0.12.0
     app.kubernetes.io/name: gha-rs-controller
     app.kubernetes.io/namespace: sys-actions
     app.kubernetes.io/instance: arc
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/part-of: gha-rs-controller
     app.kubernetes.io/managed-by: Helm
     actions.github.com/controller-service-account-namespace: sys-actions
@@ -99,7 +99,7 @@ spec:
       labels:
         app.kubernetes.io/part-of: gha-rs-controller
         app.kubernetes.io/component: controller-manager
-        app.kubernetes.io/version: 0.9.3
+        app.kubernetes.io/version: 0.12.0
         app.kubernetes.io/name: gha-rs-controller
         app.kubernetes.io/namespace: sys-actions
         app.kubernetes.io/instance: arc
@@ -107,12 +107,13 @@ spec:
       serviceAccountName: arc-gha-rs-controller
       containers:
         - name: manager
-          image: "ghcr.io/actions/gha-runner-scale-set-controller:0.9.3"
+          image: "ghcr.io/actions/gha-runner-scale-set-controller:0.12.0"
           imagePullPolicy: IfNotPresent
           args:
             - "--auto-scaling-runner-set-only"
             - "--log-level=debug"
             - "--log-format=text"
+            - "--runner-max-concurrent-reconciles=2"
             - "--update-strategy=immediate"
             - "--listener-metrics-addr=0"
             - "--listener-metrics-endpoint="
@@ -121,7 +122,7 @@ spec:
             - "/manager"
           env:
             - name: CONTROLLER_MANAGER_CONTAINER_IMAGE
-              value: "ghcr.io/actions/gha-runner-scale-set-controller:0.9.3"
+              value: "ghcr.io/actions/gha-runner-scale-set-controller:0.12.0"
             - name: CONTROLLER_MANAGER_POD_NAMESPACE
               valueFrom:
                 fieldRef:
