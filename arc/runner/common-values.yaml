@@ -20,9 +20,17 @@ template:
     containers:
       - name: runner
         image: ghcr.io/actions/actions-runner:latest
-        command: ["/home/runner/run.sh"]
+        # image of the self hosted runners is different than the base image of GH's cloud runner
+        # install common dependencies. git, curl and jq is pre-installed in the image
+        command:
+          - /bin/bash
+          - -c
+          - |
+            sudo apt-get update
+            sudo apt-get -y install make gettext-base
+            /home/runner/run.sh
         env:
-            # Avoid forcing jobs to have a `container` section
+          # Avoid forcing jobs to have a `container` section
           - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
             value: "false"
 
