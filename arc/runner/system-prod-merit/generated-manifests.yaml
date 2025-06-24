@@ -6,10 +6,10 @@ metadata:
   name: system-prod-merit-gha-rs-kube-mode
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.12.0
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
@@ -22,6 +22,16 @@ kind: Role
 metadata:
   name: system-prod-merit-gha-rs-kube-mode
   namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.12.0
+    app.kubernetes.io/name: system-prod-merit
+    app.kubernetes.io/instance: system-prod-merit
+    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-prod-merit
+    actions.github.com/scale-set-namespace: sys-actions
+  annotations:
 rules:
   - apiGroups: [""]
     resources: ["pods"]
@@ -46,15 +56,16 @@ metadata:
   name: system-prod-merit-gha-rs-manager
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.12.0
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
     actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role
+  annotations:
 rules:
   - apiGroups:
       - ""
@@ -119,6 +130,16 @@ kind: RoleBinding
 metadata:
   name: system-prod-merit-gha-rs-kube-mode
   namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.12.0
+    app.kubernetes.io/name: system-prod-merit
+    app.kubernetes.io/instance: system-prod-merit
+    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-prod-merit
+    actions.github.com/scale-set-namespace: sys-actions
+  annotations:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -135,15 +156,16 @@ metadata:
   name: system-prod-merit-gha-rs-manager
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.12.0
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
     actions.github.com/scale-set-namespace: sys-actions
     app.kubernetes.io/component: manager-role-binding
+  annotations:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -161,16 +183,16 @@ metadata:
   namespace: sys-actions
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
-    helm.sh/chart: gha-rs-0.9.3
+    helm.sh/chart: gha-rs-0.12.0
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.9.3"
+    app.kubernetes.io/version: "0.12.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 4a022b2c189d2e0973e19406f6b463b7d3afee1938204aa7c5aee5643c9e1b2
+    actions.github.com/values-hash: c8e627caff899e21957f092f653c980bb7852833a18f6d419bdcd82c3513412
     actions.github.com/cleanup-manager-role-binding: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-prod-merit-gha-rs-kube-mode
@@ -190,7 +212,12 @@ spec:
       containers:
         - name: runner
           command:
-            - /home/runner/run.sh
+            - /bin/bash
+            - -c
+            - |
+              sudo apt-get update
+              sudo apt-get -y install make gettext-base
+              /home/runner/run.sh
           image: ghcr.io/actions/actions-runner:latest
           env:
             - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER

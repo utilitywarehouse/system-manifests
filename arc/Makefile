@@ -1,4 +1,4 @@
-VERSION=0.9.3
+VERSION=0.12.0
 NAMESPACE=sys-actions
 
 .DEFAULT_GOAL := generate-manifests
@@ -9,11 +9,11 @@ generate-manifests: controller runners
 controller:
 	helm template arc --namespace $(NAMESPACE) --include-crds --values controller/values.yaml oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller --version $(VERSION) > /tmp/arc-controller.yaml
 
-	yq 'select(.kind=="CustomResourceDefinition")' /tmp/arc-controller.yaml > controller/cluster/crds.yaml
-	yq 'select(.kind=="ClusterRole")' /tmp/arc-controller.yaml > controller/cluster/clusterrole.yaml
-	yq 'select(.kind=="ClusterRoleBinding")' /tmp/arc-controller.yaml > controller/cluster/clusterrolebinding.yaml
+	yq 'select(.kind == "CustomResourceDefinition")' /tmp/arc-controller.yaml > controller/cluster/crds.yaml
+	yq 'select(.kind == "ClusterRole")' /tmp/arc-controller.yaml > controller/cluster/clusterrole.yaml
+	yq 'select(.kind == "ClusterRoleBinding")' /tmp/arc-controller.yaml > controller/cluster/clusterrolebinding.yaml
 
-	yq 'select(.kind!="CustomResourceDefinition" and .kind!="ClusterRole" and .kind!="ClusterRoleBinding")' /tmp/arc-controller.yaml > /tmp/arc-controller-namespaced.yaml
+	yq 'select(.kind != "CustomResourceDefinition" and .kind != "ClusterRole" and .kind != "ClusterRoleBinding")' /tmp/arc-controller.yaml > /tmp/arc-controller-namespaced.yaml
 	# Remove empty yaml documents by generated a unified yaml document and splitting it back
 	yq ea '[.]' /tmp/arc-controller-namespaced.yaml | yq '.[] | split_doc' > controller/namespaced/generated-manifests.yaml
 
