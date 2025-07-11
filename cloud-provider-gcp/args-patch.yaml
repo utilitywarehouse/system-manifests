@@ -11,7 +11,7 @@ spec:
           args:
             - /cloud-controller-manager
             - --allocate-node-cidrs=true
-            - --cloud-config=/etc/kubernetes/config/cloud_provider/cloud.conf
+            - --cloud-config=/etc/kubernetes/cloud.config
             - --cloud-provider=gce
             - --cluster-cidr=10.4.0.0/16
             - --configure-cloud-routes=false

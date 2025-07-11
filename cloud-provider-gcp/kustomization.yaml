@@ -7,7 +7,6 @@ resources:
 patches:
   - path: args-patch.yaml
   - path: image-patch.yaml
-  - path: volume-patch.yaml
   # Deploy on control-plane nodes. Upstream sets this to null which makes
   # apiserver to moan. Also, we want to schedule pods there before waiting for
   # our labeller to mark the node as control-plane, thus we can use role=master
