@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: Issuer
+metadata:
+  name: registry-selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: registry-auth-cert
+spec:
+  commonName: docker-registry
+  issuerRef:
+    kind: Issuer
+    name: registry-selfsigned-issuer
+  secretName: registry-auth-cert
