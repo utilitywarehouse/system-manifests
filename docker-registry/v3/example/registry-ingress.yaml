@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: docker-registry-internal
+  labels:
+    kubernetes.io/ingress.class: traefik-private-tls
+  annotations:
+    external-dns.alpha.kubernetes.io/target: private.example.com
+spec:
+  rules:
+    - host: registry-browser.example.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: registry-browser
+              servicePort: 8080
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    kubernetes.io/ingress.class: traefik-public-tls
+  annotations:
+    external-dns.alpha.kubernetes.io/target: public.example.com
+  name: docker-registry
+spec:
+  rules:
+    - host: registry.example.com
+      http:
+        paths:
+          - path: /auth
+            backend:
+              serviceName: docker-registry-auth
+              servicePort: 5001
+          - path: /
+            backend:
+              serviceName: docker-registry
+              servicePort: 5000
