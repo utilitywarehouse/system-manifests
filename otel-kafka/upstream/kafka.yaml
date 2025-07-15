@@ -1,0 +1,778 @@
+---
+# Source: kafka/templates/broker/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: kafka-broker
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: kafka
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: 32.3.5
+      app.kubernetes.io/name: kafka
+      app.kubernetes.io/component: broker
+      app.kubernetes.io/part-of: kafka
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    # Allow client connections
+    - ports:
+        - port: 9092
+        - port: 9094
+        - port: 5556
+---
+# Source: kafka/templates/controller-eligible/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: kafka-controller
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: kafka
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: 32.3.5
+      app.kubernetes.io/name: kafka
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/part-of: kafka
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    # Allow client connections
+    - ports:
+        - port: 9093
+        - port: 9092
+        - port: 9094
+        - port: 5556
+---
+# Source: kafka/templates/broker/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: kafka-broker
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: broker
+    app.kubernetes.io/part-of: kafka
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: 32.3.5
+      app.kubernetes.io/name: kafka
+      app.kubernetes.io/component: broker
+      app.kubernetes.io/part-of: kafka
+---
+# Source: kafka/templates/controller-eligible/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: kafka-controller
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: controller-eligible
+    app.kubernetes.io/part-of: kafka
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: 32.3.5
+      app.kubernetes.io/name: kafka
+      app.kubernetes.io/component: controller-eligible
+      app.kubernetes.io/part-of: kafka
+---
+# Source: kafka/templates/provisioning/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kafka-provisioning
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+automountServiceAccountToken: false
+---
+# Source: kafka/templates/rbac/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kafka
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: kafka
+automountServiceAccountToken: false
+---
+# Source: kafka/templates/controller-eligible/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-controller-configuration
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: controller-eligible
+    app.kubernetes.io/part-of: kafka
+data:
+  server.properties: |-
+    advertised.listeners=CLIENT://advertised-address-placeholder:9092,INTERNAL://advertised-address-placeholder:9094
+    controller.listener.names=CONTROLLER
+    controller.quorum.bootstrap.servers=kafka-controller-0.kafka-controller-headless.otel.svc.cluster.local:9093,kafka-controller-1.kafka-controller-headless.otel.svc.cluster.local:9093,kafka-controller-2.kafka-controller-headless.otel.svc.cluster.local:9093
+    inter.broker.listener.name=INTERNAL
+    listener.security.protocol.map=CONTROLLER:SSL,CLIENT:SSL,INTERNAL:SSL
+    listeners=CLIENT://:9092,INTERNAL://:9094,CONTROLLER://:9093
+    log.dir=/bitnami/kafka/data
+    logs.dir=/opt/bitnami/kafka/logs
+    process.roles=controller,broker
+    ssl.client.auth=required
+    ssl.endpoint.identification.algorithm=https
+    ssl.keystore.location=/opt/bitnami/kafka/config/certs/kafka.keystore.jks
+    ssl.keystore.type=JKS
+    ssl.truststore.location=/opt/bitnami/kafka/config/certs/kafka.truststore.jks
+    ssl.truststore.type=JKS
+---
+# Source: kafka/templates/metrics/jmx-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kafka-jmx-configuration
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: metrics
+data:
+  jmx-kafka-prometheus.yml: |-
+    jmxUrl: service:jmx:rmi:///jndi/rmi://127.0.0.1:5555/jmxrmi
+    lowercaseOutputName: true
+    lowercaseOutputLabelNames: true
+    ssl: false
+    whitelistObjectNames: ["kafka.controller:*","kafka.server:*","java.lang:*","kafka.network:*","kafka.log:*"]
+    rules:
+      - pattern: kafka.controller<type=(ControllerChannelManager), name=(QueueSize), broker-id=(\d+)><>(Value)
+        name: kafka_controller_$1_$2_$4
+        labels:
+          broker_id: "$3"
+      - pattern: kafka.controller<type=(ControllerChannelManager), name=(TotalQueueSize)><>(Value)
+        name: kafka_controller_$1_$2_$3
+      - pattern: kafka.controller<type=(KafkaController), name=(.+)><>(Value)
+        name: kafka_controller_$1_$2_$3
+      - pattern: kafka.controller<type=(ControllerStats), name=(.+)><>(Count)
+        name: kafka_controller_$1_$2_$3
+      - pattern : kafka.network<type=(Processor), name=(IdlePercent), networkProcessor=(.+)><>(Value)
+        name: kafka_network_$1_$2_$4
+        labels:
+          network_processor: $3
+      - pattern : kafka.network<type=(RequestMetrics), name=(.+), request=(.+)><>(Count|Value)
+        name: kafka_network_$1_$2_$4
+        labels:
+          request: $3
+      - pattern : kafka.network<type=(SocketServer), name=(.+)><>(Count|Value)
+        name: kafka_network_$1_$2_$3
+      - pattern : kafka.network<type=(RequestChannel), name=(.+)><>(Count|Value)
+        name: kafka_network_$1_$2_$3
+      - pattern: kafka.server<type=(.+), name=(.+), topic=(.+)><>(Count|OneMinuteRate)
+        name: kafka_server_$1_$2_$4
+        labels:
+          topic: $3
+      - pattern: kafka.server<type=(ReplicaFetcherManager), name=(.+), clientId=(.+)><>(Value)
+        name: kafka_server_$1_$2_$4
+        labels:
+          client_id: "$3"
+      - pattern: kafka.server<type=(DelayedOperationPurgatory), name=(.+), delayedOperation=(.+)><>(Value)
+        name: kafka_server_$1_$2_$3_$4
+      - pattern: kafka.server<type=(.+), name=(.+)><>(Count|Value|OneMinuteRate)
+        name: kafka_server_$1_total_$2_$3
+      - pattern: kafka.server<type=(.+)><>(queue-size)
+        name: kafka_server_$1_$2
+      - pattern: java.lang<type=(.+), name=(.+)><(.+)>(\w+)
+        name: java_lang_$1_$4_$3_$2
+      - pattern: java.lang<type=(.+), name=(.+)><>(\w+)
+        name: java_lang_$1_$3_$2
+      - pattern : java.lang<type=(.*)>
+      - pattern: kafka.log<type=(.+), name=(.+), topic=(.+), partition=(.+)><>Value
+        name: kafka_log_$1_$2
+        labels:
+          topic: $3
+          partition: $4
+---
+# Source: kafka/templates/controller-eligible/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-controller-headless
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: controller-eligible
+    app.kubernetes.io/part-of: kafka
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: tcp-interbroker
+      port: 9094
+      protocol: TCP
+      targetPort: interbroker
+    - name: tcp-client
+      port: 9092
+      protocol: TCP
+      targetPort: client
+    - name: tcp-controller
+      protocol: TCP
+      port: 9093
+      targetPort: controller
+  selector:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/component: controller-eligible
+    app.kubernetes.io/part-of: kafka
+---
+# Source: kafka/templates/metrics/jmx-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-jmx-metrics
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: metrics
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "5556"
+    prometheus.io/scrape: "true"
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: http-metrics
+      port: 5556
+      protocol: TCP
+      targetPort: metrics
+  selector:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/part-of: kafka
+---
+# Source: kafka/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: kafka
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: tcp-client
+      port: 9092
+      protocol: TCP
+      targetPort: client
+      nodePort: null
+  selector:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/part-of: kafka
+---
+# Source: kafka/templates/controller-eligible/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-controller
+  namespace: "otel"
+  labels:
+    app.kubernetes.io/instance: 32.3.5
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.3.5
+    app.kubernetes.io/component: controller-eligible
+    app.kubernetes.io/part-of: kafka
+spec:
+  podManagementPolicy: Parallel
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: 32.3.5
+      app.kubernetes.io/name: kafka
+      app.kubernetes.io/component: controller-eligible
+      app.kubernetes.io/part-of: kafka
+  serviceName: kafka-controller-headless
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: 32.3.5
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: kafka
+        app.kubernetes.io/version: 4.0.0
+        helm.sh/chart: kafka-32.3.5
+        app.kubernetes.io/component: controller-eligible
+        app.kubernetes.io/part-of: kafka
+      annotations:
+        checksum/configuration: 4290669c0c79aad5c6aac739c62c70db3a42afcd1f011493d1db874b9933b385
+        checksum/jmx-configuration: b4e923cd804d5cdd5eb71fbfa55bc66adde20d4f18cf32908b3a31d4f21e05b3
+    spec:
+      
+      automountServiceAccountToken: false
+      hostNetwork: false
+      hostIPC: false
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: 32.3.5
+                    app.kubernetes.io/name: kafka
+                    app.kubernetes.io/component: controller-eligible
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        seccompProfile:
+          type: RuntimeDefault
+        supplementalGroups: []
+        sysctls: []
+      serviceAccountName: kafka
+      enableServiceLinks: true
+      initContainers:
+        
+        - name: prepare-config
+          image: docker.io/bitnami/kafka:4.0.0-debian-12-r8
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add: []
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          command:
+            - /bin/bash
+          args:
+            - -ec
+            - |
+              . /opt/bitnami/scripts/libkafka.sh
+              configure_kafka_tls() {
+                  # Remove previously existing keystores and certificates, if any
+                  rm -f /certs/kafka.keystore.jks /certs/kafka.truststore.jks
+                  rm -f /certs/tls.crt /certs/tls.key /certs/ca.crt
+                  find /certs -name "xx*" -exec rm {} \;
+                  if [[ "${KAFKA_TLS_TYPE}" = "PEM" ]]; then
+                      # Copy PEM certificate and key
+                      if [[ -f "/mounted-certs/kafka-${POD_ROLE}-${POD_ID}.crt" && "/mounted-certs/kafka-${POD_ROLE}-${POD_ID}.key" ]]; then
+                          cp "/mounted-certs/kafka-${POD_ROLE}-${POD_ID}.crt" /certs/tls.crt
+                          # Copy the PEM key ensuring the key used PEM format with PKCS#8
+                          openssl pkcs8 -topk8 -nocrypt -passin pass:"${KAFKA_TLS_PEM_KEY_PASSWORD:-}" -in "/mounted-certs/kafka-${POD_ROLE}-${POD_ID}.key" > /certs/tls.key
+                      elif [[ -f /mounted-certs/tls.crt && -f /mounted-certs/tls.key ]]; then
+                          cp "/mounted-certs/tls.crt" /certs/tls.crt
+                          # Copy the PEM key ensuring the key used PEM format with PKCS#8
+                          openssl pkcs8 -topk8 -passin pass:"${KAFKA_TLS_PEM_KEY_PASSWORD:-}" -nocrypt -in "/mounted-certs/tls.key" > /certs/tls.key
+                      else
+                          error "PEM key and cert files not found"
+                      fi
+                      # Copy CA certificate
+                      if [[ -f /mounted-certs/ca.crt ]]; then
+                          cp /mounted-certs/ca.crt /certs/ca.crt
+                      else
+                          error "CA certificate file not found"
+                      fi
+                      # Create JKS keystore from PEM cert and key
+                      openssl pkcs12 -export -in "/certs/tls.crt" \
+                          -passout pass:"$KAFKA_TLS_KEYSTORE_PASSWORD" \
+                          -inkey "/certs/tls.key" \
+                          -out "/certs/kafka.keystore.p12"
+                      keytool -importkeystore -srckeystore "/certs/kafka.keystore.p12" \
+                          -srcstoretype PKCS12 \
+                          -srcstorepass "$KAFKA_TLS_KEYSTORE_PASSWORD" \
+                          -deststorepass "$KAFKA_TLS_KEYSTORE_PASSWORD" \
+                          -destkeystore "/certs/kafka.keystore.jks" \
+                          -noprompt
+                      # Create JKS truststore from CA cert
+                      keytool -keystore /certs/kafka.truststore.jks -alias CARoot -import -file /certs/ca.crt -storepass "$KAFKA_TLS_TRUSTSTORE_PASSWORD" -noprompt
+                      # Remove extra files
+                      rm -f "/certs/kafka.keystore.p12" "/certs/tls.crt" "/certs/tls.key" "/certs/ca.crt"
+                  elif [[ "$KAFKA_TLS_TYPE" = "JKS" ]]; then
+                      if [[ -f "/mounted-certs/kafka-${POD_ROLE}-${POD_ID}.keystore.jks" ]]; then
+                          cp "/mounted-certs/kafka-${POD_ROLE}-${POD_ID}.keystore.jks" /certs/kafka.keystore.jks
+                      elif [[ -f "$KAFKA_TLS_KEYSTORE_FILE" ]]; then
+                          cp "$KAFKA_TLS_KEYSTORE_FILE" /certs/kafka.keystore.jks
+                      else
+                          error "Keystore file not found"
+                      fi
+                      if [[ -f "$KAFKA_TLS_TRUSTSTORE_FILE" ]]; then
+                          cp "$KAFKA_TLS_TRUSTSTORE_FILE" /certs/kafka.truststore.jks
+                      else
+                          error "Truststore file not found"
+                      fi
+                  else
+                      error "Invalid type $KAFKA_TLS_TYPE"
+                  fi
+                  # Configure TLS password settings in Kafka configuration
+                  [[ -n "${KAFKA_TLS_KEYSTORE_PASSWORD:-}" ]] && kafka_server_conf_set "ssl.keystore.password" "$KAFKA_TLS_KEYSTORE_PASSWORD"
+                  [[ -n "${KAFKA_TLS_TRUSTSTORE_PASSWORD:-}" ]] && kafka_server_conf_set "ssl.truststore.password" "$KAFKA_TLS_TRUSTSTORE_PASSWORD"
+                  [[ -n "${KAFKA_TLS_PEM_KEY_PASSWORD:-}" ]] && kafka_server_conf_set "ssl.key.password" "$KAFKA_TLS_PEM_KEY_PASSWORD"
+                  # Avoid errors caused by previous checks
+                  true
+              }
+        
+              cp /configmaps/server.properties $KAFKA_CONF_FILE
+        
+              # Get pod ID and role, last and second last fields in the pod name respectively
+              POD_ID="${MY_POD_NAME##*-}"
+              POD_ROLE="${MY_POD_NAME%-*}"; POD_ROLE="${POD_ROLE##*-}"
+        
+              # Configure node.id
+              ID=$((POD_ID + KAFKA_MIN_ID))
+              [[ -f "/bitnami/kafka/data/meta.properties" ]] && ID="$(grep "node.id" /bitnami/kafka/data/meta.properties | awk -F '=' '{print $2}')"
+              kafka_server_conf_set "node.id" "$ID"
+              # Configure initial controllers
+              if [[ "controller" =~ "$POD_ROLE" ]]; then
+                  INITIAL_CONTROLLERS=()
+                  for ((i = 0; i < 3; i++)); do
+                      var="KAFKA_CONTROLLER_${i}_DIR_ID"; DIR_ID="${!var}"
+                      [[ $i -eq $POD_ID ]] && [[ -f "/bitnami/kafka/data/meta.properties" ]] && DIR_ID="$(grep "directory.id" /bitnami/kafka/data/meta.properties | awk -F '=' '{print $2}')"
+                      INITIAL_CONTROLLERS+=("${i}@${KAFKA_FULLNAME}-${POD_ROLE}-${i}.${KAFKA_CONTROLLER_SVC_NAME}.${MY_POD_NAMESPACE}.svc.${CLUSTER_DOMAIN}:${KAFKA_CONTROLLER_PORT}:${DIR_ID}")
+                  done
+                  echo "${INITIAL_CONTROLLERS[*]}" | awk -v OFS=',' '{$1=$1}1' > /shared/initial-controllers.txt
+              fi
+              replace_in_file "$KAFKA_CONF_FILE" "advertised-address-placeholder" "${MY_POD_NAME}.${KAFKA_FULLNAME}-${POD_ROLE}-headless.${MY_POD_NAMESPACE}.svc.${CLUSTER_DOMAIN}"
+              configure_kafka_tls
+              if [[ -f /secret-config/server-secret.properties ]]; then
+                  cat /secret-config/server-secret.properties >> $KAFKA_CONF_FILE
+              fi
+              
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                    fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KAFKA_FULLNAME
+              value: "kafka"
+            - name: CLUSTER_DOMAIN
+              value: "cluster.local"
+            - name: KAFKA_VOLUME_DIR
+              value: "/bitnami/kafka"
+            - name: KAFKA_CONF_FILE
+              value: /config/server.properties
+            - name: KAFKA_MIN_ID
+              value: "0"
+            - name: KAFKA_CONTROLLER_SVC_NAME
+              value: kafka-controller-headless
+            - name: KAFKA_CONTROLLER_PORT
+              value: "9093"
+            - name: KAFKA_CONTROLLER_0_DIR_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-kraft
+                  key: controller-0-id
+            - name: KAFKA_CONTROLLER_1_DIR_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-kraft
+                  key: controller-1-id
+            - name: KAFKA_CONTROLLER_2_DIR_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-kraft
+                  key: controller-2-id
+            - name: KAFKA_TLS_TYPE
+              value: PEM
+            - name: KAFKA_TLS_KEYSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-tls-passwords
+                  key: "keystore-password"
+            - name: KAFKA_TLS_TRUSTSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-tls-passwords
+                  key: "truststore-password"
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/kafka
+            - name: kafka-config
+              mountPath: /config
+            - name: kafka-configmaps
+              mountPath: /configmaps
+            - name: kafka-secret-config
+              mountPath: /secret-config
+            - name: tmp
+              mountPath: /tmp
+            - name: init-shared
+              mountPath: /shared
+            - name: kafka-shared-certs
+              mountPath: /certs
+            - name: kafka-certs
+              mountPath: /mounted-certs
+              readOnly: true
+      containers:
+        - name: kafka
+          image: docker.io/bitnami/kafka:4.0.0-debian-12-r8
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+          env:
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx1024m -Xms1024m"
+            - name: KAFKA_CFG_PROCESS_ROLES
+              value: "controller,broker"
+            - name: KAFKA_INITIAL_CONTROLLERS_FILE
+              value: /shared/initial-controllers.txt
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: KAFKA_KRAFT_CLUSTER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kafka-kraft
+                  key: cluster-id
+            - name: JMX_PORT
+              value: "5555"
+            - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
+              value: "2"
+            - name: KAFKA_CFG_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM
+              value: ""
+          ports:
+            - name: controller
+              containerPort: 9093
+            - name: client
+              containerPort: 9092
+            - name: interbroker
+              containerPort: 9094
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - pgrep
+                - -f
+                - kafka
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            tcpSocket:
+              port: "controller"
+          resources:
+            limits:
+              cpu: 750m
+              ephemeral-storage: 2Gi
+              memory: 768Mi
+            requests:
+              cpu: 500m
+              ephemeral-storage: 50Mi
+              memory: 512Mi
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/kafka
+            - name: logs
+              mountPath: /opt/bitnami/kafka/logs
+            - name: kafka-config
+              mountPath: /opt/bitnami/kafka/config/server.properties
+              subPath: server.properties
+            - name: tmp
+              mountPath: /tmp
+            - name: init-shared
+              mountPath: /shared
+            - name: log4j2-config
+              mountPath: /opt/bitnami/kafka/config/log4j2.yaml
+              subPath: log4j2.yaml
+            - name: kafka-shared-certs
+              mountPath: /opt/bitnami/kafka/config/certs
+              readOnly: true
+        - name: jmx-exporter
+          image: docker.io/bitnami/jmx-exporter:1.3.0-debian-12-r4
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+          command:
+            - java
+          args:
+            - -XX:MaxRAMPercentage=100
+            - -XshowSettings:vm
+            - -jar
+            - jmx_prometheus_standalone.jar
+            - "5556"
+            - /etc/jmx-kafka/jmx-kafka-prometheus.yml
+          ports:
+            - name: metrics
+              containerPort: 5556
+          resources:
+            limits:
+              cpu: 375m
+              ephemeral-storage: 2Gi
+              memory: 384Mi
+            requests:
+              cpu: 250m
+              ephemeral-storage: 50Mi
+              memory: 256Mi
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+            tcpSocket:
+              port: metrics
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+            httpGet:
+              path: /
+              port: metrics
+          volumeMounts:
+            - name: jmx-config
+              mountPath: /etc/jmx-kafka
+      volumes:
+        - name: kafka-configmaps
+          configMap:
+            name: kafka-controller-configuration
+        - name: kafka-secret-config
+          emptyDir: {}
+        - name: kafka-config
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: init-shared
+          emptyDir: {}
+        - name: log4j2-config
+          configMap:
+            name: kafka-log4j-config
+        - name: jmx-config
+          configMap:
+            name: kafka-jmx-configuration
+        - name: kafka-shared-certs
+          emptyDir: {}
+        - name: kafka-certs
+          projected:
+            defaultMode: 256
+            sources:
+              - secret:
+                  name: kafka-crt
+        - name: logs
+          emptyDir: {}
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"

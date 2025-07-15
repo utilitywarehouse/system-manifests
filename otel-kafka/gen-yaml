@@ -1,0 +1,7 @@
+#!/bin/sh
+
+mkdir -p upstream
+
+# Fetch from helm repo: https://github.com/bitnami/charts/tree/main/bitnami/kafka#installing-the-chart
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm template ${BITNAMI_KAFKA_RELEASE} bitnami/kafka --version ${BITNAMI_KAFKA_RELEASE} -f values.yaml --set fullnameOverride=${NAME} --namespace ${NAMESPACE} > upstream/kafka.yaml

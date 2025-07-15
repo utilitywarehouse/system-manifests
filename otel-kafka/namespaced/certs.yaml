@@ -1,0 +1,78 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: kafka-selfsigned-ca-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kafka-selfsigned-ca
+spec:
+  issuerRef:
+    kind: Issuer
+    name: kafka-selfsigned-ca-issuer
+  secretName: kafka-selfsigned-ca
+  commonName: kafka
+  isCA: true
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: kafka-selfsigned-issuer
+spec:
+  ca:
+    secretName: kafka-selfsigned-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kafka-crt
+  namespace: otel
+  labels:
+    app.kubernetes.io/instance: 32.1.1
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/version: 4.0.0
+    helm.sh/chart: kafka-32.1.1
+    app.kubernetes.io/part-of: kafka
+spec:
+  secretName: kafka-crt
+  commonName: kafka.otel.svc.cluster.local
+  issuerRef:
+    name: kafka-selfsigned-issuer
+    kind: Issuer
+  subject:
+    organizations:
+      - "Kafka"
+  dnsNames:
+    - '*.otel'
+    - '*.otel.svc'
+    - '*.otel.svc.cluster.local'
+    - '*.kafka-controller-headless'
+    - '*.kafka-controller-headless.otel'
+    - '*.kafka-controller-headless.otel.svc'
+    - '*.kafka-controller-headless.otel.svc.cluster.local'
+    - '*.kafka-broker-headless'
+    - '*.kafka-broker-headless.otel'
+    - '*.kafka-broker-headless.otel.svc'
+    - '*.kafka-broker-headless.otel.svc.cluster.local'
+    # for local debugging
+    - 'localhost'
+  privateKey:
+    algorithm: RSA
+    size: 2048
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kafka-tf-applier
+spec:
+  commonName: kafka-tf-applier
+  dnsNames:
+    - kafka-tf-applier.otel
+  issuerRef:
+    kind: Issuer
+    name: kafka-selfsigned-issuer
+  secretName: kafka-tf-applier

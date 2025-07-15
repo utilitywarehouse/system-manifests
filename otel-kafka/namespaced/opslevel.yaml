@@ -1,0 +1,10 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-controller
+  namespace: otel
+  annotations:
+    "app.uw.systems/name": "Otel kafka"
+    "app.uw.systems/description": "Kafka instance for Otel stack"
+    "app.uw.systems/tier": tier_3
+    "app.uw.systems/repos.manifests": "https://github.com/utilitywarehouse/system-manifests/otel-kafka"
