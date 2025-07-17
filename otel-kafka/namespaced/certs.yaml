@@ -30,13 +30,6 @@ kind: Certificate
 metadata:
   name: kafka-crt
   namespace: otel
-  labels:
-    app.kubernetes.io/instance: 32.1.1
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: kafka
-    app.kubernetes.io/version: 4.0.0
-    helm.sh/chart: kafka-32.1.1
-    app.kubernetes.io/part-of: kafka
 spec:
   secretName: kafka-crt
   commonName: kafka.otel.svc.cluster.local
@@ -54,10 +47,16 @@ spec:
     - '*.kafka-controller-headless.otel'
     - '*.kafka-controller-headless.otel.svc'
     - '*.kafka-controller-headless.otel.svc.cluster.local'
+    - '*.kafka-controller-headless.otel.svc.cluster.aws'
+    - '*.kafka-controller-headless.otel.svc.cluster.gcp'
+    - '*.kafka-controller-headless.otel.svc.cluster.merit'
     - '*.kafka-broker-headless'
     - '*.kafka-broker-headless.otel'
     - '*.kafka-broker-headless.otel.svc'
     - '*.kafka-broker-headless.otel.svc.cluster.local'
+    - '*.kafka-broker-headless.otel.svc.cluster.aws'
+    - '*.kafka-broker-headless.otel.svc.cluster.gcp'
+    - '*.kafka-broker-headless.otel.svc.cluster.merit'
     # for local debugging
     - 'localhost'
   privateKey:
