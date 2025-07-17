@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka-controller
+  namespace: otel
+spec:
+  template:
+    spec:
+      containers:
+        - name: kafka
+          env:
+            - name: KAFKA_CFG_SUPER_USERS
+              value: "User:CN=kafka.otel.svc.cluster.local;User:CN=kafka-tf-applier"
