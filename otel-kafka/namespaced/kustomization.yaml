@@ -6,11 +6,6 @@ resources:
   - ../upstream
   - certs.yaml
 
-configMapGenerator:
-  - name: kafka-log4j-config
-    files:
-      - log4j2.yaml=resources/log4j2.yaml
-
 patches:
   - path: admins.yaml
   - path: opslevel.yaml

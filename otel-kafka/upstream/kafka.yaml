@@ -677,9 +677,6 @@ spec:
               mountPath: /tmp
             - name: init-shared
               mountPath: /shared
-            - name: log4j2-config
-              mountPath: /opt/bitnami/kafka/config/log4j2.yaml
-              subPath: log4j2.yaml
             - name: kafka-shared-certs
               mountPath: /opt/bitnami/kafka/config/certs
               readOnly: true
@@ -749,9 +746,6 @@ spec:
           emptyDir: {}
         - name: init-shared
           emptyDir: {}
-        - name: log4j2-config
-          configMap:
-            name: kafka-log4j-config
         - name: jmx-config
           configMap:
             name: kafka-jmx-configuration
