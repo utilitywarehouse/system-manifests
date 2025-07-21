@@ -7,6 +7,6 @@ resources:
   - certs.yaml
 
 patches:
-  - path: admins.yaml
+  - path: kafka-controller-configuration.yaml
   - path: opslevel.yaml
   - path: refresh-certs.yaml

@@ -23,9 +23,6 @@ uncleanLeaderElectionEnable: false
 extraEnvVars:
   - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
     value: "2"
-  # https://github.com/bitnami/charts/issues/34577#issuecomment-2993796106
-  - name: KAFKA_CFG_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM
-    value: ""
 service:
   headless:
     publishNotReadyAddresses: true
@@ -35,7 +32,6 @@ metrics:
   jmx:
     enabled: true
 allowEveryoneIfNoAclFound: false
-authorizerClassName: org.apache.kafka.metadata.authorizer.StandardAuthorizer
 listeners:
   client:
     protocol: SSL

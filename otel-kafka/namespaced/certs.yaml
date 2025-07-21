@@ -36,9 +36,6 @@ spec:
   issuerRef:
     name: kafka-selfsigned-issuer
     kind: Issuer
-  subject:
-    organizations:
-      - "Kafka"
   dnsNames:
     - '*.otel'
     - '*.otel.svc'
