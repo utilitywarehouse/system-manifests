@@ -628,8 +628,6 @@ spec:
               value: "5555"
             - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
               value: "2"
-            - name: KAFKA_CFG_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM
-              value: ""
           ports:
             - name: controller
               containerPort: 9093
