@@ -1,0 +1,59 @@
+# Based on https://github.com/danielqsj/kafka_exporter/blob/master/deploy/base/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-exporter
+  namespace: otel
+  labels:
+    app.kubernetes.io/name: kafka-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kafka-exporter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kafka-exporter
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: '9308'
+        prometheus.io/scrape: "true"
+    spec:
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: kafka-exporter
+          image: kafka-exporter
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+          command:
+            - bash
+          args:
+            - -ce
+            - |
+              kafka_exporter \
+              --kafka.server=kafka-controller-0.kafka-controller-headless.otel.svc.cluster.local:9092 \
+              --kafka.server=kafka-controller-1.kafka-controller-headless.otel.svc.cluster.local:9092 \
+              --kafka.server=kafka-controller-2.kafka-controller-headless.otel.svc.cluster.local:9092 \
+              --tls.enabled \
+              --tls.key-file=/opt/bitnami/kafka-exporter/certs/tls.key \
+              --tls.cert-file=/opt/bitnami/kafka-exporter/certs/tls.crt \
+              --tls.ca-file=/opt/bitnami/kafka-exporter/certs/ca.crt \
+              --web.listen-address=:9308
+          ports:
+            - name: metrics
+              containerPort: 9308
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: kafka-exporter-certificates
+              mountPath: /opt/bitnami/kafka-exporter/certs/
+              readOnly: true
+      volumes:
+        - name: kafka-exporter-certificates
+          secret:
+            secretName: kafka-exporter-cert
+            defaultMode: 0440

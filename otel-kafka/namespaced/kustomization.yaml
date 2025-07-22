@@ -5,8 +5,14 @@ namespace: otel
 resources:
   - ../upstream
   - certs.yaml
+  - kafka-exporter.yaml
 
 patches:
   - path: kafka-controller-configuration.yaml
   - path: opslevel.yaml
   - path: refresh-certs.yaml
+
+images:
+  - name: kafka-exporter
+    newName: danielqsj/kafka-exporter
+    newTag: v1.9.0
