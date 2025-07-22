@@ -83,6 +83,6 @@ spec:
     - kafka-exporter.otel.svc
     - kafka-exporter.otel.svc.cluster.local
   issuerRef:
-    kind: ClusterIssuer
-    name: kafka-shared-selfsigned-issuer
+    kind: Issuer
+    name: kafka-selfsigned-issuer
   secretName: kafka-exporter-cert

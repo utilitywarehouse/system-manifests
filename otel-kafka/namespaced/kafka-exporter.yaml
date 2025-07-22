@@ -28,20 +28,15 @@ spec:
           securityContext:
             runAsNonRoot: true
             runAsUser: 1001
-          command:
-            - bash
           args:
-            - -ce
-            - |
-              kafka_exporter \
-              --kafka.server=kafka-controller-0.kafka-controller-headless.otel.svc.cluster.local:9092 \
-              --kafka.server=kafka-controller-1.kafka-controller-headless.otel.svc.cluster.local:9092 \
-              --kafka.server=kafka-controller-2.kafka-controller-headless.otel.svc.cluster.local:9092 \
-              --tls.enabled \
-              --tls.key-file=/opt/bitnami/kafka-exporter/certs/tls.key \
-              --tls.cert-file=/opt/bitnami/kafka-exporter/certs/tls.crt \
-              --tls.ca-file=/opt/bitnami/kafka-exporter/certs/ca.crt \
-              --web.listen-address=:9308
+            - --kafka.server=kafka-controller-0.kafka-controller-headless.otel.svc.cluster.local:9092
+            - --kafka.server=kafka-controller-1.kafka-controller-headless.otel.svc.cluster.local:9092
+            - --kafka.server=kafka-controller-2.kafka-controller-headless.otel.svc.cluster.local:9092
+            - --tls.enabled
+            - --tls.key-file=/opt/bitnami/kafka-exporter/certs/tls.key
+            - --tls.cert-file=/opt/bitnami/kafka-exporter/certs/tls.crt
+            - --tls.ca-file=/opt/bitnami/kafka-exporter/certs/ca.crt
+            - --web.listen-address=:9308
           ports:
             - name: metrics
               containerPort: 9308
