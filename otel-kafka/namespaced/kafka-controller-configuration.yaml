@@ -25,7 +25,7 @@ data:
     listener.name.internal.ssl.client.auth=required
     # Authorizer
     authorizer.class.name=org.apache.kafka.metadata.authorizer.StandardAuthorizer
-    super.users=User:CN=kafka.otel.svc.cluster.local;User:CN=kafka-tf-applier
+    super.users=User:CN=otel/kafka.otel.svc.cluster.local;User:CN=otel/kafka-tf-applier
     # Network
     listener.security.protocol.map=CONTROLLER:SSL,CLIENT:SSL,INTERNAL:SSL
     listeners=CLIENT://:9092,INTERNAL://:9094,CONTROLLER://:9093

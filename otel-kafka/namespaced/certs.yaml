@@ -1,41 +1,14 @@
 apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: kafka-selfsigned-ca-issuer
-spec:
-  selfSigned: {}
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: kafka-selfsigned-ca
-spec:
-  issuerRef:
-    kind: Issuer
-    name: kafka-selfsigned-ca-issuer
-  secretName: kafka-selfsigned-ca
-  commonName: kafka
-  isCA: true
----
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: kafka-selfsigned-issuer
-spec:
-  ca:
-    secretName: kafka-selfsigned-ca
----
-apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: kafka-crt
   namespace: otel
 spec:
   secretName: kafka-crt
-  commonName: kafka.otel.svc.cluster.local
+  commonName: otel/kafka.otel.svc.cluster.local
   issuerRef:
-    name: kafka-selfsigned-issuer
-    kind: Issuer
+    name: kafka-shared-selfsigned-issuer
+    kind: ClusterIssuer
   dnsNames:
     - '*.otel'
     - '*.otel.svc'
@@ -69,8 +42,8 @@ spec:
   dnsNames:
     - kafka-tf-applier.otel
   issuerRef:
-    kind: Issuer
-    name: kafka-selfsigned-issuer
+    kind: ClusterIssuer
+    name: kafka-shared-selfsigned-issuer
   secretName: kafka-tf-applier
 ---
 apiVersion: cert-manager.io/v1
@@ -83,6 +56,6 @@ spec:
     - kafka-exporter.otel.svc
     - kafka-exporter.otel.svc.cluster.local
   issuerRef:
-    kind: Issuer
-    name: kafka-selfsigned-issuer
+    kind: ClusterIssuer
+    name: kafka-shared-selfsigned-issuer
   secretName: kafka-exporter-cert
