@@ -24,7 +24,7 @@ spec:
       serviceAccount: trident-controller
       containers:
       - name: trident-main
-        image: netapp/trident:25.02.1
+        image: netapp/trident:25.06.0
         imagePullPolicy: IfNotPresent
         securityContext:
           runAsNonRoot: false
@@ -52,6 +52,7 @@ spec:
         - "--address=127.0.0.1"
         - "--http_request_timeout=1m30s"
         - "--enable_force_detach=false"
+        - "--enable_concurrency=false"
         - "--metrics"
         
         #- -debug
@@ -89,8 +90,9 @@ spec:
           mountPath: /certs
           readOnly: true
         
+      
       - name: trident-autosupport
-        image: docker.io/netapp/trident-autosupport:25.02
+        image: docker.io/netapp/trident-autosupport:25.06
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -115,6 +117,7 @@ spec:
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
+
       - name: csi-provisioner
         image: registry.k8s.io/sig-storage/csi-provisioner:v5.2.0
         imagePullPolicy: IfNotPresent
@@ -128,6 +131,7 @@ spec:
         - "--csi-address=$(ADDRESS)"
         - "--retry-interval-start=8s"
         - "--retry-interval-max=30s"
+        - "--worker-threads=5"
         
         env:
         - name: ADDRESS
@@ -136,7 +140,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: registry.k8s.io/sig-storage/csi-attacher:v4.8.0
+        image: registry.k8s.io/sig-storage/csi-attacher:v4.8.1
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -146,6 +150,7 @@ spec:
         - "--v=2"
         - "--timeout=60s"
         - "--retry-interval-start=10s"
+        - "--worker-threads=10"
         - "--csi-address=$(ADDRESS)"
         
         env:
@@ -155,7 +160,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: registry.k8s.io/sig-storage/csi-resizer:v1.13.1
+        image: registry.k8s.io/sig-storage/csi-resizer:v1.13.2
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -164,6 +169,7 @@ spec:
         args:
         - "--v=2"
         - "--timeout=300s"
+        - "--workers=10"
         - "--csi-address=$(ADDRESS)"
         
         env:
@@ -173,7 +179,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.2.0
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.2.1
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -182,7 +188,9 @@ spec:
         args:
         - "--v=2"
         - "--timeout=300s"
+        - "--worker-threads=10"
         - "--csi-address=$(ADDRESS)"
+        
         
         env:
         - name: ADDRESS
@@ -215,8 +223,10 @@ spec:
               name: trident-csi
           - secret:
               name: trident-encryption-keys
+      
       - name: asup-dir
         emptyDir:
           medium: ""
           sizeLimit: 1Gi
+
       
