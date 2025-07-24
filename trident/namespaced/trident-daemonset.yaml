@@ -33,7 +33,7 @@ spec:
             - all
             add:
             - SYS_ADMIN
-        image: netapp/trident:25.02.1
+        image: netapp/trident:25.06.0
         imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
