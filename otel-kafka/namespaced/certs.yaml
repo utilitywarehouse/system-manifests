@@ -38,7 +38,7 @@ kind: Certificate
 metadata:
   name: kafka-tf-applier
 spec:
-  commonName: kafka-tf-applier
+  commonName: otel/kafka-tf-applier
   dnsNames:
     - kafka-tf-applier.otel
   issuerRef:
