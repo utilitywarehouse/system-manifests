@@ -157,21 +157,36 @@ metadata:
     app.kubernetes.io/part-of: kafka
 data:
   server.properties: |-
-    advertised.listeners=CLIENT://advertised-address-placeholder:9092,INTERNAL://advertised-address-placeholder:9094
+    advertised.listeners=CLIENT://advertised-address-placeholder:9092,INTERNAL://advertised-address-placeholder:9094,CONTROLLER://advertised-address-placeholder:9093
+    authorizer.class.name=org.apache.kafka.metadata.authorizer.StandardAuthorizer
+    autoCreateTopicsEnable=false
     controller.listener.names=CONTROLLER
     controller.quorum.bootstrap.servers=kafka-controller-0.kafka-controller-headless.otel.svc.cluster.local:9093,kafka-controller-1.kafka-controller-headless.otel.svc.cluster.local:9093,kafka-controller-2.kafka-controller-headless.otel.svc.cluster.local:9093
+    defaultReplicationFactor=3
+    deleteTopicEnable=true
     inter.broker.listener.name=INTERNAL
+    listener.name.client.ssl.client.auth=required
+    listener.name.controller.ssl.client.auth=required
+    listener.name.internal.ssl.client.auth=required
     listener.security.protocol.map=CONTROLLER:SSL,CLIENT:SSL,INTERNAL:SSL
     listeners=CLIENT://:9092,INTERNAL://:9094,CONTROLLER://:9093
     log.dir=/bitnami/kafka/data
     logs.dir=/opt/bitnami/kafka/logs
+    numIoThreads=8
+    numNetworkThreads=15
+    numPartitions=15
+    numRecoveryThreadsPerDataDir=8
+    offsetsTopicReplicationFactor=3
     process.roles=controller,broker
     ssl.client.auth=required
-    ssl.endpoint.identification.algorithm=https
+    ssl.endpoint.identification.algorithm=
     ssl.keystore.location=/opt/bitnami/kafka/config/certs/kafka.keystore.jks
     ssl.keystore.type=JKS
     ssl.truststore.location=/opt/bitnami/kafka/config/certs/kafka.truststore.jks
     ssl.truststore.type=JKS
+    super.users=User:CN=otel/kafka.otel.svc.cluster.local;User:CN=otel/kafka-tf-applier
+    transactionStateLogMinIsr=2
+    transactionStateLogReplicationFactor=3
 ---
 # Source: kafka/templates/metrics/jmx-configmap.yaml
 apiVersion: v1
@@ -372,7 +387,7 @@ spec:
         app.kubernetes.io/component: controller-eligible
         app.kubernetes.io/part-of: kafka
       annotations:
-        checksum/configuration: 4290669c0c79aad5c6aac739c62c70db3a42afcd1f011493d1db874b9933b385
+        checksum/configuration: f7ff6020afb924b8aecfa6190bddb87cfdba4aba3a84d9a4961e09cbcb6a5135
         checksum/jmx-configuration: b4e923cd804d5cdd5eb71fbfa55bc66adde20d4f18cf32908b3a31d4f21e05b3
     spec:
       

@@ -9,17 +9,29 @@ existingKraftSecret: kafka-kraft
 startupProbe:
   enabled: true
   initialDelaySeconds: 10
-deleteTopicEnable: true
-autoCreateTopicsEnable: false
-defaultReplicationFactor: 3
-offsetsTopicReplicationFactor: 3
-transactionStateLogReplicationFactor: 3
-transactionStateLogMinIsr: 2
-numIoThreads: 8
-numNetworkThreads: 15
-numPartitions: 15
-numRecoveryThreadsPerDataDir: 8
-uncleanLeaderElectionEnable: false
+overrideConfiguration:
+  deleteTopicEnable: true
+  autoCreateTopicsEnable: false
+  defaultReplicationFactor: 3
+  offsetsTopicReplicationFactor: 3
+  transactionStateLogReplicationFactor: 3
+  transactionStateLogMinIsr: 2
+  numIoThreads: 8
+  numNetworkThreads: 15
+  numPartitions: 15
+  numRecoveryThreadsPerDataDir: 8
+  # TLS auth
+  ssl.client.auth: required
+  ssl.endpoint.identification.algorithm: ''
+  # per-listener auth
+  listener.name.controller.ssl.client.auth: required
+  listener.name.client.ssl.client.auth: required
+  listener.name.internal.ssl.client.auth: required
+  # Authorizer
+  authorizer.class.name: "org.apache.kafka.metadata.authorizer.StandardAuthorizer"
+  super.users: "User:CN=otel/kafka.otel.svc.cluster.local;User:CN=otel/kafka-tf-applier"
+  # Network
+  advertised.listeners: "CLIENT://advertised-address-placeholder:9092,INTERNAL://advertised-address-placeholder:9094,CONTROLLER://advertised-address-placeholder:9093"
 extraEnvVars:
   - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
     value: "2"
