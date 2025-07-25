@@ -8,7 +8,6 @@ resources:
   - kafka-exporter.yaml
 
 patches:
-  - path: kafka-controller-configuration.yaml
   - path: opslevel.yaml
   - path: refresh-certs.yaml
 
