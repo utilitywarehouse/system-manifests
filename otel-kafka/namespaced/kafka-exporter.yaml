@@ -6,7 +6,7 @@ metadata:
   namespace: otel
   labels:
     app.kubernetes.io/name: kafka
-    app.kubernetes.io/component: metrics
+    app.kubernetes.io/component: cluster-metrics
 spec:
   replicas: 1
   selector:
