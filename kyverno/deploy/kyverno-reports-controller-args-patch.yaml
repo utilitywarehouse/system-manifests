@@ -14,5 +14,6 @@ spec:
             - --policyReports=false
             - --backgroundScan=false
             - --validatingAdmissionPolicyReports=false # Already default, but guarding future changes by explicitly setting
+            - --mutatingAdmissionPolicyReports=false
             - -v=0
           name: controller
