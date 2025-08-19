@@ -6,7 +6,6 @@ metadata:
   name: argocd-cmd-params-cm
 data:
   application.namespaces: "*"
-  applicationsetcontroller.enable.github.api.metrics: "true"
 
   ## Server properties
   # Run server without TLS
