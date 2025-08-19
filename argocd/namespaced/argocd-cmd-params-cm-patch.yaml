@@ -12,11 +12,17 @@ data:
   # Run server without TLS
   server.insecure: "true"
   server.log.level: "warn"
+  # Repo server RPC call timeout seconds. (default 60)
+  # voodoobox generates manifests on repo server
+  server.repo.server.timeout.seconds: "600"
 
   ## Controller Properties
   controller.log.level: "warn"
   # Specifies a sync timeout for applications.
   controller.sync.timeout.seconds: "600"
+  # Repo server RPC call timeout seconds.
+  # voodoobox generates manifests on repo server
+  controller.repo.server.timeout.seconds: "600"
 
   ## Repo-server properties
   # Set the logging level. One of: debug|info|warn|error (default "info")
