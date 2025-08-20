@@ -21,10 +21,12 @@ spec:
       containers:
         - name: voodoobox
           command: [/var/run/argocd/argocd-cmp-server]
-          args:
-            - "--loglevel=warn"
           image: quay.io/utilitywarehouse/argocd-voodoobox-plugin:master
           env:
+            # do not use debug level as it prints output from plugin which
+            # will include secrets
+            - name: ARGOCD_CMP_SERVER_LOGLEVEL
+              value: info
             - name: AVP_GLOBAL_GIT_SSH_KEY_FILE
               value: /etc/global-git-ssh-key/ssh
             - name: AVP_GLOBAL_GIT_SSH_KNOWN_HOSTS_FILE
