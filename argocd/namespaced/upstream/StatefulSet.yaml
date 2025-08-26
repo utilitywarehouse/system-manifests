@@ -291,7 +291,7 @@ spec:
                   optional: true
             - name: KUBECACHEDIR
               value: /tmp/kubecache
-          image: quay.io/argoproj/argocd:v3.1.0
+          image: quay.io/argoproj/argocd:v3.1.1
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
