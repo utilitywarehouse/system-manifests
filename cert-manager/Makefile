@@ -1,5 +1,5 @@
 version=v1.18.0
-aws_pca_version=v1.5.0
+aws_pca_version=v1.7.0
 
 # replace all namespace references with "kube-system", this works since we
 # deploy all resources under "kube-system"
