@@ -3,21 +3,22 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
-  name: apibundles.hub.traefik.io
+    controller-gen.kubebuilder.io/version: v0.17.1
+  name: apiratelimits.hub.traefik.io
 spec:
   group: hub.traefik.io
   names:
-    kind: APIBundle
-    listKind: APIBundleList
-    plural: apibundles
-    singular: apibundle
+    kind: APIRateLimit
+    listKind: APIRateLimitList
+    plural: apiratelimits
+    singular: apiratelimit
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: APIBundle defines a set of APIs.
+        description: APIRateLimit defines how group of consumers are rate limited
+          on a set of APIs.
         properties:
           apiVersion:
             description: |-
@@ -37,12 +38,12 @@ spec:
           metadata:
             type: object
           spec:
-            description: The desired behavior of this APIBundle.
+            description: The desired behavior of this APIRateLimit.
             properties:
               apiSelector:
                 description: |-
-                  APISelector selects the APIs that will be accessible to the configured audience.
-                  Multiple APIBundles can select the same set of APIs.
+                  APISelector selects the APIs that will be rate limited.
+                  Multiple APIRateLimits can select the same set of APIs.
                   This field is optional and follows standard label selector semantics.
                   An empty APISelector matches any API.
                 properties:
@@ -72,11 +73,13 @@ spec:
                           items:
                             type: string
                           type: array
+                          x-kubernetes-list-type: atomic
                       required:
                       - key
                       - operator
                       type: object
                     type: array
+                    x-kubernetes-list-type: atomic
                   matchLabels:
                     additionalProperties:
                       type: string
@@ -89,8 +92,8 @@ spec:
                 x-kubernetes-map-type: atomic
               apis:
                 description: |-
-                  APIs defines a set of APIs that will be accessible to the configured audience.
-                  Multiple APIBundles can select the same APIs.
+                  APIs defines a set of APIs that will be rate limited.
+                  Multiple APIRateLimits can select the same APIs.
                   When combined with APISelector, this set of APIs is appended to the matching APIs.
                 items:
                   description: APIReference references an API.
@@ -107,12 +110,52 @@ spec:
                 x-kubernetes-validations:
                 - message: duplicated apis
                   rule: self.all(x, self.exists_one(y, x.name == y.name))
+              everyone:
+                description: |-
+                  Everyone indicates that all users will, by default, be rate limited with this configuration.
+                  If an APIRateLimit explicitly target a group, the default rate limit will be ignored.
+                type: boolean
+              groups:
+                description: |-
+                  Groups are the consumer groups that will be rate limited.
+                  Multiple APIRateLimits can target the same set of consumer groups, the most restrictive one applies.
+                  When a consumer belongs to multiple groups, the least restrictive APIRateLimit applies.
+                items:
+                  type: string
+                type: array
+              limit:
+                description: Limit is the maximum number of token in the bucket.
+                type: integer
+                x-kubernetes-validations:
+                - message: must be a positive number
+                  rule: self >= 0
+              period:
+                description: Period is the unit of time for the Limit.
+                format: duration
+                type: string
+                x-kubernetes-validations:
+                - message: must be between 1s and 1h
+                  rule: self >= duration('1s') && self <= duration('1h')
+              strategy:
+                description: |-
+                  Strategy defines how the bucket state will be synchronized between the different Traefik Hub instances.
+                  It can be, either "local" or "distributed".
+                enum:
+                - local
+                - distributed
+                type: string
+            required:
+            - limit
             type: object
+            x-kubernetes-validations:
+            - message: groups and everyone are mutually exclusive
+              rule: '(has(self.everyone) && has(self.groups)) ? !(self.everyone &&
+                self.groups.size() > 0) : true'
           status:
-            description: The current status of this APIBundle.
+            description: The current status of this APIRateLimit.
             properties:
               hash:
-                description: Hash is a hash representing the APIBundle.
+                description: Hash is a hash representing the APIRateLimit.
                 type: string
               syncedAt:
                 format: date-time
