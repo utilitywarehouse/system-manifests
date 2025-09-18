@@ -10,16 +10,17 @@ startupProbe:
   enabled: true
   initialDelaySeconds: 10
 overrideConfiguration:
-  deleteTopicEnable: true
-  autoCreateTopicsEnable: false
-  defaultReplicationFactor: 3
-  offsetsTopicReplicationFactor: 3
-  transactionStateLogReplicationFactor: 3
-  transactionStateLogMinIsr: 2
-  numIoThreads: 8
-  numNetworkThreads: 15
-  numPartitions: 15
-  numRecoveryThreadsPerDataDir: 8
+  delete.topic.enable: true
+  auto.create.topics.enable: false
+  default.replication.factor: 3
+  offsets.topic.replication.factor: 3
+  transaction.state.log.replication.factor: 3
+  transaction.state.log.min.isr: 2
+  num.io.threads: 8
+  num.network.threads: 15
+  num.partitions: 15
+  num.recovery.threads.per.data.dir: 8
+  min.insync.replicas: 2
   # TLS auth
   ssl.client.auth: required
   ssl.endpoint.identification.algorithm: ''
@@ -36,9 +37,6 @@ overrideConfiguration:
   # See this commit: https://github.com/utilitywarehouse/opentelemetry-manifests/commit/600d7e5962d36c58af622a7d54a9df78db4d198a
   message.max.bytes: "104857600"
   replica.fetch.max.bytes: "104857600"
-extraEnvVars:
-  - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
-    value: "2"
 service:
   headless:
     publishNotReadyAddresses: true
