@@ -35,6 +35,12 @@ overrideConfiguration:
 extraEnvVars:
   - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
     value: "2"
+  # Update the message size limit to 100MB. This must be kept in sync with what the otel collector can send.
+  # See this commit: https://github.com/utilitywarehouse/opentelemetry-manifests/commit/600d7e5962d36c58af622a7d54a9df78db4d198a
+  - name: KAFKA_CFG_MESSAGE_MAX_BYTES
+    value: "104857600"
+  - name: KAFKA_CFG_REPLICA_FETCH_MAX_BYTES
+    value: "104857600"
 service:
   headless:
     publishNotReadyAddresses: true
