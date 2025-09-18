@@ -172,12 +172,14 @@ data:
     listeners=CLIENT://:9092,INTERNAL://:9094,CONTROLLER://:9093
     log.dir=/bitnami/kafka/data
     logs.dir=/opt/bitnami/kafka/logs
+    message.max.bytes=104857600
     numIoThreads=8
     numNetworkThreads=15
     numPartitions=15
     numRecoveryThreadsPerDataDir=8
     offsetsTopicReplicationFactor=3
     process.roles=controller,broker
+    replica.fetch.max.bytes=104857600
     ssl.client.auth=required
     ssl.endpoint.identification.algorithm=
     ssl.keystore.location=/opt/bitnami/kafka/config/certs/kafka.keystore.jks
@@ -387,7 +389,7 @@ spec:
         app.kubernetes.io/component: controller-eligible
         app.kubernetes.io/part-of: kafka
       annotations:
-        checksum/configuration: f7ff6020afb924b8aecfa6190bddb87cfdba4aba3a84d9a4961e09cbcb6a5135
+        checksum/configuration: 19ea2e2d1dc14c508845f17580ef33e3eba34a1a782e42fdf2d8e93bf00401b2
         checksum/jmx-configuration: b4e923cd804d5cdd5eb71fbfa55bc66adde20d4f18cf32908b3a31d4f21e05b3
     spec:
       
@@ -643,10 +645,6 @@ spec:
               value: "5555"
             - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
               value: "2"
-            - name: KAFKA_CFG_MESSAGE_MAX_BYTES
-              value: "104857600"
-            - name: KAFKA_CFG_REPLICA_FETCH_MAX_BYTES
-              value: "104857600"
           ports:
             - name: controller
               containerPort: 9093
