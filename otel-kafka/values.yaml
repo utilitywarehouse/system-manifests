@@ -10,16 +10,17 @@ startupProbe:
   enabled: true
   initialDelaySeconds: 10
 overrideConfiguration:
-  deleteTopicEnable: true
-  autoCreateTopicsEnable: false
-  defaultReplicationFactor: 3
-  offsetsTopicReplicationFactor: 3
-  transactionStateLogReplicationFactor: 3
-  transactionStateLogMinIsr: 2
-  numIoThreads: 8
-  numNetworkThreads: 15
-  numPartitions: 15
-  numRecoveryThreadsPerDataDir: 8
+  delete.topic.enable: true
+  auto.create.topics.enable: false
+  default.replication.factor: 3
+  offsets.topic.replication.factor: 3
+  transaction.state.log.replication.factor: 3
+  transaction.state.log.min.isr: 2
+  num.io.threads: 8
+  num.network.threads: 15
+  num.partitions: 15
+  num.recovery.threads.per.data.dir: 8
+  min.insync.replicas: 2
   # TLS auth
   ssl.client.auth: required
   ssl.endpoint.identification.algorithm: ''
@@ -32,15 +33,10 @@ overrideConfiguration:
   super.users: "User:CN=otel/kafka.otel.svc.cluster.local;User:CN=otel/kafka-tf-applier"
   # Network
   advertised.listeners: "CLIENT://advertised-address-placeholder:9092,INTERNAL://advertised-address-placeholder:9094,CONTROLLER://advertised-address-placeholder:9093"
-extraEnvVars:
-  - name: KAFKA_CFG_MIN_INSYNC_REPLICAS
-    value: "2"
   # Update the message size limit to 100MB. This must be kept in sync with what the otel collector can send.
   # See this commit: https://github.com/utilitywarehouse/opentelemetry-manifests/commit/600d7e5962d36c58af622a7d54a9df78db4d198a
-  - name: KAFKA_CFG_MESSAGE_MAX_BYTES
-    value: "104857600"
-  - name: KAFKA_CFG_REPLICA_FETCH_MAX_BYTES
-    value: "104857600"
+  message.max.bytes: "104857600"
+  replica.fetch.max.bytes: "104857600"
 service:
   headless:
     publishNotReadyAddresses: true
