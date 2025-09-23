@@ -23,7 +23,7 @@ spec:
           serviceAccountName: etcd-backup
           initContainers:
             - name: etcd-backup
-              image: gcr.io/etcd-development/etcd:v3.6.4
+              image: gcr.io/etcd-development/etcd:v3.6.5
               command:
                 - etcdctl
                 - --endpoints=https://$(ETCD_HOSTNAME):2379
