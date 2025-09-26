@@ -1,0 +1,173 @@
+apiVersion: apps/v1
+# Using a statefulset to get a static pod name
+kind: StatefulSet
+metadata:
+  name: &app msk-admin-client
+  labels:
+    app: *app
+  annotations:
+    "app.uw.systems/name": "MSK admin client"
+    "app.uw.systems/description": "Allows pubsub admins to execute terraform and kafka commands against the MSK shared cluster (e.g to apply topics deletes in prod, reassign partitions)"
+    "app.uw.systems/tier": tier_4
+    "app.uw.systems/repos.manifests": "https://github.com/utilitywarehouse/dev-enablement-mono/services/msk-admin-client/k8s-manifests"
+    "app.uw.systems/tags.oss": "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: *app
+  template:
+    metadata:
+      annotations:
+        uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws
+      labels:
+        app: *app
+    spec:
+      serviceAccountName: msk-admin-client
+      containers:
+        # container used for executing terraform commands on the MSK cluster
+        - name: tf-kafka-config
+          image: hashicorp/terraform
+          imagePullPolicy: IfNotPresent
+          command: [ "/bin/sh", "-c", "--" ]
+          # using trap + wait commands to exit the pod process when we get a SIGTERM or SIGINT
+          # explanation: the reception of a signal for which a trap has been set will cause the wait builtin to return immediately
+          args: [ "trap : TERM INT; sleep infinity & wait"]
+          env:
+            - name: REPO_ROOT
+              value: /uwgh/kafka-cluster-config/
+            - name: ENV
+              # can be dev or prod
+              value: dev
+            - name: KAFKA_CLIENT_KEY
+              value: /certs/tls.key
+            - name: KAFKA_CLIENT_CERT
+              value: /certs/tls.crt
+
+          volumeMounts:
+            - name: git-sync
+              mountPath: /uwgh
+            - name: tf-scripts
+              mountPath: /scripts
+            - name: kafka-client-cert
+              mountPath: /certs
+              readOnly: true
+          resources:
+            requests:
+              cpu: "0"
+              memory: "0"
+            limits:
+              cpu: "4"
+              memory: 4Gi
+        # container used for executing kafka client commands on the MSK cluster
+        - name: kafka-client
+          image: docker.io/bitnamilegacy/kafka
+          imagePullPolicy: IfNotPresent
+          command: [ "/bin/sh", "-c", "--" ]
+          # using trap + wait commands to exit the pod process when we get a SIGTERM or SIGINT
+          # explanation: the reception of a signal for which a trap has been set will cause the wait builtin to return immediately
+          args: [ "trap : TERM INT; sleep infinity & wait"]
+          env:
+            # The seed brokers should be defined per env
+            - name: SEED_BROKERS
+              value: "TBD"
+
+            - name: KAFKA_CMD_CONFIG
+              value: /kafka-config/cmd.properties
+            - name: JMX_PORT
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx2048M"
+
+          volumeMounts:
+            - name: kafka-client-cert
+              mountPath: /certs
+            - name: kafka-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: kafka-config
+              mountPath: /kafka-config
+              readOnly: true
+          resources:
+            requests:
+              cpu: "0"
+              memory: "0"
+            limits:
+              cpu: "4"
+              memory: 4Gi
+
+      initContainers:
+        #  Configure git-sync as a proper k8s sidecar container (https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/) for the kafka-cluster-config repo
+        - name: git-sync
+          image: registry.k8s.io/git-sync/git-sync
+          restartPolicy: Always
+          env:
+            - name: GITSYNC_REPO
+              value: "https://github.com/utilitywarehouse/kafka-cluster-config.git"
+            - name: GITSYNC_REF
+              value: main
+            - name: GITSYNC_PERIOD
+              value: "10s"
+            - name: GITSYNC_ROOT
+              value: /uwgh
+            - name: GITSYNC_LINK
+              value: kafka-cluster-config
+            - name: GITSYNC_MAX_FAILURES
+              value: "5"
+            - name: GITSYNC_ONE_TIME
+              value: "false"
+          # run as root to be able to overwrite any changes done in the tf container
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          volumeMounts:
+            - name: git-sync
+              mountPath: /uwgh
+          resources:
+            requests:
+              cpu: 10m
+              memory: 50Mi
+            limits:
+              cpu: 100m
+              memory: 500Mi
+        #  we need to inject the jks password that is used for the keystore in the certificate, in the kafka command config. Using envsubst for this.
+        - name: render-kafka-config
+          image: alpine
+          args:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache gettext
+              envsubst < /kafka-config-template/kafka-command-config-template.properties > /kafka-config-rendered/cmd.properties
+          env:
+            - name: JKS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: jks.password
+                  name: msk-admin-client
+          volumeMounts:
+            - name: kafka-config-template
+              mountPath: /kafka-config-template
+            - name: kafka-config
+              mountPath: /kafka-config-rendered
+      volumes:
+        - name: git-sync
+          emptyDir: {}
+        - name: kafka-client-cert
+          secret:
+            secretName: msk-admin-client-cert
+        - name: tf-scripts
+          configMap:
+            name: msk-admin-tf-client-scripts
+            defaultMode: 0555
+        - name: kafka-scripts
+          configMap:
+            name: msk-admin-kafka-client-scripts
+            defaultMode: 0555
+        - name: kafka-config-template
+          configMap:
+            name: msk-admin-client-kafka-config
+        - name: kafka-config
+          emptyDir: {}
+        - name: kafka-config-secrets
+          secret:
+            secretName: msk-admin-client

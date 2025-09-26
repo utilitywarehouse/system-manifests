@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: msk-admin-client
+spec:
+  commonName: pubsub/msk-admin-client
+  duration: 168h # 7 days, renews 2/3 of the way through
+  keystores:
+    jks:
+      create: true
+      passwordSecretRef:
+        key: jks.password
+        name: msk-admin-client
+  issuerRef:
+    group: awspca.cert-manager.io
+    kind: AWSPCAClusterIssuer
+    name: aws-pca
+  secretName: msk-admin-client-cert
