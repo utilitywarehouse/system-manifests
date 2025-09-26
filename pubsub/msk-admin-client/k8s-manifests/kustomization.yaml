@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - kafka-cert.yaml
+  - sa.yaml
+  - statefulset.yaml
+
+configMapGenerator:
+  - name: msk-admin-tf-client-scripts
+    files:
+      - tf.sh=scripts/tf.sh
+  - name: msk-admin-kafka-client-scripts
+    files:
+      - kafka-commands-aliases.sh=scripts/kafka-commands-aliases.sh
+      - search-msk-backup-topic-with-header-at-tip.sh=scripts/search-msk-backup-topic-with-header-at-tip.sh
+  - name: msk-admin-client-kafka-config
+    files:
+      - kafka-command-config-template.properties=config/kafka-command-config-template.properties
+
+# This secret generator together with the secrets file, should be enabled per instance
+#secretGenerator:
+#  - name: msk-admin-client
+#    envs:
+#      - ./secrets/kafka-command-config.properties
+#    options:
+#      #  we need this, as the suffixed secret name is not replaced in the certificate
+#      disableNameSuffixHash: true
