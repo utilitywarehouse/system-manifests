@@ -1,0 +1,14 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: example-producer-kafka-client
+spec:
+  commonName: pubsub/example-producer
+  dnsNames:
+    - example-producer.pubsub
+  duration: 168h # 7 days, renews 2/3 of the way through
+  issuerRef:
+    group: awspca.cert-manager.io
+    kind: AWSPCAClusterIssuer
+    name: aws-pca
+  secretName: example-producer-kafka-client-cert

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: &app example-consume-process-batch
+  annotations:
+    uw.systems/msk-kafka-client: "example-consume-process-batch"
+    "app.uw.systems/description": "Example on using the franz-go library to consume and process messages as a whole batch from Kafka"
+    "app.uw.systems/repos.go-mono": "https://github.com/utilitywarehouse/go-mono/teams/dev-enablement/services/pubsub-consume-process-batch-example"
+    "app.uw.systems/tier": "tier_4"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: *app
+  template:
+    metadata:
+      name: *app
+      labels:
+        app: *app
+        policy.semaphore.uw.io/name: *app
+        xds.semaphore.uw.systems/client: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /__/metrics
+        prometheus.io/port: "8081"
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-key
+      containers:
+        - name: *app
+          image: registry.uw.systems/dev-enablement/pubsub-consume-process-batch-example:latest
+          imagePullPolicy: Always
+          env:
+            - name: KAFKA_BROKERS_DNS
+              value: TBD # depends on env, set in kubernetes-manifests repo
+            - name: KAFKA_TOPIC
+              value: "pubsub.examples"
+            - name: KAFKA_CONSUMER_GROUP
+              value: "pubsub.example-consume-process-batch"
+            - name: TRY_BATCH_SIZE
+              value: "1048576"  # 1 MB
+            - name: TRY_BATCH_WAIT
+              value: "5s"
+            - name: TRY_BATCH_RECORDS
+              value: "5000"
+            - name: UW_LOG_LEVEL
+              value: "INFO"
+            - name: UW_KAFKA_TLS_AUTH
+              value: "true"
+          ports:
+            - containerPort: 8081
+              name: ops
+          resources:
+            requests:
+              cpu: 10m
+              memory: 200Mi
+            limits:
+              cpu: "1"
+              memory: 600Mi
