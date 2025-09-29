@@ -31,11 +31,11 @@ spec:
           imagePullPolicy: Always
           env:
             - name: KAFKA_BROKERS
-              value: "kafka-shared-0.kafka-shared-headless.pubsub.svc.cluster.aws:9092,kafka-shared-1.kafka-shared-headless.pubsub.svc.cluster.aws:9092,kafka-shared-2.kafka-shared-headless.pubsub.svc.cluster.aws:9092"
+              value: "TBD"
             - name: GROUPS
-              value: "pubsub.example-consume-process-batch,pubsub.example-consume-process-individually"
+              value: "TBD"
             - name: PREFIX
-              value: "mirror"
+              value: "TBD"
             - name: UW_KAFKA_TLS_AUTH
               value: "true"
             - name: INTERVAL
