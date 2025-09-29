@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: &app kafka-consumer-group-mirror
+  annotations:
+    "app.uw.systems/description": "New consumers groups are created <prefix>.<input_group> and offsets are mirrored as long
+as the mirrored groups are not stable(active consumer running)"
+    "app.uw.systems/repos.go-mono": "https://github.com/utilitywarehouse/go-mono/teams/dev-enablement/services/kafka-consumer-group-mirror"
+    "app.uw.systems/tier": "tier_4"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: *app
+  template:
+    metadata:
+      name: *app
+      labels:
+        app: *app
+        policy.semaphore.uw.io/name: *app
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /__/metrics
+        prometheus.io/port: "8081"
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-key
+      containers:
+        - name: *app
+          image: registry.uw.systems/dev-enablement/kafka-consumer-group-mirror:latest
+          imagePullPolicy: Always
+          env:
+            - name: KAFKA_BROKERS
+              value: "TBD"
+            - name: GROUPS
+              value: "TBD"
+            - name: PREFIX
+              value: "TBD"
+            - name: UW_KAFKA_TLS_AUTH
+              value: "true"
+            - name: INTERVAL
+              value: "5s"
+            - name: UW_LOG_LEVEL
+              value: "INFO"
+          ports:
+            - containerPort: 8081
+              name: ops
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+            limits:
+              cpu: "1"
+              memory: 200Mi
+          volumeMounts:
+            - name: client-cert
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: client-cert
+          secret:
+            secretName: kafka-consumer-group-mirror-cert
