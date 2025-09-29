@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: &app example-consume-process-individually
+  annotations:
+    uw.systems/msk-kafka-client: "example-consume-process-individually"
+    "app.uw.systems/description": "Example on using the franz-go library to consume and process messages individually from Kafka"
+    "app.uw.systems/repos.go-mono": "https://github.com/utilitywarehouse/go-mono/teams/dev-enablement/services/pubsub-consume-process-individually-example"
+    "app.uw.systems/tier": "tier_4"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: *app
+  template:
+    metadata:
+      name: *app
+      labels:
+        app: *app
+        policy.semaphore.uw.io/name: *app
+        xds.semaphore.uw.systems/client: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /__/metrics
+        prometheus.io/port: "8081"
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-key
+      containers:
+        - name: *app
+          image: registry.uw.systems/dev-enablement/pubsub-consume-process-individually-example:latest
+          imagePullPolicy: Always
+          env:
+            - name: KAFKA_BROKERS_DNS
+              value: TBD # depends on env, set in kubernetes-manifests repo
+            - name: KAFKA_TOPIC
+              value: "pubsub.examples"
+            - name: KAFKA_CONSUMER_GROUP
+              value: "pubsub.example-consume-process-individually"
+            - name: UW_LOG_LEVEL
+              value: "INFO"
+            - name: UW_KAFKA_TLS_AUTH
+              value: "true"
+          ports:
+            - containerPort: 8081
+              name: ops
+          resources:
+            requests:
+              cpu: 10m
+              memory: 200Mi
+            limits:
+              cpu: "1"
+              memory: 600Mi
