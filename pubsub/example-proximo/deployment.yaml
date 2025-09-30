@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/path: /__/metrics
+    prometheus.io/port: "8080"
+    prometheus.io/scrape: "true"
+  labels:
+    app: &app example-proximo
+  name: *app
+spec:
+  ports:
+    - name: ops
+      port: 8080
+      protocol: TCP
+    - name: http
+      port: 6868
+      protocol: TCP
+  selector:
+    app: *app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: &app example-proximo
+  name: *app
+  annotations:
+    uw.systems/msk-kafka-client: "example-proximo"
+    "app.uw.systems/name": "example-proximo"
+    "app.uw.systems/description": "Proximo instance used to test Proximo"
+    "app.uw.systems/tier": "tier_4"
+    "app.uw.systems/language": "Go"
+    "app.uw.systems/repos.uw-proximo": "https://github.com/utilitywarehouse/uw-proximo"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: *app
+  template:
+    metadata:
+      labels:
+        app: *app
+        policy.semaphore.uw.io/name: *app
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-key
+      containers:
+        - name: proximo
+          # we use `latest` to always test the latest version
+          image: quay.io/utilitywarehouse/uw-proximo:latest
+          imagePullPolicy: Always
+          args:
+            - proximo-kafka-tls
+          env:
+            - name: PROXIMO_KAFKA_BROKERS
+              value: "b-1.devenablementpubsubmsk.zfikfc.c4.kafka.eu-west-1.amazonaws.com:9094,b-2.devenablementpubsubmsk.zfikfc.c4.kafka.eu-west-1.amazonaws.com:9094,b-3.devenablementpubsubmsk.zfikfc.c4.kafka.eu-west-1.amazonaws.com:9094"
+            - name: PROXIMO_PROBE_PORT
+              value: "8080"
+            - name: PROXIMO_PORT
+              value: "6868"
+            - name: UW_KAFKA_TLS_AUTH
+              value: "true"
+            - name: PROXIMO_ENDPOINTS
+              value: "consume,publish"
+            - name: PROXIMO_DEBUG
+              value: "false"
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /__/ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          ports:
+            - containerPort: 6868
+              name: proximo
+              protocol: TCP
+            - containerPort: 8080
+              name: proximo-probe
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /__/ready
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 10
+          resources:
+            requests:
+              cpu: 0
+              memory: 0
+            limits:
+              memory: 400Mi
+              cpu: "4"

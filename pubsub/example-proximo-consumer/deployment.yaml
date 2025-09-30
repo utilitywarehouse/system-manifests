@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: &app example-proximo-consumer
+  annotations:
+    "app.uw.systems/description": "Proximo consumer used to test proximo"
+    "app.uw.systems/repos.go-mono": "https://github.com/utilitywarehouse/go-mono/teams/dev-enablement/services/example-proximo-consumer"
+    "app.uw.systems/tier": "tier_4"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: *app
+  template:
+    metadata:
+      name: *app
+      annotations:
+        prometheus.io/path: /__/metrics
+        prometheus.io/port: "8081"
+        prometheus.io/scrape: "true"
+      labels:
+        app: *app
+        policy.semaphore.uw.io/name: *app
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-key
+      containers:
+        - name: *app
+          image: registry.uw.systems/dev-enablement/example-proximo-consumer:latest
+          imagePullPolicy: Always
+          env:
+            - name: PROXIMO_URL
+              value: "example-proximo:6868"
+            - name: KAFKA_TOPIC
+              value: "pubsub.proximo-example"
+            - name: KAFKA_CONSUMER_GROUP
+              value: "pubsub.example-proximo"
+            - name: UW_LOG_LEVEL
+              value: "INFO"
+          ports:
+            - containerPort: 8081
+              name: ops
+          resources:
+            requests:
+              cpu: 10m
+              memory: 10Mi
+            limits:
+              cpu: "1"
+              memory: 200Mi
