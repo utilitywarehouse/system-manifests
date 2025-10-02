@@ -5,7 +5,10 @@ kind: ConfigMap
 metadata:
   name: argocd-cmd-params-cm
 data:
+  # List of namespaces that Argo CD applications are in (apps-in-any-namespace)
   application.namespaces: "*"
+  # Enable self-service notifications config. Used in conjunction with apps-in-any-namespace.
+  notificationscontroller.selfservice.enabled: "true"
 
   ## Server properties
   # Run server without TLS
