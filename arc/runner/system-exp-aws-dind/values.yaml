@@ -1,0 +1,3 @@
+runnerScaleSetName: system-exp-aws-dind
+containerMode:
+  type: dind
