@@ -1,0 +1,215 @@
+---
+# Source: gha-runner-scale-set/templates/no_permission_serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: system-dev-aws-dind-gha-rs-no-permission
+  namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.12.0
+    app.kubernetes.io/name: system-dev-aws-dind
+    app.kubernetes.io/instance: system-dev-aws-dind
+    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-dev-aws-dind
+    actions.github.com/scale-set-namespace: sys-actions
+  annotations:
+---
+# Source: gha-runner-scale-set/templates/manager_role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: system-dev-aws-dind-gha-rs-manager
+  namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.12.0
+    app.kubernetes.io/name: system-dev-aws-dind
+    app.kubernetes.io/instance: system-dev-aws-dind
+    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-dev-aws-dind
+    actions.github.com/scale-set-namespace: sys-actions
+    app.kubernetes.io/component: manager-role
+  annotations:
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - create
+      - delete
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - rolebindings
+    verbs:
+      - create
+      - delete
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+    verbs:
+      - create
+      - delete
+      - get
+      - patch
+      - update
+---
+# Source: gha-runner-scale-set/templates/manager_role_binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: system-dev-aws-dind-gha-rs-manager
+  namespace: sys-actions
+  labels:
+    helm.sh/chart: gha-rs-0.12.0
+    app.kubernetes.io/name: system-dev-aws-dind
+    app.kubernetes.io/instance: system-dev-aws-dind
+    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-dev-aws-dind
+    actions.github.com/scale-set-namespace: sys-actions
+    app.kubernetes.io/component: manager-role-binding
+  annotations:
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: system-dev-aws-dind-gha-rs-manager
+subjects:
+  - kind: ServiceAccount
+    name: arc-gha-rs-controller
+    namespace: sys-actions
+---
+# Source: gha-runner-scale-set/templates/autoscalingrunnerset.yaml
+apiVersion: actions.github.com/v1alpha1
+kind: AutoscalingRunnerSet
+metadata:
+  name: system-dev-aws-dind
+  namespace: sys-actions
+  labels:
+    app.kubernetes.io/component: "autoscaling-runner-set"
+    helm.sh/chart: gha-rs-0.12.0
+    app.kubernetes.io/name: system-dev-aws-dind
+    app.kubernetes.io/instance: system-dev-aws-dind
+    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: gha-rs
+    actions.github.com/scale-set-name: system-dev-aws-dind
+    actions.github.com/scale-set-namespace: sys-actions
+  annotations:
+    actions.github.com/values-hash: 977e8152eefa3fedc7590c122e469d33a8b9d3fba645b801d577bdb293d3cfb
+    actions.github.com/cleanup-manager-role-binding: system-dev-aws-dind-gha-rs-manager
+    actions.github.com/cleanup-manager-role-name: system-dev-aws-dind-gha-rs-manager
+    actions.github.com/cleanup-no-permission-service-account-name: system-dev-aws-dind-gha-rs-no-permission
+spec:
+  githubConfigUrl: https://github.com/utilitywarehouse
+  githubConfigSecret: arc-auth
+  runnerScaleSetName: system-dev-aws-dind
+  minRunners: 1
+  template:
+    spec:
+      securityContext:
+        fsGroup: 123
+      restartPolicy: Never
+      serviceAccountName: system-dev-aws-dind-gha-rs-no-permission
+      initContainers:
+        - name: init-dind-externals
+          image: ghcr.io/actions/actions-runner:latest
+          command: ["cp"]
+          args: ["-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+          volumeMounts:
+            - name: dind-externals
+              mountPath: /home/runner/tmpDir
+        - name: dind
+          image: docker:dind
+          args:
+            - dockerd
+            - --host=unix:///var/run/docker.sock
+            - --group=$(DOCKER_GROUP_GID)
+          env:
+            - name: DOCKER_GROUP_GID
+              value: "123"
+          securityContext:
+            privileged: true
+          restartPolicy: Always
+          startupProbe:
+            exec:
+              command:
+                - docker
+                - info
+            initialDelaySeconds: 0
+            failureThreshold: 24
+            periodSeconds: 5
+          volumeMounts:
+            - name: work
+              mountPath: /home/runner/_work
+            - name: dind-sock
+              mountPath: /var/run
+            - name: dind-externals
+              mountPath: /home/runner/externals
+      containers:
+        - name: runner
+          command:
+            - /bin/bash
+            - -c
+            - |
+              sudo apt-get update
+              sudo apt-get -y install make gettext-base
+              /home/runner/run.sh
+          image: ghcr.io/actions/actions-runner:latest
+          env:
+            - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+              value: "false"
+            - name: DOCKER_HOST
+              value: unix:///var/run/docker.sock
+            - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+              value: "120"
+          volumeMounts:
+            - name: work
+              mountPath: /home/runner/_work
+            - name: dind-sock
+              mountPath: /var/run
+      volumes:
+        - name: dind-sock
+          emptyDir: {}
+        - name: dind-externals
+          emptyDir: {}
+        - name: work
+          emptyDir: {}

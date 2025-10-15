@@ -37,6 +37,13 @@ runners:
 		--values runner/common-values.yaml --values runner/$(RUNNER)/values.yaml | yq 'del(.metadata.finalizers)' \
 		> runner/$(RUNNER)/generated-manifests.yaml
 
+	$(eval RUNNER=system-dev-aws-dind)
+	helm template \
+		oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version $(VERSION) \
+		--namespace $(NAMESPACE) \
+		--values runner/common-values.yaml --values runner/$(RUNNER)/values.yaml | yq 'del(.metadata.finalizers)' \
+		> runner/$(RUNNER)/generated-manifests.yaml
+
 	$(eval RUNNER=system-dev-aws)
 	helm template \
 		oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set --version $(VERSION) \
