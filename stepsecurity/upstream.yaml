@@ -1,0 +1,639 @@
+---
+# Source: arc-harden-runner/templates/harden_runner_ds.yml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hardenrunner
+  namespace: sys-actions
+---
+# Source: arc-harden-runner/templates/harden_runner_ds.yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: arc-harden-runner-config
+  namespace: sys-actions
+data:
+  values: |
+    
+    affinity: {}
+    broker:
+      enabled: false
+      image: ghcr.io/step-security/broker/broker:v1.2.0
+      instanceCount: 2
+      label: ""
+      maxQueueSize: 10000
+      messageTimeoutSeconds: 90
+      serverURL: wss://prod.websocket-api.stepsecurity.io/v1
+      workerThreads: 5
+    env:
+      apiKey: step_api_key_change_me
+      apiKeySecretName: ""
+      arcPodNameRegexes: ""
+      arcRunnerNameSpaces:
+      - sys-actions
+      blockModeDisabled: "false"
+      clusterName: '[CLUSTER_NAME]'
+      clusterNetworkTrafficFilter:
+        allowedEndpoints: null
+      containerSecurityContext:
+        privileged: true
+      customer: utilitywarehouse
+      debugMode: "false"
+      disableHealthReport: "false"
+      disableHttpsMonitoring: "true"
+      disableMemReadEvent: "false"
+      disablePodErrorLogs: "false"
+      disableProcessArgsCollection: "false"
+      dnsMode: step-security
+      enableConnectMonitoring: "true"
+      enableFileMonitoring: "true"
+      enableFipsMode: "false"
+      enableProfiling: false
+      enabled: true
+      excludedBinaries:
+      - /runner/bin/Runner.Listener
+      - /runner/bin/Runner.Worker
+      - /usr/local/bin/dockerd
+      - /usr/local/bin/docker
+      - /usr/bin/docker
+      - /usr/bin/containerd
+      - /usr/local/bin/containerd
+      filePrefixFiltering: "true"
+      hardenRunnerImage: ghcr.io/step-security/arc-harden-runner/arc-harden-runner:v2.16.0
+      healthReportInterval: 900
+      hubbleServerCertsSecretName: hubble-server-certs
+      ignoreDNSRegex: ""
+      ignoreDestinationIPRegex: ""
+      ignoreFilePathRegex: ""
+      ignorePrivateConnections: "false"
+      ignoreProcessPathRegex: ""
+      ignoreResolvedIPRegex: ""
+      k8sModeDisabled: "false"
+      logEbpFEvents: "false"
+      prefixesToInclude:
+      - /runner/
+      - /home/runner/
+      - /__w/
+      ringBufferSize: 134217728
+      stepSecurityApiEndpoint: https://agent.api.stepsecurity.io/v1
+    fullnameOverride: ""
+    nodeSelector: {}
+    rbac:
+      clusterRoleBindingName: ""
+      clusterRoleName: ""
+      create: true
+    serviceAccount:
+      create: true
+      name: ""
+    tetragon:
+      configDir: /etc/tetragon/tetragon.conf.d/
+      debug: false
+      enablePolicyFilter: true
+      enabled: true
+      extraArgs:
+        eventQueueSize: 500000
+        rbSize: 104857600
+      grpc:
+        address: :54321
+      image: quay.io/cilium/tetragon:v1.5.0
+      metricsPort: 2112
+      policy:
+        securityPathTruncate: true
+      resources:
+        requests:
+          cpu: "1"
+          memory: 1024Mi
+    tolerations:
+    - operator: Exists
+---
+# Source: arc-harden-runner/templates/harden_runner_ds.yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tetragon-config
+  namespace: sys-actions
+data:
+  debug: "false"
+  enable-k8s-api: "true"
+  enable-pod-info: "false"
+  enable-policy-filter: "true"
+  enable-process-cred: "false"
+  enable-process-ns: "false"
+  enable-tracing-policy-crd: "true"
+  export-allowlist: '{"event_set":["PROCESS_EXEC", "PROCESS_EXIT", "PROCESS_KPROBE",
+    "PROCESS_UPROBE", "PROCESS_TRACEPOINT", "PROCESS_LSM"]}'
+  export-denylist: |-
+    {"health_check":true}
+    {"namespace":["", "cilium", "kube-system"]}
+  export-file-compress: "false"
+  export-file-max-backups: "5"
+  export-file-max-size-mb: "10"
+  export-file-perm: "600"
+  export-filename: /var/run/cilium/tetragon/tetragon.log
+  export-rate-limit: "-1"
+  field-filters: ""
+  gops-address: localhost:8118
+  health-server-address: :6789
+  health-server-interval: "10"
+  metrics-label-filter: namespace,workload,pod,binary
+  metrics-server: :2112
+  process-cache-size: "65536"
+  procfs: /procRoot
+  redaction-filters: ""
+  server-address: :54321
+---
+# Source: arc-harden-runner/templates/tetragon_configmap.yml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "tetragon-policy"
+  namespace: sys-actions
+data:
+  tetragon-policy-sys-actions.yaml: |
+    apiVersion: cilium.io/v1alpha1
+    kind: TracingPolicyNamespaced
+    metadata:
+      name: "tetragon-policy-sys-actions"
+      namespace: sys-actions
+    spec:
+      options:
+        - name: "policy-mode"
+          value: "monitor"
+      kprobes:
+        - call: "do_renameat2"
+          syscall: false
+          args:
+            - index: 1
+              type: "filename"
+            - index: 3
+              type: "filename"
+        - call: "do_sys_open"
+          return: true
+          syscall: false
+          args:
+          - index: 0
+            type: int
+          - index: 1
+            type: "string"
+          - index: 2 # flags
+            type: int
+          - index: 3
+            type: int
+          returnArg:
+            index: 0
+            type: int
+          selectors:
+          - matchArgs:
+            - index: 2
+              operator: "Mask"
+              values:
+              - "64" # CREATE (0x40)
+              - "1"  # WRONLY (0x01)
+              - "2"  # RDWR (0x02)
+            matchReturnArgs:
+            - index: 0
+              operator: "GT"
+              values:
+              - "0"
+            matchBinaries:
+              - operator: NotIn
+                values: 
+                  - /runner/bin/Runner.Listener
+                  - /runner/bin/Runner.Worker
+                  - /usr/local/bin/dockerd
+                  - /usr/local/bin/docker
+                  - /usr/bin/docker
+                  - /usr/bin/containerd
+                  - /usr/local/bin/containerd
+          - matchArgs:
+            - index: 1
+              operator: "Postfix"
+              values:
+              - "mem"
+            matchBinaries:
+              - operator: NotIn
+                values: 
+                  - /runner/bin/Runner.Listener
+                  - /runner/bin/Runner.Worker
+                  - /usr/local/bin/dockerd
+                  - /usr/local/bin/docker
+                  - /usr/bin/docker
+                  - /usr/bin/containerd
+                  - /usr/local/bin/containerd
+        - call: "do_sys_openat2"
+          return: true
+          syscall: false
+          args:
+          - index: 0
+            type: int
+          - index: 1
+            type: "string"
+          - index: 2 # how
+            type: uint64
+            resolve: "flags" # how.flags
+          returnArg:
+            index: 0
+            type: int
+          selectors:
+          - matchArgs:
+            - index: 2
+              operator: "Mask"
+              values:
+              - "64" # CREATE (0x40)
+              - "1"  # WRONLY (0x01)
+              - "2"  # RDWR (0x02)
+            matchReturnArgs:
+            - index: 0
+              operator: "GT"
+              values:
+              - "0"
+            matchBinaries:
+              - operator: NotIn
+                values: 
+                  - /runner/bin/Runner.Listener
+                  - /runner/bin/Runner.Worker
+                  - /usr/local/bin/dockerd
+                  - /usr/local/bin/docker
+                  - /usr/bin/docker
+                  - /usr/bin/containerd
+                  - /usr/local/bin/containerd
+          - matchArgs:
+            - index: 1
+              operator: "Postfix"
+              values:
+              - "mem"
+            matchBinaries:
+              - operator: NotIn
+                values: 
+                  - /runner/bin/Runner.Listener
+                  - /runner/bin/Runner.Worker
+                  - /usr/local/bin/dockerd
+                  - /usr/local/bin/docker
+                  - /usr/bin/docker
+                  - /usr/bin/containerd
+                  - /usr/local/bin/containerd
+        - call: "security_mmap_file"
+          syscall: false
+          args:
+          - index: 0
+            type: "file"
+          - index: 1
+            type: "uint32"
+          - index: 2
+            type: "nop"
+          selectors:
+          - matchArgs:
+            - index: 0
+              operator: "Prefix"
+              values: 
+                  - /runner/
+                  - /home/runner/
+                  - /__w/
+            - index: 1
+              operator: "Mask"
+              values:
+              - "2"
+            matchBinaries:
+              - operator: NotIn
+                values: 
+                  - /runner/bin/Runner.Listener
+                  - /runner/bin/Runner.Worker
+                  - /usr/local/bin/dockerd
+                  - /usr/local/bin/docker
+                  - /usr/bin/docker
+                  - /usr/bin/containerd
+                  - /usr/local/bin/containerd
+        - call: "security_path_truncate"
+          syscall: false
+          args:
+          - index: 0
+            type: "path"
+          selectors:
+          - matchBinaries:
+              - operator: NotIn
+                values: 
+                  - /runner/bin/Runner.Listener
+                  - /runner/bin/Runner.Worker
+                  - /usr/local/bin/dockerd
+                  - /usr/local/bin/docker
+                  - /usr/bin/docker
+                  - /usr/bin/containerd
+                  - /usr/local/bin/containerd
+            matchArgs:
+              - index: 0
+                operator: "Prefix"
+                values: 
+                  - /runner/
+                  - /home/runner/
+                  - /__w/
+---
+# Source: arc-harden-runner/templates/harden_runner_ds.yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hardenrunner-role
+rules:
+
+- apiGroups:
+    - "cilium.io"
+  resources:
+    - "tracingpoliciesnamespaced"
+  verbs:
+    - "get"
+    - "list"
+    - "watch"
+
+- apiGroups:
+    - ""
+  resources:
+    - "pods"
+    - "events"
+  verbs:
+    - "get"
+    - "list"
+    - "watch"
+
+- apiGroups:
+    - "apps"
+  resources:
+    - "daemonsets"
+  verbs:
+    - "get"
+    - "list"
+    - "watch"
+
+- apiGroups:
+    - "metrics.k8s.io"
+  resources:
+    - "pods"
+    - "nodes"
+  verbs:
+    - "get"
+    - "list"
+    - "watch"
+
+- apiGroups:
+    - ""
+  resources:
+    - "nodes"
+  verbs:
+    - "get"
+    - "list"
+    - "watch"
+# We need to split out the create permission and enforce it without resourceNames since
+# the name would not be known at resource creation time
+- apiGroups:
+    - ""
+  resources:
+    - pods
+    - services
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+    - cilium.io
+  resources:
+    - podinfo
+    - tracingpolicies
+    - tracingpoliciesnamespaced
+  verbs:
+    - get
+    - list
+    - watch
+# We need to split out the create permission and enforce it without resourceNames since
+# the name would not be known at resource creation time
+- apiGroups:
+    - apiextensions.k8s.io
+  resources:
+    - customresourcedefinitions
+  verbs:
+    - get
+    - list
+    - watch
+---
+# Source: arc-harden-runner/templates/harden_runner_ds.yml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hardenrunner-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hardenrunner-role
+subjects:
+  - kind: ServiceAccount
+    name: hardenrunner
+    namespace: sys-actions
+---
+# Source: arc-harden-runner/templates/service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tetragon
+  namespace: sys-actions
+spec:
+  ports:
+    - name: metrics
+      port: 2112
+      protocol: TCP
+      targetPort: 2112
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: hardenrunner
+---
+# Source: arc-harden-runner/templates/harden_runner_ds.yml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: sys-actions
+  name: hardenrunner
+  labels:
+    app.kubernetes.io/instance: hardenrunner
+    app.kubernetes.io/app: hardenrunner
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: hardenrunner
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: hardenrunner
+        app.kubernetes.io/app: hardenrunner
+    spec:
+      serviceAccountName: hardenrunner
+      tolerations:
+      - operator: Exists
+      volumes:
+        - name: host-sys-fs-cgroup
+          hostPath:
+            path: /sys/fs/cgroup
+            type: Directory
+        - name: host-run
+          hostPath:
+            path: /run
+            type: Directory
+        - name: config-volume
+          configMap:
+            name: arc-harden-runner-config
+            items:
+              - key: values
+                path: values.yaml
+        - name: host-proc
+          hostPath:
+            path: /proc
+            type: Directory
+        - configMap:
+            defaultMode: 420
+            name: tetragon-config
+          name: tetragon-config
+        - configMap:
+            defaultMode: 420
+            name: tetragon-policy
+            items:
+              - key: tetragon-policy-sys-actions.yaml
+                path: tetragon-policy-sys-actions.yaml
+          name: tetragon-policy
+        - name: bpf-maps
+          hostPath:
+            path: /sys/fs/bpf
+            type: DirectoryOrCreate
+        - name: hubble-server-certs
+          secret:
+            secretName: "hubble-server-certs"
+      containers:
+        - name: hardenrunner
+          securityContext: 
+            privileged: true
+          image: ghcr.io/step-security/arc-harden-runner/arc-harden-runner:v2.16.0
+          imagePullPolicy: Always
+          env:
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: helmChartVersion
+              value: "2.16.0"
+            - name: stepSecurityApiEndpoint
+              value: "https://agent.api.stepsecurity.io/v1"
+            - name: logEbpFEvents
+              value: "false"
+            - name: arcPodNameRegexes
+              value: ""
+            - name: blockModeDisabled
+              value: "false"
+            - name: enableFileMonitoring
+              value: "true"
+            - name: k8sModeDisabled
+              value: "false"
+            - name: ignorePrivateConnections
+              value: "false"
+            - name: disableHealthReport
+              value: "false"
+            - name: disablePodErrorLogs
+              value: "false"
+            - name: disableProcessArgsCollection
+              value: "false"
+            - name: disableMemReadEvent
+              value: "false"
+            - name: disableHttpsMonitoring
+              value: "true"
+            - name: ignoreDNSRegex
+              value: ""
+            - name: ignoreDestinationIPRegex
+              value: ""
+            - name: ignoreResolvedIPRegex
+              value: ""
+            - name: ignoreFilePathRegex
+              value: ""
+            - name: ignoreProcessPathRegex
+              value: ""
+            - name: enableFipsMode
+              value: "false"
+            - name: debugMode
+              value: "false"
+            - name: clusterName
+              value: "[CLUSTER_NAME]"
+            - name: customer
+              value: "utilitywarehouse"
+            - name: hubbleServerCertsSecretName
+              value: "hubble-server-certs"
+            - name: apiKey
+              value: "step_api_key_change_me"
+            - name: arcRunnerNameSpaces
+              value: "sys-actions"
+            - name: ringBufferSize
+              value: "134217728"
+            - name: enabledTracer
+              value: "1"
+            - name: enableTetragonSidecar
+              value: "1"
+            - name: healthReportInterval
+              value: "900"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+              readOnly: true
+            - mountPath: /host/proc
+              name: host-proc
+            - mountPath: /host/cgroup
+              name: host-sys-fs-cgroup
+            - mountPath: /host/run
+              name: host-run
+            - mountPath: /etc/tetragon/tetragon.tp.d/tetragon-policy-sys-actions.yaml
+              name: tetragon-policy
+              readOnly: true
+              subPath: tetragon-policy-sys-actions.yaml
+        - name: tetragon
+          image: quay.io/cilium/tetragon:v1.5.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - --config-dir=/etc/tetragon/tetragon.conf.d/
+            - --event-queue-size=500000
+            - --rb-size=104857600
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          livenessProbe:
+            failureThreshold: 3
+            grpc:
+              port: 6789
+              service: liveness
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 60
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /sys/fs/bpf
+              mountPropagation: Bidirectional
+              name: bpf-maps
+            - mountPath: /procRoot
+              name: host-proc
+            - mountPath: /etc/tetragon/tetragon.conf.d/
+              name: tetragon-config
+              readOnly: true
+            - mountPath: /etc/tetragon/tetragon.tp.d/tetragon-policy-sys-actions.yaml
+              name: tetragon-policy
+              readOnly: true
+              subPath: tetragon-policy-sys-actions.yaml
+          resources:
+            requests:
+              cpu: 1
+              memory: 1024Mi
+          ports:
+            - name: metrics
+              containerPort: 2112
+              protocol: TCP
+      restartPolicy: Always

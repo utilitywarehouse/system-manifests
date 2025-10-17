@@ -1,0 +1,11 @@
+env:
+  customer: "utilitywarehouse"
+  apiKey: "step_api_key_change_me"
+  clusterName: "[CLUSTER_NAME]"
+  arcRunnerNameSpaces:
+    - sys-actions
+tetragon:
+  resources:
+    requests:
+      cpu: "1"
+      memory: "1024Mi"
