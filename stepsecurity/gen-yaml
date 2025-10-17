@@ -9,4 +9,3 @@ helm template  arc-harden-runner stepsecurity/arc-harden-runner \
   -n sys-actions \
   --version "${STEP_SECURITY_VERSION}" \
   -f arc_harden_runner_values.yaml > upstream.yaml
-
