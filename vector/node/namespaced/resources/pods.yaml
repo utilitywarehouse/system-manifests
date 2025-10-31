@@ -46,7 +46,7 @@ sinks:
     inputs:
       - throttle
     type: loki
-    endpoint: http://loki.sys-log.svc.cluster.aws:3100
+    endpoint: http://loki-write.sys-log.svc.cluster.aws:3100
     path: /loki/api/v1/push
     encoding:
       codec: text
