@@ -145,6 +145,12 @@ spec:
                   key: controller.self.heal.backoff.cooldown.seconds
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_SYNC_WAVE_DELAY
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.sync.wave.delay.seconds
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_APPLICATION_CONTROLLER_SYNC_TIMEOUT
               valueFrom:
                 configMapKeyRef:
@@ -291,7 +297,7 @@ spec:
                   optional: true
             - name: KUBECACHEDIR
               value: /tmp/kubecache
-          image: quay.io/argoproj/argocd:v3.1.1
+          image: quay.io/argoproj/argocd:v3.2.0
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
@@ -366,7 +372,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: bd30e83dfdad9912b6c1cc32a8c26d7d01429a0730f5ee7af380fb593e874d54
+        checksum/init-config: fd74f7d84e39b3f6eac1d7ce5deb0083e58f218376faf363343d91a0fb4f2563
       labels:
         app.kubernetes.io/name: argocd-redis-ha
     spec:
@@ -389,7 +395,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:7.2.7-alpine
+          image: public.ecr.aws/docker/library/redis:8.2.2-alpine
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -437,9 +443,9 @@ spec:
                 - sh
                 - -c
                 - /health/redis_readiness.sh
-            failureThreshold: 3
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 15
             successThreshold: 1
             timeoutSeconds: 15
           volumeMounts:
@@ -460,7 +466,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:7.2.7-alpine
+          image: public.ecr.aws/docker/library/redis:8.2.2-alpine
           imagePullPolicy: IfNotPresent
           lifecycle:
             postStart:
@@ -535,7 +541,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:7.2.7-alpine
+          image: public.ecr.aws/docker/library/redis:8.2.2-alpine
           imagePullPolicy: IfNotPresent
           name: split-brain-fix
           resources: {}
@@ -570,7 +576,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:7.2.7-alpine
+          image: public.ecr.aws/docker/library/redis:8.2.2-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:

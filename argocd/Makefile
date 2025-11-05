@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := get-upstream
 
 # https://github.com/argoproj/argo-cd
-VERSION=v3.1.1
+VERSION=v3.2.0
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
@@ -15,7 +15,8 @@ get-upstream:
 	sd "namespace: argocd" "namespace: sys-argocd" /tmp/argo.yaml
 	
 	# Filter out dex and applicationset resoruces
-	yq 'select(.metadata.name != "argocd-dex-server*" and .metadata.name != "argocd-applicationset*")' /tmp/argo.yaml > /tmp/argo_filtered.yaml
+	# also create new secrets when required instead of patching it
+	yq 'select(.kind!="Secret" and .metadata.name != "argocd-dex-server*" and .metadata.name != "argocd-applicationset*")' /tmp/argo.yaml > /tmp/argo_filtered.yaml
 
 	# cluster resources
 	yq 'select(.kind=="CustomResourceDefinition")' /tmp/argo_filtered.yaml > cluster/upstream/CustomResourceDefinition.yaml
@@ -27,7 +28,6 @@ get-upstream:
 	yq 'select(.kind=="StatefulSet")' /tmp/argo_filtered.yaml > namespaced/upstream/StatefulSet.yaml
 	yq 'select(.kind=="Role")' /tmp/argo_filtered.yaml > namespaced/upstream/Role.yaml
 	yq 'select(.kind=="RoleBinding")' /tmp/argo_filtered.yaml > namespaced/upstream/RoleBinding.yaml
-	yq 'select(.kind=="Secret")' /tmp/argo_filtered.yaml > namespaced/upstream/Secret.yaml
 	yq 'select(.kind=="Service")' /tmp/argo_filtered.yaml > namespaced/upstream/Service.yaml
 	yq 'select(.kind=="ServiceAccount")' /tmp/argo_filtered.yaml > namespaced/upstream/ServiceAccount.yaml
 	yq 'select(.kind=="ConfigMap")' /tmp/argo_filtered.yaml > namespaced/upstream/ConfigMap.yaml

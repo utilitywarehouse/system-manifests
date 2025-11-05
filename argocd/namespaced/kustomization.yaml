@@ -9,7 +9,6 @@ resources:
   - upstream/NetworkPolicy.yaml
   - upstream/Role.yaml
   - upstream/RoleBinding.yaml
-  - upstream/Secret.yaml
   - upstream/Service.yaml
   - upstream/ServiceAccount.yaml
   - upstream/StatefulSet.yaml
