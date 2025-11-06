@@ -54,6 +54,4 @@ spec:
             - --protectManagedResources=false
             - --allowInsecureRegistry=false
             - --registryCredentialHelpers=default,google,amazon,azure,github
-            - --enablePolicyException=true
-            - --exceptionNamespace=kube-system
           name: kyverno
