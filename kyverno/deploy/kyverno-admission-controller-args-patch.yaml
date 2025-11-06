@@ -49,7 +49,8 @@ spec:
             - --loggingFormat=text
             - --v=0
             - --omitEvents=PolicyApplied,PolicySkipped
-            - --enablePolicyException=false
+            - --enablePolicyException=true
+            - --exceptionNamespace=kube-system
             - --protectManagedResources=false
             - --allowInsecureRegistry=false
             - --registryCredentialHelpers=default,google,amazon,azure,github
