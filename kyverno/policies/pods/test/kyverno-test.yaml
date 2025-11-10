@@ -3,12 +3,14 @@ policies:
   - ../hostIPC.yaml
   - ../hostNetwork.yaml
   - ../privilege-escalation.yaml
+  - ../resource-limits.yaml
 resources:
   - test-hostIPC.yaml
   - test-hostNetwork.yaml
   - test-privilege-escalation.yaml
+  - test-resource-limits.yaml
 results:
-# Test hostIPC
+  # Test hostIPC
   - policy: disallow-host-ipc-pods
     rule: default
     resource: test-hostIPC-not-set
@@ -24,7 +26,7 @@ results:
     resource: test-hostIPC-set-to-true
     kind: Pod
     result: fail
-# Test hostNetwork
+  # Test hostNetwork
   - policy: disallow-host-network-pods
     rule: default
     resource: test-hostNetwork-not-set
@@ -40,7 +42,7 @@ results:
     resource: test-hostNetwork-set-to-true
     kind: Pod
     result: fail
-# Test privilege escalation
+  # Test privilege escalation
   - policy: disallow-privilege-escalation
     rule: default
     resource: test-privilege-escalation-not-set
@@ -54,5 +56,106 @@ results:
   - policy: disallow-privilege-escalation
     rule: default
     resource: test-privilege-escalation-set-to-true
+    kind: Pod
+    result: fail
+  # Test Restict Resource Limits
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-resource-limits-not-set
+    kind: Pod
+    result: skip
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-resource-limits-not-set
+    kind: Pod
+    result: skip
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-resource-limits-both-ok
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-resource-limits-both-ok
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-resource-limits-cpu-too-high
+    kind: Pod
+    result: fail
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-resource-limits-cpu-too-high
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-resource-limits-memory-too-high
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-resource-limits-memory-too-high
+    kind: Pod
+    result: fail
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-resource-limits-both-too-high
+    kind: Pod
+    result: fail
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-resource-limits-both-too-high
+    kind: Pod
+    result: fail
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-cpu-limit-ok
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-cpu-limit-decimal-ok
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-cpu-limit-millicores-ok
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-cpu-limit-too-high
+    kind: Pod
+    result: fail
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-cpu-limit-decimal-too-high
+    kind: Pod
+    result: fail
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-cpu-limit-millicores-too-high
+    kind: Pod
+    result: fail
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-memory-limit-ok
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-memory-limit-mi-ok
+    kind: Pod
+    result: pass
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-memory-limit-too-high
+    kind: Pod
+    result: fail
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-memory-limit-mi-too-high
     kind: Pod
     result: fail

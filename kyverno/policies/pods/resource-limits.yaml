@@ -1,0 +1,51 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-resource-limits
+  annotations:
+    policies.kyverno.io/title: Restrict Resource Limits
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      This policy restricts containers from setting CPU limit above 6 cores and
+      memory limit above 24Gi.
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: cpu
+      match:
+        resources:
+          kinds:
+            - Pod
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.containers[].resources.limits.cpu || '' }}"
+            operator: NotEquals
+            value: ""
+      validate:
+        message: "Containers must not set CPU limits over 6 cores."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  limits:
+                    cpu: "<=6"
+    - name: memory
+      match:
+        resources:
+          kinds:
+            - Pod
+      preconditions:
+        all:
+          - key: "{{ request.object.spec.containers[].resources.limits.memory || '' }}"
+            operator: NotEquals
+            value: ""
+      validate:
+        message: "Containers must not set memory limits over 24Gi."
+        pattern:
+          spec:
+            containers:
+              - resources:
+                  limits:
+                    memory: "<=24Gi"
