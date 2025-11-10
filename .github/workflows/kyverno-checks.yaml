@@ -101,3 +101,16 @@ jobs:
             ```diff
             ${{ steps.diff.outputs.diff-output }}
             ```
+
+  run-kyverno-tests:
+    needs: check-for-kyverno
+    if: needs.check-for-kyverno.outputs.kyverno-found == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./kyverno/policies
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Kyverno tests
+        run: make test
