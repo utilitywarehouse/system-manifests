@@ -1,0 +1,41 @@
+# upstream values.yaml file
+# https://github.com/falcosecurity/charts/blob/master/charts/falco/values.yaml
+
+# -- Attach the Falco process to a tty inside the container. Needed to flush Falco logs as soon as they are emitted.
+# Set it to "true" when you need the Falco logs to be immediately displayed.
+tty: true
+
+metrics:
+  enabled: true
+
+driver:
+  kind: modern_ebpf
+
+# Collectors for data enrichment (scenario requirement)
+collectors:
+  containerEngine:
+    # -- engines specify the container engines that will be used to collect metadata.
+    engines:
+      podman:
+        enabled: false
+      containerd:
+        enabled: false
+      cri:
+        enabled: true
+        sockets:
+          [
+            "/run/containerd/containerd.sock",
+            "/run/crio/crio.sock",
+          ]
+      lxc:
+        enabled: false
+      libvirt_lxc:
+        enabled: false
+      bpm:
+        enabled: false
+
+falco:
+  json_output: true
+
+falcosidekick:
+  enabled: false
