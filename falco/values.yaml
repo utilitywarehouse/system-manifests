@@ -20,6 +20,8 @@ collectors:
     engines:
       podman:
         enabled: false
+      containerd:
+        enabled: false
       cri:
         enabled: true
         sockets:

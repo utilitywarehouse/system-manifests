@@ -101,7 +101,7 @@ data:
           bpm:
             enabled: false
           containerd:
-            enabled: true
+            enabled: false
             sockets:
             - /run/host-containerd/containerd.sock
           cri:
@@ -224,7 +224,7 @@ spec:
         app.kubernetes.io/name: falco
         app.kubernetes.io/instance: falco
       annotations:
-        checksum/config: bc97eeaead78d758df572a661f88674a4c3bd5aa412adbf84a28892a81a706a8
+        checksum/config: 56f6b050f18feeaaa7ea5edd53d4a1aa766c9f2791df9fe4b2a2e120bf13d288
         checksum/rules: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
         checksum/certs: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     spec:
@@ -282,12 +282,10 @@ spec:
           volumeMounts:
             - mountPath: /host/var/run/docker.sock
               name: container-engine-socket-0
-            - mountPath: /host/run/host-containerd/containerd.sock
-              name: container-engine-socket-1
             - mountPath: /host/run/containerd/containerd.sock
-              name: container-engine-socket-2
+              name: container-engine-socket-1
             - mountPath: /host/run/crio/crio.sock
-              name: container-engine-socket-3
+              name: container-engine-socket-2
             - mountPath: /etc/falco
               name: rulesfiles-install-dir
             - mountPath: /usr/share/falco/plugins
@@ -374,14 +372,11 @@ spec:
             path: /var/run/docker.sock
           name: container-engine-socket-0
         - hostPath:
-            path: /run/host-containerd/containerd.sock
+            path: /run/containerd/containerd.sock
           name: container-engine-socket-1
         - hostPath:
-            path: /run/containerd/containerd.sock
-          name: container-engine-socket-2
-        - hostPath:
             path: /run/crio/crio.sock
-          name: container-engine-socket-3
+          name: container-engine-socket-2
         - name: specialized-falco-configs
           emptyDir: {}
         - name: plugins-install-dir
