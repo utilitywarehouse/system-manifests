@@ -91,7 +91,19 @@ data:
     log_stderr: true
     log_syslog: true
     metrics:
-      enabled: false
+      convert_memory_to_mb: true
+      enabled: true
+      include_empty_values: false
+      interval: 1h
+      jemalloc_stats_enabled: false
+      kernel_event_counters_enabled: true
+      kernel_event_counters_per_cpu_enabled: false
+      libbpf_stats_enabled: true
+      output_rule: false
+      plugins_metrics_enabled: true
+      resource_utilization_enabled: true
+      rules_counters_enabled: true
+      state_counters_enabled: true
     output_timeout: 2000
     outputs_queue:
       capacity: 0
@@ -159,7 +171,7 @@ data:
       k8s_healthz_endpoint: /healthz
       listen_address: 0.0.0.0
       listen_port: 8765
-      prometheus_metrics_enabled: false
+      prometheus_metrics_enabled: true
       ssl_certificate: /etc/falco/falco.pem
       ssl_enabled: false
       threadiness: 0
@@ -200,6 +212,30 @@ data:
     - name: falcosecurity
       url: https://falcosecurity.github.io/falcoctl/index.yaml
 ---
+# Source: falco/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: falco-metrics
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falco-7.0.1
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "0.42.1"
+    app.kubernetes.io/managed-by: Helm
+    type: "falco-metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8765
+      targetPort: 8765
+      protocol: TCP
+      name: "metrics"
+  selector:
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/instance: falco
+---
 # Source: falco/templates/daemonset.yaml
 apiVersion: apps/v1
 kind: DaemonSet
@@ -224,7 +260,7 @@ spec:
         app.kubernetes.io/name: falco
         app.kubernetes.io/instance: falco
       annotations:
-        checksum/config: da198e625f6ecee3578e3e0f3f94282660aaa8a7c257f2ea5e328106d1c4cf01
+        checksum/config: f3b9771bb679174bf343b4d453c9f7f0756fc903eaafae05765dfc767e58339e
         checksum/rules: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
         checksum/certs: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     spec:

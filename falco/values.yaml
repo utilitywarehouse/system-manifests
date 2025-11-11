@@ -5,10 +5,8 @@
 # Set it to "true" when you need the Falco logs to be immediately displayed.
 tty: true
 
-# -- metrics configures Falco to enable and expose the metrics.
 metrics:
-  # -- enabled specifies whether the metrics should be enabled.
-  enabled: false
+  enabled: true
 
 driver:
   kind: modern_ebpf
