@@ -35,8 +35,6 @@ collectors:
         enabled: false
 
 falco:
-  metrics:
-    enabled: false
   json_output: true
 
 falcosidekick:
