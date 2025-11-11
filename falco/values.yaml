@@ -11,7 +11,7 @@ metrics:
   enabled: false
 
 driver:
-  kind: ebpf
+  kind: modern_ebpf
 
 # Collectors for data enrichment (scenario requirement)
 collectors:

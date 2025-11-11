@@ -8,7 +8,6 @@ resources:
   - upstream.yaml
 
 patches:
-  - path: falco-driver-loader-privileged.yaml
   - path: falco-exclude-logs.yaml
   - path: falco-rules-local.yaml
 
