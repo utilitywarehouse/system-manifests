@@ -10,8 +10,35 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: test-resource-limits-both-ok
+  name: test-resource-limits-ok
 spec:
+  initContainers:
+    - name: test
+      image: test
+      resources:
+        limits:
+          cpu: "6"
+          memory: "24Gi"
+  containers:
+    - name: test
+      image: test
+      resources:
+        limits:
+          cpu: "6"
+          memory: "24Gi"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-resource-limits-init-cpu-too-high
+spec:
+  initContainers:
+    - name: test
+      image: test
+      resources:
+        limits:
+          cpu: "7"
+          memory: "24Gi"
   containers:
     - name: test
       image: test
@@ -31,6 +58,26 @@ spec:
       resources:
         limits:
           cpu: "7"
+          memory: "24Gi"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-resource-limits-init-memory-too-high
+spec:
+  initContainers:
+    - name: test
+      image: test
+      resources:
+        limits:
+          cpu: "6"
+          memory: "25Gi"
+  containers:
+    - name: test
+      image: test
+      resources:
+        limits:
+          cpu: "6"
           memory: "24Gi"
 ---
 apiVersion: v1

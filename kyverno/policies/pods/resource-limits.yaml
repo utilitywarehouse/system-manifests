@@ -18,34 +18,42 @@ spec:
         resources:
           kinds:
             - Pod
-      preconditions:
-        all:
-          - key: "{{ request.object.spec.containers[].resources.limits.cpu || '' }}"
-            operator: NotEquals
-            value: ""
       validate:
         message: "Containers must not set CPU limits over 6 cores."
-        pattern:
-          spec:
-            containers:
-              - resources:
-                  limits:
-                    cpu: "<=6"
+        foreach:
+          - list: "request.object.spec.initContainers"
+            deny:
+              conditions:
+                any:
+                  - key: '{{ element.resources.limits.cpu || "" }}'
+                    operator: GreaterThan
+                    value: "6"
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: '{{ element.resources.limits.cpu || "" }}'
+                    operator: GreaterThan
+                    value: "6"
     - name: memory
       match:
         resources:
           kinds:
             - Pod
-      preconditions:
-        all:
-          - key: "{{ request.object.spec.containers[].resources.limits.memory || '' }}"
-            operator: NotEquals
-            value: ""
       validate:
         message: "Containers must not set memory limits over 24Gi."
-        pattern:
-          spec:
-            containers:
-              - resources:
-                  limits:
-                    memory: "<=24Gi"
+        foreach:
+          - list: "request.object.spec.initContainers"
+            deny:
+              conditions:
+                any:
+                  - key: '{{ element.resources.limits.memory || "" }}'
+                    operator: GreaterThan
+                    value: "24Gi"
+          - list: "request.object.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: '{{ element.resources.limits.memory || "" }}'
+                    operator: GreaterThan
+                    value: "24Gi"

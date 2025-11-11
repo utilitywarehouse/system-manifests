@@ -63,22 +63,27 @@ results:
     rule: cpu
     resource: test-resource-limits-not-set
     kind: Pod
-    result: skip
+    result: pass
   - policy: restrict-resource-limits
     rule: memory
     resource: test-resource-limits-not-set
     kind: Pod
-    result: skip
+    result: pass
   - policy: restrict-resource-limits
     rule: cpu
-    resource: test-resource-limits-both-ok
+    resource: test-resource-limits-ok
     kind: Pod
     result: pass
   - policy: restrict-resource-limits
     rule: memory
-    resource: test-resource-limits-both-ok
+    resource: test-resource-limits-ok
     kind: Pod
     result: pass
+  - policy: restrict-resource-limits
+    rule: cpu
+    resource: test-resource-limits-init-cpu-too-high
+    kind: Pod
+    result: fail
   - policy: restrict-resource-limits
     rule: cpu
     resource: test-resource-limits-cpu-too-high
@@ -94,6 +99,11 @@ results:
     resource: test-resource-limits-memory-too-high
     kind: Pod
     result: pass
+  - policy: restrict-resource-limits
+    rule: memory
+    resource: test-resource-limits-init-memory-too-high
+    kind: Pod
+    result: fail
   - policy: restrict-resource-limits
     rule: memory
     resource: test-resource-limits-memory-too-high
