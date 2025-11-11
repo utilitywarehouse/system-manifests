@@ -8,7 +8,7 @@ resources:
   - upstream.yaml
 
 patches:
-  - path: falco-exclude-logs.yaml
+  - path: falco-annotations-patch.yaml
   - path: falco-rules-local.yaml
 
 configMapGenerator:
