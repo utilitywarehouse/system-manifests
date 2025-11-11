@@ -1,0 +1,137 @@
+# Source: tetragon/templates/clusterrole.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tetragon
+  labels:
+    app.kubernetes.io/name: tetragon
+    app.kubernetes.io/instance: tetragon
+    helm.sh/chart: tetragon-1.6.0
+    app.kubernetes.io/version: "1.6.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: tetragon
+    app.kubernetes.io/component: agent
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - nodes
+      - pods
+      - services
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - cilium.io
+    resources:
+      - podinfo
+      - tracingpolicies
+      - tracingpoliciesnamespaced
+    verbs:
+      - get
+      - list
+      - watch
+  # We need to split out the create permission and enforce it without resourceNames since
+  # the name would not be known at resource creation time
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - list
+      - watch
+---
+# Source: tetragon/templates/operator_clusterrole.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tetragon-operator
+  labels:
+    app.kubernetes.io/name: "tetragon-operator"
+    app.kubernetes.io/instance: tetragon
+    helm.sh/chart: tetragon-1.6.0
+    app.kubernetes.io/version: "1.6.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: tetragon
+    app.kubernetes.io/component: operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - cilium.io
+    resources:
+      - podinfo
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    resourceNames:
+      - tracingpolicies.cilium.io
+      - tracingpoliciesnamespaced.cilium.io
+      - podinfo.cilium.io
+    verbs:
+      - update
+      - get
+      - list
+      - watch
+---
+# Source: tetragon/templates/clusterrolebinding.yml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tetragon
+  labels:
+    app.kubernetes.io/name: tetragon
+    app.kubernetes.io/instance: tetragon
+    helm.sh/chart: tetragon-1.6.0
+    app.kubernetes.io/version: "1.6.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: tetragon
+    app.kubernetes.io/component: agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tetragon
+subjects:
+  - kind: ServiceAccount
+    namespace: sys-tetragon
+    name: tetragon
+---
+# Source: tetragon/templates/operator_clusterrolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: tetragon-operator-rolebinding
+  labels:
+    app.kubernetes.io/name: "tetragon-operator"
+    app.kubernetes.io/instance: tetragon
+    helm.sh/chart: tetragon-1.6.0
+    app.kubernetes.io/version: "1.6.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: tetragon
+    app.kubernetes.io/component: operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tetragon-operator
+subjects:
+  - kind: ServiceAccount
+    namespace: sys-tetragon
+    name: tetragon-operator-service-account

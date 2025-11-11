@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tetragon-config
+  namespace: sys-tetragon
+data:
+  # default config adds kube-system and its own NS in the list
+  export-denylist: |-
+    {"health_check":true}
