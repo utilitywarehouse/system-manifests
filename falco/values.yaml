@@ -1,6 +1,10 @@
 # upstream values.yaml file
 # https://github.com/falcosecurity/charts/blob/master/charts/falco/values.yaml
 
+# more info about values
+# https://github.com/falcosecurity/falco/blob/master/falco.yaml
+
+
 # -- Attach the Falco process to a tty inside the container. Needed to flush Falco logs as soon as they are emitted.
 # Set it to "true" when you need the Falco logs to be immediately displayed.
 tty: true
@@ -10,6 +14,14 @@ metrics:
 
 driver:
   kind: modern_ebpf
+  modernEbpf:
+    # -- bufSizePreset determines the size of the shared space between Falco and its drivers.
+    # This shared space serves as a temporary storage for syscall events.
+    # 6-> 32MB, 7 -> 64 MB
+    bufSizePreset: 6
+    # -- cpusForEachBuffer is the index that controls how many CPUs to assign to a single syscall buffer.
+    cpusForEachBuffer: 2
+
 
 # Collectors for data enrichment (scenario requirement)
 collectors:
