@@ -20,7 +20,7 @@ driver:
     # 6-> 32MB, 7 -> 64 MB
     bufSizePreset: 6
     # -- cpusForEachBuffer is the index that controls how many CPUs to assign to a single syscall buffer.
-    cpusForEachBuffer: 2
+    cpusForEachBuffer: 4
 
 
 # Collectors for data enrichment (scenario requirement)
