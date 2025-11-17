@@ -44,7 +44,7 @@ data:
     engine:
       kind: modern_ebpf
       modern_ebpf:
-        buf_size_preset: 4
+        buf_size_preset: 6
         cpus_for_each_buffer: 2
         drop_failed_exit: false
     falco_libs:
@@ -260,7 +260,7 @@ spec:
         app.kubernetes.io/name: falco
         app.kubernetes.io/instance: falco
       annotations:
-        checksum/config: f3b9771bb679174bf343b4d453c9f7f0756fc903eaafae05765dfc767e58339e
+        checksum/config: 33f4733a20a6877440434cb877d7812ee8e41dcaf6571c08ba86c4c7d4587ffb
         checksum/rules: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
         checksum/certs: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     spec:
