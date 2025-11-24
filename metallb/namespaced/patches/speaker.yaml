@@ -36,6 +36,10 @@ spec:
               name: memberlist
             - $patch: delete
               name: metallb-excludel2
+      # Remove tolerations to not allow scheduling on control plane nodes. We
+      # will run bgp-lb instances there to manage Kubernetes apiserver load
+      # balancing in a more static/kube Service agnostic way.
+      tolerations: []
       volumes:
         - $patch: delete
           name: memberlist
