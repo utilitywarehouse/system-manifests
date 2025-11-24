@@ -4,7 +4,6 @@
 # more info about values
 # https://github.com/falcosecurity/falco/blob/master/falco.yaml
 
-
 # -- Attach the Falco process to a tty inside the container. Needed to flush Falco logs as soon as they are emitted.
 # Set it to "true" when you need the Falco logs to be immediately displayed.
 tty: true
@@ -13,16 +12,14 @@ metrics:
   enabled: true
 
 driver:
-  kind: modern_ebpf
-  modernEbpf:
-    # -- bufSizePreset determines the size of the shared space between Falco and its drivers.
-    # This shared space serves as a temporary storage for syscall events.
-    # 6-> 32MB, 7 -> 64 MB
-    bufSizePreset: 6
-    # -- cpusForEachBuffer is the index that controls how many CPUs to assign to a single syscall buffer.
-    # we have 4 CPU nodes
-    cpusForEachBuffer: 2
-
+  # memory issue with 0.42.1 and "modern-bpf"
+  # https://github.com/falcosecurity/falco/issues/3643
+  # https://github.com/falcosecurity/falco/issues/3733
+  kind: ebpf
+  loader:
+    initContainer:
+      securityContext:
+        privileged: true
 
 # Collectors for data enrichment (scenario requirement)
 collectors:
@@ -35,11 +32,7 @@ collectors:
         enabled: false
       cri:
         enabled: true
-        sockets:
-          [
-            "/run/containerd/containerd.sock",
-            "/run/crio/crio.sock",
-          ]
+        sockets: ["/run/containerd/containerd.sock", "/run/crio/crio.sock"]
       lxc:
         enabled: false
       libvirt_lxc:
