@@ -1,0 +1,99 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-workload-resource-limits
+  annotations:
+    policies.kyverno.io/title: Restrict Workload Resource Limits
+    policies.kyverno.io/category: Resource Management
+    policies.kyverno.io/subject: Workload Controllers
+    policies.kyverno.io/description: >-
+      This policy restricts all workload controllers from defining Pod templates
+      with containers that set CPU limits above 6 cores or memory limits above 24Gi.
+spec:
+  validationFailureAction: Enforce
+  rules:
+    - name: restrict-cpu-limits
+      match:
+        resources:
+          kinds:
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - ReplicaSet
+            - CronJob
+      validate:
+        message: "CPU limit cannot exceed 6 cores in any container within the Pod template."
+        foreach:
+          # Workloads with spec.template.spec
+          - list: "request.object.spec.template.spec.initContainers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.limits.cpu || '' }}"
+                    operator: GreaterThan
+                    value: "6"
+          - list: "request.object.spec.template.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.limits.cpu || '' }}"
+                    operator: GreaterThan
+                    value: "6"
+          # CronJobs with spec.jobTemplate.spec.template.spec
+          - list: "request.object.spec.jobTemplate.spec.template.spec.initContainers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.limits.cpu || '' }}"
+                    operator: GreaterThan
+                    value: "6"
+          - list: "request.object.spec.jobTemplate.spec.template.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.limits.cpu || '' }}"
+                    operator: GreaterThan
+                    value: "6"
+    - name: restrict-memory-limits
+      match:
+        resources:
+          kinds:
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - ReplicaSet
+            - Job
+            - CronJob
+      validate:
+        message: "Memory limit cannot exceed 24Gi in any container within the Pod template."
+        foreach:
+          # Workloads with spec.template.spec
+          - list: "request.object.spec.template.spec.initContainers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.limits.memory || '' }}"
+                    operator: GreaterThan
+                    value: "24Gi"
+          - list: "request.object.spec.template.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.limits.memory || '' }}"
+                    operator: GreaterThan
+                    value: "24Gi"
+          # CronJobs with spec.jobTemplate.spec.template.spec
+          - list: "request.object.spec.jobTemplate.spec.template.spec.initContainers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.limits.memory || '' }}"
+                    operator: GreaterThan
+                    value: "24Gi"
+          - list: "request.object.spec.jobTemplate.spec.template.spec.containers"
+            deny:
+              conditions:
+                any:
+                  - key: "{{ element.resources.limits.memory || '' }}"
+                    operator: GreaterThan
+                    value: "24Gi"

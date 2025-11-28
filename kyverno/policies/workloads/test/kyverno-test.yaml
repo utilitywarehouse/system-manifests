@@ -1,0 +1,117 @@
+name: disallow-privileged-containers
+policies:
+  - ../resource-limits.yaml
+resources:
+  - test-resource-limits.yaml
+results:
+  # Test Restict Resource Limits
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-deployment-resource-limits-not-set
+    kind: Deployment
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-deployment-resource-limits-not-set
+    kind: Deployment
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-deployment-resource-limits-ok
+    kind: Deployment
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-deployment-resource-limits-ok
+    kind: Deployment
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-deployment-resource-limits-init-cpu-too-high
+    kind: Deployment
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-deployment-resource-limits-cpu-too-high
+    kind: Deployment
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-deployment-resource-limits-cpu-too-high
+    kind: Deployment
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-deployment-resource-limits-memory-too-high
+    kind: Deployment
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-deployment-resource-limits-init-memory-too-high
+    kind: Deployment
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-deployment-resource-limits-memory-too-high
+    kind: Deployment
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-statefulset-resource-limits-too-high
+    kind: StatefulSet
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-statefulset-resource-limits-too-high
+    kind: StatefulSet
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-daemonset-cpu-limit-ok
+    kind: DaemonSet
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-daemonset-cpu-limit-decimal-ok
+    kind: DaemonSet
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-daemonset-cpu-limit-millicores-ok
+    kind: DaemonSet
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-daemonset-cpu-limit-too-high
+    kind: DaemonSet
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-daemonset-cpu-limit-decimal-too-high
+    kind: DaemonSet
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-cpu-limits
+    resource: test-daemonset-cpu-limit-millicores-too-high
+    kind: DaemonSet
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-replicaset-memory-limit-ok
+    kind: ReplicaSet
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-replicaset-memory-limit-mi-ok
+    kind: ReplicaSet
+    result: pass
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-cronjob-memory-limit-too-high
+    kind: CronJob
+    result: fail
+  - policy: restrict-workload-resource-limits
+    rule: restrict-memory-limits
+    resource: test-cronjob-memory-limit-mi-too-high
+    kind: CronJob
+    result: fail

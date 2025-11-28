@@ -1,0 +1,364 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-resource-limits-not-set
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-resource-limits-ok
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 6
+              memory: 24Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-resource-limits-init-cpu-too-high
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      initContainers:
+        - name: init-test
+          image: test
+          resources:
+            limits:
+              cpu: 7
+              memory: 24Gi
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: 6
+              memory: 24Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-resource-limits-cpu-too-high
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: 7
+              memory: 24Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-resource-limits-init-memory-too-high
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      initContainers:
+        - name: init-test
+          image: test
+          resources:
+            limits:
+              cpu: 6
+              memory: 25Gi
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: 6
+              memory: 24Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment-resource-limits-memory-too-high
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: 6
+              memory: 25Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: test-statefulset-resource-limits-too-high
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: 7
+              memory: 25Gi
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: test-daemonset-cpu-limit-ok
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: 6
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: test-daemonset-cpu-limit-decimal-ok
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: 6.0
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: test-daemonset-cpu-limit-millicores-ok
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: "6000m"
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: test-daemonset-cpu-limit-too-high
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: "7"
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: test-daemonset-cpu-limit-decimal-too-high
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: "7.0"
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: test-daemonset-cpu-limit-millicores-too-high
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              cpu: "7000m"
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: test-replicaset-memory-limit-ok
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              memory: "24Gi"
+---
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: test-replicaset-memory-limit-mi-ok
+spec:
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+          resources:
+            limits:
+              memory: "24000Mi"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: test-cronjob-memory-limit-too-high
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: test
+              image: test
+              resources:
+                limits:
+                  memory: "25Gi"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: test-cronjob-memory-limit-mi-too-high
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: test
+              image: test
+              resources:
+                limits:
+                  memory: "25000Mi"
