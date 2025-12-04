@@ -47,6 +47,9 @@ spec:
               value: TBD
             - name: WORKING_DIR
               value: /backup-workdir
+            - name: UW_KAFKA_TLS_AUTH
+              value: "true"
+
           volumeMounts:
             - mountPath: /backup-workdir
               name: workdir
