@@ -1,4 +1,3 @@
-# Used by tf-kafka-config-admin to fetch resources in this namespace
 apiVersion: v1
 kind: ServiceAccount
 metadata:
