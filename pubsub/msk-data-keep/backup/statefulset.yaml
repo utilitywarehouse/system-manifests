@@ -27,6 +27,10 @@ spec:
         app: msk-data-keep-backup
     spec:
       serviceAccountName: msk-data-keep
+      securityContext:
+        # Change ownership to the group created in Dockerfile
+        fsGroup: 1000
+
       containers:
         - name: msk-data-keep-backup
           image: quay.io/utilitywarehouse/kafka-data-keep:main
