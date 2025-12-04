@@ -36,7 +36,7 @@ spec:
             - name: KAFKA_BROKERS_DNS_SRV
               value: TBD
             - name: KAFKA_GROUP_ID
-              value: msk-data-keep-backup
+              value: pubsub.msk-data-keep-backup
             - name: KAFKA_TOPICS_REGEX
               value: .*
             - name: KAFKA_EXCLUDE_TOPICS_REGEX
