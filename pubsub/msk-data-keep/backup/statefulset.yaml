@@ -53,6 +53,7 @@ spec:
           volumeMounts:
             - mountPath: /backup-workdir
               name: workdir
+              readOnly: false
           resources:
             requests:
               cpu: "0"
