@@ -31,6 +31,7 @@ spec:
         - name: msk-data-keep-backup
           image: quay.io/utilitywarehouse/kafka-data-keep:main
           imagePullPolicy: IfNotPresent
+          command: ["/kafka-data-keep", "backup"]
           env:
             - name: KAFKA_BROKERS_DNS_SRV
               value: TBD
