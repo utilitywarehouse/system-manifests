@@ -1,0 +1,8 @@
+# Used by tf-kafka-config-admin to fetch resources in this namespace
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: msk-data-keep
+# add the vault role annotation to gain access to the tf state bucket in the specific environment
+#  annotations:
+#    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role//pubsub-msk-data-keep-backup-bucket-rw"

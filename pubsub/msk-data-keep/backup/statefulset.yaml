@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+# Using a statefulset to get a static pod name
+kind: StatefulSet
+metadata:
+  name: msk-data-keep-backup
+  labels:
+    app: msk-data-keep-backup
+  annotations:
+    uw.systems/msk-kafka-client: "msk-data-keep"
+    "app.uw.systems/name": "MSK data backup"
+    "app.uw.systems/description": "Backups the data in the MSK cluster to S3."
+    "app.uw.systems/tier": tier_4
+    "app.uw.systems/repos.manifests": "https://github.com/utilitywarehouse/kafka-data-keep"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: msk-data-keep-backup
+  template:
+    metadata:
+      annotations:
+        uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /__/metrics
+        prometheus.io/port: "8081"
+      labels:
+        app: msk-data-keep-backup
+    spec:
+      serviceAccountName: msk-data-keep
+      containers:
+        - name: msk-data-keep-backup
+          image: quay.io/utilitywarehouse/kafka-data-keep:main
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KAFKA_BROKERS_DNS_SRV
+              value: TBD
+            - name: KAFKA_GROUP_ID
+              value: msk-data-keep-backup
+            - name: KAFKA_TOPICS_REGEX
+              value: .*
+            - name: KAFKA_EXCLUDE_TOPICS_REGEX
+              value: ""
+            - name: S3_PREFIX
+              value: msk-backup
+            - name: S3_BUCKET
+              value: TBD
+            - name: WORKING_DIR
+              value: /backup-workdir
+          volumeMounts:
+            - mountPath: /backup-workdir
+              name: workdir
+          resources:
+            requests:
+              cpu: "0"
+              memory: "0"
+            limits:
+              cpu: "4"
+              memory: 4Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: workdir
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
