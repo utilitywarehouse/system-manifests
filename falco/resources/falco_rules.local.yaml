@@ -75,6 +75,6 @@
     and container
     and not fd.snet in (internal_subnets)
   output: >
-    Outbound Network Traffic | connection=%fd.name sip=%fd.snet sdomain=%fd.sip.name lport=%fd.lport rport=%fd.rport fd_type=%fd.type fd_proto=%fd.l4proto evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname command=%proc.cmdline terminal=%proc.tty
+    Outbound Network Traffic | connection=%fd.name sip=%fd.sip sdomain=%fd.sip.name lport=%fd.lport rport=%fd.rport fd_type=%fd.type fd_proto=%fd.l4proto evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname command=%proc.cmdline terminal=%proc.tty
   priority: NOTICE
   tags: [network, mitre_exfiltration]
