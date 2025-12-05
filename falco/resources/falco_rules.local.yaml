@@ -69,14 +69,14 @@
   ]
 
 # modified outbound macro to 
-# also skip connections to `::1`
+# also skip connections to `::1` and port == "0"
 - macro: uw_outbound
   condition: >
     ((evt.type = connect or
       (evt.type in (sendto,sendmsg) and
        fd.l4proto != tcp and fd.connected=false and fd.name_changed=true)) and
      (fd.typechar = 4 or fd.typechar = 6) and
-     (fd.ip != "0.0.0.0" and fd.net != "127.0.0.0/8" and fd.sip != "::1" and not fd.snet in (rfc_1918_addresses)) and
+     (fd.ip != "0.0.0.0" and fd.net != "127.0.0.0/8" and fd.port != "0" and fd.sip != "::1" and not fd.snet in (rfc_1918_addresses)) and
      (evt.rawres >= 0 or evt.res = EINPROGRESS))
 
 - rule: Log Outbound External Connections
