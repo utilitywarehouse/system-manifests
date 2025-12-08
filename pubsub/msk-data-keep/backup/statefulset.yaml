@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-# Using a statefulset to get a static pod name
+# Using a statefulset to get permanent PVCs attached
 kind: StatefulSet
 metadata:
   name: msk-data-keep-backup
@@ -12,6 +12,8 @@ metadata:
     "app.uw.systems/tier": tier_4
     "app.uw.systems/repos.manifests": "https://github.com/utilitywarehouse/kafka-data-keep"
 spec:
+  # Initialize all pods at the same time, otherwise rebalances will happen each time a pod is started
+  podManagementPolicy: Parallel
   replicas: 1
   selector:
     matchLabels:
