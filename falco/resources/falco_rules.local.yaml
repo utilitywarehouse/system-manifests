@@ -50,15 +50,15 @@
 # UW Custom rules
 # 
 
-#     and (container_entrypoint or proc.pname in (shell_binaries))
-- rule: Log All Container Executions
-  desc: Log the container entrypoint and any processes spawned by a shell (commands executed inside the container).
+# modified 'Terminal shell in container' rule to log all interactive processes
+- rule: Interactive Executions in Containers
+  desc: Detects any process running with an attached terminal (TTY) inside a container, indicating interactive user activity.
   condition: >
     spawned_process
     and container
     and proc.tty != 0
   output: >
-    Process Started | evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname gparent=%proc.aname[2] pid=%proc.pid ppid=%proc.ppid gpid=%proc.apid[2] command=%proc.cmdline terminal=%proc.tty exe_flags=%evt.arg.flags
+    Interactive Process Started | evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname gparent=%proc.aname[2] command=%proc.cmdline terminal=%proc.tty exe_flags=%evt.arg.flags
   priority: INFO
   tags: [process, mitre_execution]
 
@@ -81,5 +81,5 @@
     and container
   output: >
     Outbound Network Traffic | connection=%fd.name sdomain=%fd.sip.name srcip=%fd.cip dstip=%fd.sip dstport=%fd.sport fd_type=%fd.type fd_proto=%fd.l4proto evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname command=%proc.cmdline terminal=%proc.tty
-  priority: NOTICE
+  priority: INFO
   tags: [network, mitre_exfiltration]
