@@ -64,16 +64,17 @@
 #     '
 - macro: known_liveness_readiness_probes
   condition: >
-    (proc.cmdline endswith "/health/redis_liveness.sh"
-     or proc.cmdline endswith "/health/redis_readiness.sh"
-     or proc.cmdline endswith "/health/sentinel_liveness.sh"
-     or proc.cmdline = "calico-node -felix-live -bird-live"
+    (
+     proc.cmdline = "calico-node -felix-live -bird-live"
      or proc.cmdline = "calico-node -felix-ready -bird-ready"
      or proc.cmdline = "check-status -l"
      or proc.cmdline = "check-status -r"
-     or proc.cmdline glob "csi-node-driver --kubelet-registration-path=* --mode=kubelet-registration-probe"
      or proc.cmdline = "pgrep memcached"
-     or proc.cmdline = "sh -c while ! nc -w 1 127.0.0.1 8098; do sleep 1; done"
+     or proc.cmdline endswith "/health/redis_liveness.sh"
+     or proc.cmdline endswith "/health/redis_readiness.sh"
+     or proc.cmdline endswith "/health/sentinel_liveness.sh"
+     or proc.cmdline glob "csi-node-driver --kubelet-registration-path=* --mode=kubelet-registration-probe"
+     or proc.cmdline glob "sh -c while ! nc -w 1 127.0.0.1 8098; do sleep 1; done?"
     )
 
 # modified 'Terminal shell in container' rule 
