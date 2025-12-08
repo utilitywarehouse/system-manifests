@@ -50,8 +50,33 @@
 # UW Custom rules
 # 
 
+
+# Liveness, Readiness and Startup Probes are executed by containerd-shim
+# so it sims like an container_entrypoint
+# kubectl get deployment,sts,ds --all-namespaces --output=json   | jq --raw-output '
+#       .items[]
+#       | .metadata.name as $name
+#       | (.spec.template.spec.containers[], .spec.template.spec.initContainers[]?)
+#       | (.livenessProbe, .readinessProbe, .startupProbe)
+#       | .exec.command
+#       | select(. != null)
+#       | "\(join(" "))"
+#     '
+- macro: known_liveness_readiness_probes
+  condition: >
+    (
+    proc.cmdline glob "* /health/redis_liveness.sh" or
+    proc.cmdline glob "* /health/redis_readiness.sh" or
+    proc.cmdline glob "* /health/sentinel_liveness.sh" or
+    proc.cmdline glob "calico-node -felix-live -bird-live" or
+    proc.cmdline glob "calico-node -felix-ready -bird-ready" or
+    proc.cmdline glob "check-status -l" or
+    proc.cmdline glob "check-status -r" or
+    proc.cmdline glob "pgrep memcached" or
+    proc.cmdline glob "csi-node-driver --kubelet-registration-path=* --mode=kubelet-registration-probe"
+    )
+
 # modified 'Terminal shell in container' rule 
-# 
 #  `proc.tty != 0`: Catches standard interactive shells where a terminal is allocated.
 #   kubectl exec -it my-pod -- sh -c "ls -la"
 #   kubectl exec -it my-pod -- ls -la
@@ -68,6 +93,7 @@
     spawned_process
     and container
     and (proc.tty != 0 or container_entrypoint)
+    and not known_liveness_readiness_probes
   output: >
     Interactive Process Started | evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname gparent=%proc.aname[2] command=%proc.cmdline terminal=%proc.tty exe_flags=%evt.arg.flags
   priority: INFO
