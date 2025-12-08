@@ -51,13 +51,14 @@
 # 
 
 
-# Liveness, Readiness and Startup Probes are executed by containerd-shim
-# so it sims like an container_entrypoint
+# Liveness, Readiness Probes are executed by containerd-shim
+# so it sims like an container_entrypoint. following cmd can be used to get list of probes
+# 
 # kubectl get deployment,sts,ds --all-namespaces --output=json   | jq --raw-output '
 #       .items[]
 #       | .metadata.name as $name
 #       | (.spec.template.spec.containers[], .spec.template.spec.initContainers[]?)
-#       | (.livenessProbe, .readinessProbe, .startupProbe)
+#       | (.livenessProbe, .readinessProbe)
 #       | .exec.command
 #       | select(. != null)
 #       | "\(join(" "))"
@@ -70,9 +71,9 @@
      or proc.cmdline = "check-status -l"
      or proc.cmdline = "check-status -r"
      or proc.cmdline = "pgrep memcached"
-     or proc.cmdline endswith "/health/redis_liveness.sh"
-     or proc.cmdline endswith "/health/redis_readiness.sh"
-     or proc.cmdline endswith "/health/sentinel_liveness.sh"
+     or proc.cmdline regex "(busybox|sh -c) \/health\/redis_liveness.sh"
+     or proc.cmdline regex "(busybox|sh -c) \/health\/redis_readiness.sh"
+     or proc.cmdline regex "(busybox|sh -c) \/health\/sentinel_liveness.sh"
      or proc.cmdline glob "csi-node-driver --kubelet-registration-path=* --mode=kubelet-registration-probe"
      or proc.cmdline glob "sh -c while ! nc -w 1 127.0.0.1 8098; do sleep 1; done?"
     )
