@@ -57,6 +57,7 @@
   condition: >
     spawned_process
     and container
+    and container_entrypoint
   output: >
     Process Started | evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname gparent=%proc.aname[2] pid=%proc.pid ppid=%proc.ppid gpid=%proc.apid[2] command=%proc.cmdline terminal=%proc.tty exe_flags=%evt.arg.flags
   priority: INFO
