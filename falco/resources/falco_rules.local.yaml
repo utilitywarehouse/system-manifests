@@ -70,6 +70,7 @@
      or proc.cmdline = "calico-node -felix-ready -bird-ready"
      or proc.cmdline = "check-status -l"
      or proc.cmdline = "check-status -r"
+     or proc.cmdline = "pgrep -f kafka"
      or proc.cmdline = "pgrep memcached"
      or proc.cmdline = "tridentctl -s 127.0.0.1:8000 version"
      or proc.cmdline regex "(busybox|sh -c) \/health\/redis_liveness.sh"
