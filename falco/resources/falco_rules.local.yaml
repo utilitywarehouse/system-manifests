@@ -98,6 +98,6 @@
     and container
     and (proc.tty != 0 or container_entrypoint)
   output: >
-    Interactive Process Started | evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname gparent=%proc.aname[2] command=%proc.cmdline terminal=%proc.tty exe_flags=%evt.arg.flags vpid=%proc.vpid pvpid=%proc.pvpid stdin_type=%proc.stdin.type stdout_type=%proc.stdout.type stderr_type=%proc.stderr.type stdin_name=%proc.stdin.name stdout_name=%proc.stdout.name stderr_name=%proc.stderr.name sname=%proc.sname sid_exe=%proc.sid.exe loginshellid=%proc.loginshellid
+    Interactive Process Started | evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname gparent=%proc.aname[2] command=%proc.cmdline terminal=%proc.tty exe_flags=%evt.arg.flags pid=%proc.pid vpid=%proc.vpid pvpid=%proc.pvpid stdin_type=%proc.stdin.type stdout_type=%proc.stdout.type stderr_type=%proc.stderr.type stdin_name=%proc.stdin.name stdout_name=%proc.stdout.name stderr_name=%proc.stderr.name sname=%proc.sname sid_exe=%proc.sid.exe sid=%proc.sid
   priority: INFO
   tags: [process, mitre_execution]
