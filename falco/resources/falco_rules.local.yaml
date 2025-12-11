@@ -53,25 +53,32 @@
 # Rule: Interactive Executions in Containers
 # is modified version of 'Terminal shell in container' default rule 
 #
-# WHAT IT DETECTS (proc.tty != 0):
-#   Catches standard interactive sessions where a terminal (PTY) is allocated.
+# WHAT IT DETECTS
+# 1. TTY Sessions (proc.tty != 0):
+#   standard interactive sessions where a terminal (PTY) is allocated.
 #   - kubectl exec -it my-pod -- sh  (and all commands run inside that shell)
 #   - kubectl exec -it my-pod -- ls -la
-#
+# 2. Pipe-Interactive Sessions (stdin=pipe & container_entrypoint):
+#    Catches executions where stdin is open (flag `-i`), allowing data injection 
+#    without a full TTY. Commonly used to pipe scripts into containers.
+#    - `echo "ls -al" | kubectl exec -i my-pod -- sh`
+# 
 # WHAT IT MISSES (Intentional Exclusion):
-#   Non-interactive execs (e.g., `kubectl exec my-pod -- ls -la` without -it) are NOT captured.
+#    Non-interactive execs (e.g.,  (without -it)) are NOT captured.
+#    - `kubectl exec my-pod -- ls -la`
 #   
 #   REASON:
-#   At the kernel level, non-interactive execs are effectively indistinguishable from 
-#   Kubernetes Liveness/Readiness probes. Enabling detection for these would flood logs with valid probe activity.
-#   non-interactive execs can be monitored via Kubernetes API Audit Logs instead.
+#   At the kernel level, non-interactive execs are effectively indistinguishable from Kubernetes 
+#   Liveness/Readiness probes (both have tty=0 and stdin=/dev/null). 
+#   Enabling detection here would flood logs with valid probe activity.
+#   These should be monitored via Kubernetes API Audit Logs instead.
 #
 - rule: Interactive Executions in Containers
   desc: Detects any process running with an attached terminal (TTY) inside a container, indicating interactive user activity.
   condition: >
     spawned_process
     and container
-    and proc.tty != 0
+    and (proc.tty != 0 or (container_entrypoint and proc.stdin.type = pipe))
   output: >
     Interactive Process Started | evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname gparent=%proc.aname[2] command=%proc.cmdline terminal=%proc.tty exe_flags=%evt.arg.flags stdin_type=%proc.stdin.type stdout_type=%proc.stdout.type stderr_type=%proc.stderr.type stdin_name=%proc.stdin.name stdout_name=%proc.stdout.name stderr_name=%proc.stderr.name sname=%proc.sname sid_exe=%proc.sid.exe pid=%proc.pid gpid=%proc.pgid ppid=%proc.ppid pvpid=%proc.pvpid vpid=%proc.vpid vpgid=%proc.vpgid sid=%proc.sid
   priority: INFO
