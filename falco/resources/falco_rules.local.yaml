@@ -50,36 +50,6 @@
 # UW Custom rules
 # 
 
-
-# Liveness, Readiness Probes are executed by containerd-shim
-# so it sims like an container_entrypoint. following cmd can be used to get list of probes
-# 
-# kubectl get deployment,sts,ds --all-namespaces --output=json   | jq --raw-output '
-#       .items[]
-#       | .metadata.name as $name
-#       | (.spec.template.spec.containers[], .spec.template.spec.initContainers[]?)
-#       | (.startupProbe, .readinessProbe, .livenessProbe)
-#       | .exec.command
-#       | select(. != null)
-#       | "\(join(" "))"
-#     '
-- macro: known_liveness_readiness_probes
-  condition: >
-    (
-     proc.cmdline = "calico-node -felix-live -bird-live"
-     or proc.cmdline = "calico-node -felix-ready -bird-ready"
-     or proc.cmdline = "check-status -l"
-     or proc.cmdline = "check-status -r"
-     or proc.cmdline = "pgrep -f kafka"
-     or proc.cmdline = "pgrep memcached"
-     or proc.cmdline = "tridentctl -s 127.0.0.1:8000 version"
-     or proc.cmdline regex "(busybox|sh -c) \/health\/redis_liveness.sh"
-     or proc.cmdline regex "(busybox|sh -c) \/health\/redis_readiness.sh"
-     or proc.cmdline regex "(busybox|sh -c) \/health\/sentinel_liveness.sh"
-     or proc.cmdline glob "csi-node-driver --kubelet-registration-path=* --mode=kubelet-registration-probe"
-     or proc.cmdline glob "sh -c while ! nc -w 1 127.0.0.1 8098; do sleep 1; done?"
-    )
-
 # modified 'Terminal shell in container' rule 
 #  `proc.tty != 0`: Catches standard interactive shells where a terminal is allocated.
 #   kubectl exec -it my-pod -- sh -c "ls -la"
@@ -106,8 +76,7 @@
   desc: Logs all interactive sessions (TTY) and any processes executed directly by the container runtime.
   condition: >
     spawned_process
-    and (proc.tty != 0 or proc.aname=sshd-session)
-    and not container
+    and proc.aname=sshd-session
   output: >
     Interactive Process Started | evt_type=%evt.type user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname gparent=%proc.aname[2] command=%proc.cmdline terminal=%proc.tty exe_flags=%evt.arg.flags stdin_type=%proc.stdin.type stdout_type=%proc.stdout.type stderr_type=%proc.stderr.type stdin_name=%proc.stdin.name stdout_name=%proc.stdout.name stderr_name=%proc.stderr.name sname=%proc.sname sid_exe=%proc.sid.exe pid=%proc.pid gpid=%proc.pgid ppid=%proc.ppid pvpid=%proc.pvpid vpid=%proc.vpid vpgid=%proc.vpgid sid=%proc.sid
   priority: INFO
