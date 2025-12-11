@@ -188,7 +188,6 @@
     pgid_exepath=%proc.pgid.exepath
     is_exe_lower_layer=%proc.is_exe_lower_layer
     is_pgid_leader=%proc.is_pgid_leader
-    thread_cgroup=%thread.cgroup
     stdin_type=%proc.stdin.type
     stdout_type=%proc.stdout.type
     stderr_type=%proc.stderr.type
