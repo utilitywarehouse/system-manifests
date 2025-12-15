@@ -59,7 +59,7 @@ data:
     log_syslog: true
     metrics:
       convert_memory_to_mb: true
-      enabled: false
+      enabled: true
       include_empty_values: false
       interval: 1h
       kernel_event_counters_enabled: true
@@ -176,7 +176,7 @@ spec:
         app.kubernetes.io/name: falco
         app.kubernetes.io/instance: falco
       annotations:
-        checksum/config: c4880829942754a84ac44fa03fa74c49a95a1e11d8c187bfff5846e558721e93
+        checksum/config: 09c11a5e74d97952bf9b702787b13b4408d355c7ef7017105e264c14d6167fdb
         checksum/rules: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
         checksum/certs: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     spec:
