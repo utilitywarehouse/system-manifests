@@ -46,16 +46,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: cert-manager-http01-controller-challenges
-subjects:
-  - kind: ServiceAccount
-    name: cert-manager
-    namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: cert-manager-dns01-controller-challenges
+  name: cert-manager-controller-challenges
 subjects:
   - kind: ServiceAccount
     name: cert-manager
