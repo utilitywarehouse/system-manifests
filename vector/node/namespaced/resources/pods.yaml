@@ -1,7 +1,7 @@
 sources:
   kubernetes_logs:
     type: kubernetes_logs
-    extra_namespace_label_selector: "name!=sys-falco,name!=debt"
+    extra_namespace_label_selector: "name!=sys-falco,kubernetes.io/metadata.name!=debt"
     use_apiserver_cache: true
 
 transforms:
