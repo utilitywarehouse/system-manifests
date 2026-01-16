@@ -10,6 +10,9 @@ spec:
     matchLabels:
       app.kubernetes.io/name: vector
       app.kubernetes.io/instance: vector-node
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 100%
   template:
     metadata:
       labels:
