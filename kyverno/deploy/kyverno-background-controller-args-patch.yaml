@@ -19,6 +19,7 @@ spec:
             - --loggingFormat=text
             - --v=0
             - --omitEvents=PolicyApplied,PolicySkipped
-            - --enablePolicyException=false
+            - --enablePolicyException=true
+            - --exceptionNamespace=kube-system
             - --maxBackgroundReports=0 # Do not allow background controller to create ephemeral reports
           name: controller
