@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable?ref=bb7b9e1ee0569066633d8a432d5aa6888ee5584d # v1.48.0
+  - github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable?ref=0b0cbaf9b3082edd724a90b6760c587d4ba61ffc # v1.55.0
 
 patches:
   - path: controller-patch.yaml
