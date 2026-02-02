@@ -3,6 +3,23 @@ sources:
     type: kubernetes_logs
     extra_namespace_label_selector: "name!=sys-falco"
     use_apiserver_cache: true
+    # This is the best place to filter out logs by namespace and/or pod name,
+    # since it avoids even reading the log files, thus saving iops, cpu, memory
+    # and kube API watches, compared to dropping them in a later `filter` transform
+    # or using the other filters in this source (`extra_field_selector`,
+    # `extra_label_selector` and `extra_namespace_label_selector`).
+    #
+    # Log dirs look like `/var/log/pods/kube-system_coredns-69fbfdd545-cm59c_<some_hash>`
+    exclude_paths_glob_patterns:
+      # Dynamic drop pattern, to quickly deal with misbehaving workloads that
+      # burn cpu processing and throttling them. Defaults to dropping nothing
+      # if the env var is unset.
+      #
+      # These are some example values for different use-cases:
+      # * exclude whole namespace (note the underscore at the end): `sys-falco_`
+      # * exclude pod name prefix in namespace: `sys-log_vector`
+      # * exclude pod name prefix cluster-wide: `*_cockroach`
+      - "/var/log/pods/${VECTOR_DROP_PATTERN:-none}*/**"
 
 transforms:
   drop_exclude:
