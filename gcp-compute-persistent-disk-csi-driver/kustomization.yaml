@@ -8,13 +8,14 @@ namespace: kube-system
 
 # Use a commit ref instead of tag, as images do not follow tags in the repo
 # manifests.
-# commit is for release: v1.19.0
-# image in the commit: v1.17.2
+# commit is for release: v1.23.3
+# image in the commit: v1.17.4
 resources:
-  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-master?ref=c0695cb43d217ef11e2fc0453a686ffeb3c7f971
+  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-master?ref=f265ccbc7e40a288cfa28347daa3ccb81e74ccdd
 
 patches:
   - path: csi-gce-pd-controller-patch.yaml
+  - path: csi-gce-pd-node-win-patch.yaml
   - target:
       group: rbac.authorization.k8s.io
       version: v1
