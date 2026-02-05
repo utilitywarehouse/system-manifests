@@ -15,6 +15,7 @@ resources:
 
 patches:
   - path: csi-gce-pd-controller-patch.yaml
+  - path: csi-gce-pd-node-win-patch.yaml
   - target:
       group: rbac.authorization.k8s.io
       version: v1
