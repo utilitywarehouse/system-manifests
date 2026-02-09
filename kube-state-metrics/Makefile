@@ -1,4 +1,6 @@
-v=v2.16.0
+v=v2.18.0
+
+.PHONY: pull-upstream clean-ns-attr
 
 pull-upstream:
 	curl https://raw.githubusercontent.com/kubernetes/kube-state-metrics/$(v)/examples/standard/cluster-role-binding.yaml > cluster/cluster-role-binding.yaml
