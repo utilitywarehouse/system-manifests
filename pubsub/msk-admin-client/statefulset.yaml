@@ -61,7 +61,7 @@ spec:
               memory: 4Gi
         # container used for executing kafka client commands on the MSK cluster
         - name: kafka-client
-          image: docker.io/bitnamilegacy/kafka
+          image: registry.uw.systems/bitnami/kafka:4.1.1-debian-12-r7
           imagePullPolicy: IfNotPresent
           command: [ "/bin/sh", "-c", "--" ]
           # using trap + wait commands to exit the pod process when we get a SIGTERM or SIGINT
