@@ -16,6 +16,6 @@ images:
     newName: danielqsj/kafka-exporter
     newTag: v1.9.0
   - name: docker.io/bitnami/kafka
-    newName: docker.io/bitnamilegacy/kafka
+    newName: registry.uw.systems/bitnami/kafka
   - name: docker.io/bitnami/jmx-exporter
-    newName: docker.io/bitnamilegacy/jmx-exporter
+    newName: registry.uw.systems/bitnami/jmx-exporter
