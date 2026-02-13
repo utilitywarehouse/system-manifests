@@ -1,4 +1,4 @@
-BITNAMI_KAFKA_RELEASE=32.3.5
+BITNAMI_KAFKA_RELEASE=32.4.3
 NAMESPACE=otel
 NAME=kafka
 
@@ -12,3 +12,9 @@ gen-yaml:
 	  --workdir=/opt/manifests \
 	  --entrypoint=/bin/sh \
 	  alpine/helm ./gen-yaml
+
+list-versions:
+	docker run -it --rm \
+		--entrypoint=/bin/sh alpine/helm  -c  \
+		"helm repo add bitnami https://charts.bitnami.com/bitnami && \
+		  helm search repo -l bitnami/kafka | head -n 20"
