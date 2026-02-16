@@ -1,4 +1,17 @@
 ---
+# Source: falco/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: falco
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falco-8.0.0
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "0.43.0"
+    app.kubernetes.io/managed-by: Helm
+---
 # Source: falco/templates/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
@@ -6,23 +19,39 @@ metadata:
   name: falco
   namespace: sys-falco
   labels:
-    helm.sh/chart: falco-4.2.5
+    helm.sh/chart: falco-8.0.0
     app.kubernetes.io/name: falco
     app.kubernetes.io/instance: falco
-    app.kubernetes.io/version: "0.37.1"
+    app.kubernetes.io/version: "0.43.0"
     app.kubernetes.io/managed-by: Helm
 data:
   falco.yaml: |-
+    append_output:
+    - suggested_output: true
     base_syscalls:
+      all: false
       custom_set: []
       repair: false
+    buffer_format_base64: false
     buffered_outputs: false
+    capture:
+      default_duration: 5000
+      enabled: false
+      mode: rules
+      path_prefix: /tmp/falco
+    config_files:
+    - /etc/falco/config.d
     engine:
-      ebpf:
+      kind: modern_ebpf
+      modern_ebpf:
         buf_size_preset: 4
+        cpus_for_each_buffer: 2
         drop_failed_exit: false
-        probe: ${HOME}/.falco/falco-bpf.o
-      kind: ebpf
+    falco_libs:
+      snaplen: 80
+      thread_table_auto_purging_interval_s: 300
+      thread_table_auto_purging_thread_timeout_s: 300
+      thread_table_size: 262144
     file_output:
       enabled: false
       filename: ./events.txt
@@ -44,52 +73,80 @@ data:
       enabled: false
       insecure: false
       keep_alive: false
+      max_consecutive_timeouts: 5
       mtls: false
       url: ""
       user_agent: falcosecurity/falco
+    json_include_message_property: false
+    json_include_output_fields_property: true
     json_include_output_property: true
     json_include_tags_property: true
     json_output: true
     libs_logger:
-      enabled: false
-      severity: debug
-    load_plugins: []
+      enabled: true
+      severity: info
+    load_plugins:
+    - container
     log_level: info
     log_stderr: true
     log_syslog: true
     metrics:
       convert_memory_to_mb: true
-      enabled: false
+      enabled: true
       include_empty_values: false
       interval: 1h
+      jemalloc_stats_enabled: false
       kernel_event_counters_enabled: true
+      kernel_event_counters_per_cpu_enabled: false
       libbpf_stats_enabled: true
-      output_rule: true
+      output_rule: false
+      plugins_metrics_enabled: true
       resource_utilization_enabled: true
+      rules_counters_enabled: true
       state_counters_enabled: true
     output_timeout: 2000
-    outputs:
-      max_burst: 1000
-      rate: 0
     outputs_queue:
       capacity: 0
     plugins:
-    - init_config: null
-      library_path: libk8saudit.so
-      name: k8saudit
-      open_params: http://:9765/k8s-audit
-    - library_path: libcloudtrail.so
-      name: cloudtrail
-    - init_config: ""
-      library_path: libjson.so
-      name: json
+    - init_config:
+        engines:
+          bpm:
+            enabled: false
+          containerd:
+            enabled: false
+            sockets:
+            - /run/host-containerd/containerd.sock
+          cri:
+            enabled: true
+            sockets:
+            - /run/containerd/containerd.sock
+            - /run/crio/crio.sock
+          docker:
+            enabled: true
+            sockets:
+            - /var/run/docker.sock
+          libvirt_lxc:
+            enabled: false
+          lxc:
+            enabled: false
+          podman:
+            enabled: false
+            sockets:
+            - /run/podman/podman.sock
+        hooks:
+        - create
+        label_max_len: 100
+        with_size: false
+      library_path: libcontainer.so
+      name: container
+    plugins_hostinfo: true
     priority: debug
     program_output:
       enabled: false
       keep_alive: false
       program: 'jq ''{text: .output}'' | curl -d @- -X POST https://hooks.slack.com/services/XXX'
     rule_matching: first
-    rules_file:
+    rules_files:
     - /etc/falco/falco_rules.yaml
     - /etc/falco/falco_rules.local.yaml
     - /etc/falco/rules.d
@@ -112,7 +169,9 @@ data:
     webserver:
       enabled: true
       k8s_healthz_endpoint: /healthz
+      listen_address: 0.0.0.0
       listen_port: 8765
+      prometheus_metrics_enabled: true
       ssl_certificate: /etc/falco/falco.pem
       ssl_enabled: false
       threadiness: 0
@@ -124,10 +183,10 @@ metadata:
   name: falco-falcoctl
   namespace: sys-falco
   labels:
-    helm.sh/chart: falco-4.2.5
+    helm.sh/chart: falco-8.0.0
     app.kubernetes.io/name: falco
     app.kubernetes.io/instance: falco
-    app.kubernetes.io/version: "0.37.1"
+    app.kubernetes.io/version: "0.43.0"
     app.kubernetes.io/managed-by: Helm
 data:
   falcoctl.yaml: |-
@@ -136,21 +195,48 @@ data:
       - rulesfile
       - plugin
       follow:
-        every: 6h
+        every: 168h
         falcoversions: http://localhost:8765/versions
         pluginsDir: /plugins
         refs:
-        - falco-rules:3
+        - falco-rules:5
         rulesfilesDir: /rulesfiles
+        stateDir: /artifactstate
       install:
         pluginsDir: /plugins
         refs:
-        - falco-rules:3
+        - falco-rules:5
+        - ghcr.io/falcosecurity/plugins/plugin/container:0.6.1
         resolveDeps: true
         rulesfilesDir: /rulesfiles
+        stateDir: /artifactstate
     indexes:
     - name: falcosecurity
       url: https://falcosecurity.github.io/falcoctl/index.yaml
+---
+# Source: falco/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: falco-metrics
+  namespace: sys-falco
+  labels:
+    helm.sh/chart: falco-8.0.0
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/instance: falco
+    app.kubernetes.io/version: "0.43.0"
+    app.kubernetes.io/managed-by: Helm
+    type: "falco-metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8765
+      targetPort: 8765
+      protocol: TCP
+      name: "metrics"
+  selector:
+    app.kubernetes.io/name: falco
+    app.kubernetes.io/instance: falco
 ---
 # Source: falco/templates/daemonset.yaml
 apiVersion: apps/v1
@@ -159,10 +245,10 @@ metadata:
   name: falco
   namespace: sys-falco
   labels:
-    helm.sh/chart: falco-4.2.5
+    helm.sh/chart: falco-8.0.0
     app.kubernetes.io/name: falco
     app.kubernetes.io/instance: falco
-    app.kubernetes.io/version: "0.37.1"
+    app.kubernetes.io/version: "0.43.0"
     app.kubernetes.io/managed-by: Helm
 spec:
   selector:
@@ -176,11 +262,11 @@ spec:
         app.kubernetes.io/name: falco
         app.kubernetes.io/instance: falco
       annotations:
-        checksum/config: c4880829942754a84ac44fa03fa74c49a95a1e11d8c187bfff5846e558721e93
+        checksum/config: 2bc977a35f2ee89b8813e6572cf6b7cc594e17866fdd5ff4be6dd02f579dcdf9
         checksum/rules: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
         checksum/certs: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     spec:
-      serviceAccountName: default
+      serviceAccountName: falco
       tolerations:
         - effect: NoSchedule
           key: node-role.kubernetes.io/master
@@ -188,7 +274,7 @@ spec:
           key: node-role.kubernetes.io/control-plane
       containers:
         - name: falco
-          image: docker.io/falcosecurity/falco-no-driver:0.37.1
+          image: docker.io/falcosecurity/falco:0.43.0
           imagePullPolicy: IfNotPresent
           resources:
             limits:
@@ -201,32 +287,53 @@ spec:
             privileged: true
           args:
             - /usr/bin/falco        
-            - --cri
-            - /run/containerd/containerd.sock
-            - --cri
-            - /run/crio/crio.sock
-            - -pk
           env:
+            - name: HOST_ROOT
+              value: /host
+            - name: FALCO_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             - name: FALCO_K8S_NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
           tty: true
+          ports:
+            - containerPort: 8765
+              name: web
+              protocol: TCP
+          startupProbe:
+            initialDelaySeconds: 3
+            timeoutSeconds: 5
+            periodSeconds: 5
+            failureThreshold: 20
+            httpGet:
+              path: /healthz
+              port: 8765
           livenessProbe:
-            initialDelaySeconds: 60
+            initialDelaySeconds: 0
             timeoutSeconds: 5
             periodSeconds: 15
+            failureThreshold: 3
             httpGet:
               path: /healthz
               port: 8765
           readinessProbe:
-            initialDelaySeconds: 30
+            initialDelaySeconds: 0
             timeoutSeconds: 5
             periodSeconds: 15
+            failureThreshold: 3
             httpGet:
               path: /healthz
               port: 8765
           volumeMounts:
+            - mountPath: /host/var/run/docker.sock
+              name: container-engine-socket-0
+            - mountPath: /host/run/containerd/containerd.sock
+              name: container-engine-socket-1
+            - mountPath: /host/run/crio/crio.sock
+              name: container-engine-socket-2
             - mountPath: /etc/falco
               name: rulesfiles-install-dir
             - mountPath: /usr/share/falco/plugins
@@ -238,20 +345,15 @@ spec:
             - mountPath: /host/etc
               name: etc-fs
               readOnly: true
-            - name: debugfs
-              mountPath: /sys/kernel/debug
-            - mountPath: /host/var/run/docker.sock
-              name: docker-socket
-            - mountPath: /host/run/containerd/containerd.sock
-              name: containerd-socket
-            - mountPath: /host/run/crio/crio.sock
-              name: crio-socket
+            - mountPath: /sys/kernel
+              name: sys-fs
+              readOnly: true
             - mountPath: /etc/falco/falco.yaml
               name: falco-yaml
               subPath: falco.yaml
             
         - name: falcoctl-artifact-follow
-          image: docker.io/falcosecurity/falcoctl:0.7.2
+          image: docker.io/falcosecurity/falcoctl:0.12.2
           imagePullPolicy: IfNotPresent
           args:
             - artifact
@@ -265,37 +367,13 @@ spec:
               name: rulesfiles-install-dir
             - mountPath: /etc/falcoctl
               name: falcoctl-config-volume
-          env:
+            - mountPath: /artifactstate
+              name: artifact-state-dir
       initContainers:
-        - name: falco-driver-loader
-          image: docker.io/falcosecurity/falco-driver-loader:0.37.1
+        - name: falcoctl-artifact-install
+          image: docker.io/falcosecurity/falcoctl:0.12.2
           imagePullPolicy: IfNotPresent
           args:
-            - ebpf
-          securityContext:
-            privileged: true
-          volumeMounts:
-            - mountPath: /root/.falco
-              name: root-falco-fs
-            - mountPath: /host/proc
-              name: proc-fs
-              readOnly: true
-            - mountPath: /host/boot
-              name: boot-fs
-              readOnly: true
-            - mountPath: /host/lib/modules
-              name: lib-modules
-            - mountPath: /host/usr
-              name: usr-fs
-              readOnly: true
-            - mountPath: /host/etc
-              name: etc-fs
-              readOnly: true
-          env:
-        - name: falcoctl-artifact-install
-          image: docker.io/falcosecurity/falcoctl:0.7.2
-          imagePullPolicy: IfNotPresent
-          args: 
             - artifact
             - install
             - --log-format=json
@@ -307,11 +385,23 @@ spec:
               name: rulesfiles-install-dir
             - mountPath: /etc/falcoctl
               name: falcoctl-config-volume
-          env:
+            - mountPath: /artifactstate
+              name: artifact-state-dir
       volumes:
+        - hostPath:
+            path: /var/run/docker.sock
+          name: container-engine-socket-0
+        - hostPath:
+            path: /run/containerd/containerd.sock
+          name: container-engine-socket-1
+        - hostPath:
+            path: /run/crio/crio.sock
+          name: container-engine-socket-2
         - name: plugins-install-dir
           emptyDir: {}
         - name: rulesfiles-install-dir
+          emptyDir: {}
+        - name: artifact-state-dir
           emptyDir: {}
         - name: root-falco-fs
           emptyDir: {}  
@@ -327,18 +417,9 @@ spec:
         - name: etc-fs
           hostPath:
             path: /etc
-        - name: debugfs
+        - name: sys-fs
           hostPath:
-            path: /sys/kernel/debug
-        - name: docker-socket
-          hostPath:
-            path: /var/run/docker.sock
-        - name: containerd-socket
-          hostPath:
-            path: /run/containerd/containerd.sock
-        - name: crio-socket
-          hostPath:
-            path: /run/crio/crio.sock
+            path: /sys/kernel
         - name: proc-fs
           hostPath:
             path: /proc
