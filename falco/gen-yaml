@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FALCO_CHART_VERSION="4.2.5"
+FALCO_CHART_VERSION="8.0.0"
 helm repo add falcosecurity https://falcosecurity.github.io/charts
 helm repo update
 # Generate manifests but delete dummy Secrets. We should create them downstream
