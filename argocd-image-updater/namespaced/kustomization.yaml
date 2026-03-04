@@ -6,4 +6,3 @@ resources:
   - upstream/configMaps.yaml
   - upstream/netpols.yaml
   - upstream/rbac.yaml
-  - upstream/secrets.yaml

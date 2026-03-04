@@ -4,4 +4,3 @@ kind: Kustomization
 resources:
   - upstream/cluster-rbac.yaml
   - upstream/crds.yaml
-

@@ -23,7 +23,6 @@ get-upstream:
 	yq 'select(.kind=="Deployment" or .kind=="StatefulSet" or .kind=="Service")' /tmp/argocd_image_updater.yaml > namespaced/upstream/apps.yaml
 	yq 'select(.kind=="Role" or .kind=="RoleBinding" or .kind=="ServiceAccount")' /tmp/argocd_image_updater.yaml > namespaced/upstream/rbac.yaml
 	yq 'select(.kind=="ConfigMap")' /tmp/argocd_image_updater.yaml > namespaced/upstream/configMaps.yaml
-	yq 'select(.kind=="Secret")' /tmp/argocd_image_updater.yaml > namespaced/upstream/secrets.yaml
 	yq 'select(.kind=="NetworkPolicy")' /tmp/argocd_image_updater.yaml > namespaced/upstream/netpols.yaml
 
 	# remove temp file
