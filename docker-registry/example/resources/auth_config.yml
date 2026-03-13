@@ -5,6 +5,7 @@ server:
     expiration: 900
     certificate: /etc/tls/tls.crt
     key: /etc/tls/tls.key
+    disable_legacy_key_id: true
   users:
     example:
       read-write:
