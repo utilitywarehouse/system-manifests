@@ -82,7 +82,11 @@ spec:
               mountPath: /workdir/secret-config
       containers:
         - name: docker-registry
-          image: registry:2.8.3
+          image: registry:3.0.0
+          env:
+            # Disable traces while we're not using them to avoid errors in logs
+            - name: OTEL_TRACES_EXPORTER
+              value: none
           resources:
             requests:
               cpu: 0m
@@ -92,7 +96,7 @@ spec:
               memory: 256Mi
           volumeMounts:
             - name: registry-config
-              mountPath: /etc/docker/registry/
+              mountPath: /etc/distribution/
               readOnly: true
             - name: registry-auth-cert
               mountPath: /etc/tls
