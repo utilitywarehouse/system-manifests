@@ -1,0 +1,38 @@
+name: cert-manager-restrict-letsencrypt-uw-test
+policies:
+  - ../restrict-letsencrypt.yaml
+resources:
+  - resources.yaml
+exceptions:
+  - exception.yaml
+results:
+  # Should PASS because it's NOT using letsencrypt
+  - policy: cert-manager-restrict-letsencrypt-issuer
+    rule: check-in-for-letsencrypt
+    resource: selfsigned-cert
+    kind: Certificate
+    result: pass
+  # Should skip because it's non uw.system
+  - policy: cert-manager-restrict-letsencrypt-issuer
+    rule: check-in-for-letsencrypt
+    resource: selfsigned-cert-non-uw
+    kind: Certificate
+    result: skip
+  # Should FAIL because it IS using letsencrypt for the restricted domain
+  - policy: cert-manager-restrict-letsencrypt-issuer
+    rule: check-in-for-letsencrypt
+    resource: letsencrypt-cert
+    kind: Certificate
+    result: fail
+  # Should skip because of exception
+  - policy: cert-manager-restrict-letsencrypt-issuer
+    rule: check-in-for-letsencrypt
+    resource: letsencrypt-cert-approved
+    kind: Certificate
+    result: skip
+  # Should block different domain then exception
+  - policy: cert-manager-restrict-letsencrypt-issuer
+    rule: check-in-for-letsencrypt
+    resource: letsencrypt-cert-not-approved
+    kind: Certificate
+    result: fail
