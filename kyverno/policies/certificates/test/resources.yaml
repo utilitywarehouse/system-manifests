@@ -1,0 +1,59 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-cert
+  namespace: team-a
+spec:
+  dnsNames:
+    - "app.uw.systems"
+  issuerRef:
+    name: "selfsigned"
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: selfsigned-cert-non-uw
+  namespace: team-a
+spec:
+  dnsNames:
+    - "app.diff.systems"
+  issuerRef:
+    name: "selfsigned"
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-cert
+  namespace: team-b
+spec:
+  dnsNames:
+    - "*.api.uw.systems"
+  issuerRef:
+    name: "letsencrypt"
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-cert-approved
+  namespace: team-c # has an exception
+spec:
+  dnsNames:
+    - "*.one.team-c.uw.systems"
+  issuerRef:
+    name: "letsencrypt"
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-cert-not-approved
+  namespace: team-c
+spec:
+  dnsNames:
+    - "*.two.team-c.uw.systems"
+  issuerRef:
+    name: "letsencrypt"
+    kind: ClusterIssuer
