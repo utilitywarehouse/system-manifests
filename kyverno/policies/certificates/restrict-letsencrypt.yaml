@@ -10,7 +10,7 @@ metadata:
     policies.kyverno.io/description: >-
       To ensure the Infra team has full visibility into certificates issued
       under the 'uw.systems' domain, we coordinate the use of public Let's Encrypt
-      issuers. This policy helps us track domain usage and provide lifecycle support.
+      issuers. This policy helps us track issuer usage.
 spec:
   validationFailureAction: Enforce
   background: true
