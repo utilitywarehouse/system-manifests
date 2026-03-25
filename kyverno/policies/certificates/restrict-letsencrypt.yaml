@@ -1,34 +1,34 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1alpha1
+kind: ValidatingPolicy
 metadata:
-  name: cert-manager-restrict-letsencrypt-issuer
+  name: restrict-letsencrypt-cluster-issuer
   annotations:
     policies.proximity.io/title: Restrict Let's Encrypt ClusterIssuer
     policies.kyverno.io/category: Cert-Manager
     policies.rules.io/severity: info
     policies.kyverno.io/subject: Certificate
     policies.kyverno.io/description: >-
-      To ensure the Infra team has full visibility into certificates issued
-      under the 'uw.systems' domain, we coordinate the use of public Let's Encrypt
-      issuers. This policy helps us track issuer usage.
+      This policy helps us track issuer usage. To ensure the Infra team has visibility
+      into certificates issued by Let's Encrypt under the 'uw.systems' domain.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: check-in-for-letsencrypt
-      match:
-        any:
-          - resources:
-              kinds:
-                - Certificate
-      validate:
-        message: >-
-          Direct use of 'letsencrypt' for *.uw.systems is restricted for visibility. 
-          Please create an 'PolicyException' in kube-system and reach out to us on #infra
-        pattern:
-          spec:
-            (dnsNames):
-              - "*.uw.systems"
-            issuerRef:
-              name: "!letsencrypt"
-              kind: ClusterIssuer
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["cert-manager.io"]
+        apiVersions: ["v1"]
+        resources: ["certificates"]
+        operations: ["CREATE", "UPDATE"]
+  matchConditions:
+    - name: is-uw-systems-domain
+      expression: >-
+        has(object.spec.dnsNames) &&
+        object.spec.dnsNames.exists(domain, domain.endsWith('.uw.systems'))
+  validations:
+    - expression: >-
+        !(
+          object.spec.issuerRef.name == 'letsencrypt' && 
+          object.spec.issuerRef.kind == 'ClusterIssuer'
+        )
+      message: >-
+        Direct use of 'letsencrypt' for *.uw.systems is restricted for visibility.
+        Please create a 'PolicyException' in kube-system and reach out to us on #infra.
