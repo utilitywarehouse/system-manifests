@@ -1,22 +1,18 @@
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1alpha1
 kind: PolicyException
 metadata:
-  name: team-c-letsencrypt-exception
+  name: allow-letsencrypt-team-c
   namespace: kube-system
 spec:
-  exceptions:
-    - policyName: cert-manager-restrict-letsencrypt-issuer
-      ruleNames:
-        - check-in-for-letsencrypt
-  match:
-    any:
-      - resources:
-          kinds:
-            - Certificate
-          namespaces:
-            - team-c
-  conditions:
-    all:
-      - key: "{{ request.object.spec.dnsNames }}"
-        operator: AnyIn
-        value: ["*.one.team-c.uw.systems"]
+  policyRefs:
+    - name: restrict-letsencrypt-cluster-issuer
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: approved-domains-for-team-c
+      expression: >-
+        object.metadata.namespace == 'team-c' &&
+        has(object.spec.dnsNames) &&
+        object.spec.dnsNames.all(domain, domain in [
+          '*.one.team-c.uw.systems',
+          '*.api.uw.systems'
+        ])
