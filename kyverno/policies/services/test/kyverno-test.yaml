@@ -1,4 +1,7 @@
-name: disallow-privileged-containers
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: disallow-privileged-containers
 policies:
   - ../externalIPs.yaml
   - ../externalName.yaml
@@ -12,53 +15,56 @@ resources:
   - test-nodePort.yaml
   - test-semaphore-service-mirror-length.yaml
 results:
-# Test services external IPs
+  # Test services external IPs
   - policy: restrict-external-ips
     rule: default
-    resource: test-externalIP-not-allowed
+    resources: ["test-externalIP-not-allowed"]
     kind: Service
     result: fail
-# Test services loadBalancerIP
+
+  # Test services loadBalancerIP
   - policy: restrict-load-balancer-ip
     rule: default
-    resource: test-loadBalancerIP-not-set
+    resources: ["test-loadBalancerIP-not-set"]
     kind: Service
     result: pass
   - policy: restrict-load-balancer-ip
     rule: default
-    resource: test-loadBalancerIP-not-allowed
+    resources: ["test-loadBalancerIP-not-allowed"]
     kind: Service
     result: fail
- # Test services externalNames
+
+  # Test services externalNames
   - policy: no-localhost-service
     rule: default
-    resource: test-externalName-localhost-sys-ingress-certs
+    resources: ["test-externalName-localhost-sys-ingress-certs"]
     kind: Service
     result: skip
- # Test NodePort Services
+
+  # Test NodePort Services
   - policy: restrict-nodeport
     rule: default
-    resource: test-nodePort-not-set
+    resources: ["test-nodePort-not-set"]
     kind: Service
     result: pass
   - policy: restrict-nodeport
     rule: default
-    resource: test-nodePort-not-allowed
+    resources: ["test-nodePort-not-allowed"]
     kind: Service
     result: fail
+
   # Test semaphore-service-mirror service name length
   - policy: mirror-name-length
     rule: default
-    resource: test-valid-length
+    resources: ["test-valid-length"]
     kind: Service
     result: pass
   - policy: mirror-name-length
     rule: default
-    resource: test-very-very-very-very-very-very-very-very-long-name-svc
-    kind: Service
-    result: fail
-  - policy: mirror-name-length
-    rule: default
-    resource: broadband-product-availability-app
+    resources:
+      [
+        "test-very-very-very-very-very-very-very-very-long-name-svc",
+        "broadband-product-availability-app",
+      ]
     kind: Service
     result: fail

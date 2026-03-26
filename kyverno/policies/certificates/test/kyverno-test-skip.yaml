@@ -1,3 +1,4 @@
+# due to bug in 1.17.1 this test can only be ran from kyverno master build
 apiVersion: cli.kyverno.io/v1alpha1
 kind: Test
 metadata:

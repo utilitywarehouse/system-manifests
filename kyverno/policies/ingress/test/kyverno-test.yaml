@@ -1,4 +1,7 @@
-name: test-ingress-and-traefik-resources
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-ingress-and-traefik-resources
 policies:
   - ../disallow-or-operator.yaml
   - ../disallow-wildcard-hostsni.yaml
@@ -10,87 +13,82 @@ resources:
   - test-external-dns-domain-label-length.yaml
   - test-require-ingressroute-host.yaml
 results:
-# Test OR operator
+  # Test OR operator
   - policy: disallow-or-operator
     rule: default
-    resource: test-or-operator-not-allowed-IngressRouteTCP
+    resources: ["test-or-operator-not-allowed-IngressRouteTCP"]
     kind: IngressRouteTCP
     result: fail
   - policy: disallow-or-operator
     rule: default
-    resource: test-or-operator-not-allowed-IngressRoute
+    resources:
+      [
+        "test-or-operator-not-allowed-IngressRoute",
+        "test-or-operator-complex-not-allowed-IngressRoute",
+      ]
     kind: IngressRoute
     result: fail
   - policy: disallow-or-operator
     rule: default
-    resource: test-or-operator-complex-not-allowed-IngressRoute
-    kind: IngressRoute
-    result: fail
-  - policy: disallow-or-operator
-    rule: default
-    resource: test-or-operator-valid
+    resources: ["test-or-operator-valid"]
     kind: IngressRoute
     result: pass
-# Test Wildcard HostSNI for ingressRouteTCP resources
+
+  # Test Wildcard HostSNI for ingressRouteTCP resources
   - policy: disallow-wildcard-hostsni
     rule: default
-    resource: test-wildcard-hostsni-not-allowed
+    resources:
+      [
+        "test-wildcard-hostsni-not-allowed",
+        "test-wildcard-subdomain-hostsni-not-allowed",
+        "test-wildcard-hostsni-not-allowed-multiple-routes",
+      ]
     kind: IngressRouteTCP
     result: fail
   - policy: disallow-wildcard-hostsni
     rule: default
-    resource: test-wildcard-subdomain-hostsni-not-allowed
-    kind: IngressRouteTCP
-    result: fail
-  - policy: disallow-wildcard-hostsni
-    rule: default
-    resource: test-wildcard-hostsni-not-allowed-multiple-routes
-    kind: IngressRouteTCP
-    result: fail
-  - policy: disallow-wildcard-hostsni
-    rule: default
-    resource: test-wildcard-hostsni-match-missing
+    resources: ["test-wildcard-hostsni-match-missing"]
     kind: IngressRouteTCP
     result: skip
   - policy: disallow-wildcard-hostsni
     rule: default
-    resource: test-valid-hostsni
+    resources: ["test-valid-hostsni"]
     kind: IngressRouteTCP
     result: pass
-# Test Ingress Route Require Host
+
+  # Test Ingress Route Require Host
   - policy: require-ingressroute-host
     rule: default
-    resource: test-require-ingressroute-host-missing
+    resources:
+      [
+        "test-require-ingressroute-host-missing",
+        "test-require-ingressroute-bad-host",
+      ]
     kind: IngressRoute
     result: fail
   - policy: require-ingressroute-host
     rule: default
-    resource: test-require-ingressroute-bad-host
-    kind: IngressRoute
-    result: fail
-  - policy: require-ingressroute-host
-    rule: default
-    resource: test-require-ingressroute-host-valid
-    kind: IngressRoute
-    result: pass
-  - policy: require-ingressroute-host
-    rule: default
-    resource: test-require-ingressroute-host-valid-with-path
+    resources:
+      [
+        "test-require-ingressroute-host-valid",
+        "test-require-ingressroute-host-valid-with-path",
+      ]
     kind: IngressRoute
     result: pass
-# Test External DNS naming constraints
+
+  # Test External DNS naming constraints
   - policy: external-dns-domain-label-length
     rule: domain-label-limit
-    resource: no-external-dns-anno
+    resources: ["no-external-dns-anno"]
     kind: Ingress
     result: skip
   - policy: external-dns-domain-label-length
     rule: domain-label-limit
-    resource: test-short-domain-label
+    resources: ["test-short-domain-label"]
     kind: Ingress
     result: pass
   - policy: external-dns-domain-label-length
     rule: domain-label-limit
-    resource: test-long-domain-label
+    resources: ["test-long-domain-label"]
     kind: Ingress
     result: fail
