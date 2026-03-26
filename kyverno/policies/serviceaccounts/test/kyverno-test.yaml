@@ -1,22 +1,25 @@
-name: disallow-privileged-containers
+apiVersion: cli.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: disallow-privileged-containers
 policies:
   - ../vault-annotation.yaml
 resources:
   - test-vault-annotation.yaml
 results:
-# Test vault annotation on service accounts
+  # Test vault annotation on service accounts
   - policy: vault-aws-role-arn
     rule: default
-    resource: test-no-annotation
+    resources: ["test-no-annotation"]
     kind: ServiceAccount
     result: skip
   - policy: vault-aws-role-arn
     rule: default
-    resource: test-invalid-annotation
+    resources: ["test-invalid-annotation"]
     kind: ServiceAccount
     result: fail
   - policy: vault-aws-role-arn
     rule: default
-    resource: test-valid-annotation
+    resources: ["test-valid-annotation"]
     kind: ServiceAccount
     result: pass
