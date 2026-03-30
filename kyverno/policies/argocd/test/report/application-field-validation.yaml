@@ -1,0 +1,57 @@
+apiVersion: openreports.io/v1alpha1
+kind: ClusterReport
+metadata:
+  name: merged
+results:
+  - message: 'An Application must define exactly one: either `spec.source` OR `spec.sources`.'
+    policy: argocd-application-field-validation
+    result: fail
+    resources:
+      - name: test-source-and-sources-both-specified
+  - message: Every entry in `spec.sources` must specify a `path`.
+    policy: argocd-application-field-validation
+    result: fail
+    resources:
+      - name: test-sources-chart-specified
+  - message: Helm charts are not permitted in `spec.source`. Please use a git path.
+    policy: argocd-application-field-validation
+    result: fail
+    resources:
+      - name: test-source-path-chart-specified
+  - message: The `default` is a privileged project and it may not be used in an Application.
+    policy: argocd-application-field-validation
+    result: fail
+    resources:
+      - name: test-default-project
+  - message: When using `spec.source`, a 'path' must be defined.
+    policy: argocd-application-field-validation
+    result: fail
+    resources:
+      - name: test-missing-source-path
+  - message: '`spec.destination.namespace` should not be empty.'
+    policy: argocd-application-field-validation
+    result: fail
+    resources:
+      - name: test-missing-destination-namespace
+  - message: '`spec.project` should not be empty.'
+    policy: argocd-application-field-validation
+    result: fail
+    resources:
+      - name: test-missing-project-name
+  - message: success
+    policy: argocd-application-field-validation
+    result: pass
+    resources:
+      - name: test-multiple-source-path-specified
+  - message: success
+    policy: argocd-application-field-validation
+    result: pass
+    resources:
+      - name: test-source-path-specified
+source: ""
+summary:
+  error: 0
+  fail: 7
+  pass: 2
+  skip: 0
+  warn: 0
