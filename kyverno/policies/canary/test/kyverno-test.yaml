@@ -5,17 +5,15 @@ metadata:
 policies:
   - ../canary.yaml
 resources:
-  - test-canary.yaml
+  - resources.yaml
 # variables: values.yaml
 results:
   - policy: canary-resources
-    rule: detect-canary-configmap
     kind: ConfigMap
     resources: ["kyverno-canary-resource"]
     result: fail
 
   - policy: canary-resources
-    rule: detect-canary-configmap
     kind: ConfigMap
     resources: ["argocd-cmd-params-cm"]
     result: skip
