@@ -6,7 +6,7 @@ KYVERNO = reg.kyverno.io/kyverno/kyverno-cli:latest
 .PHONY: test test-dir
 
 test:
-# 	docker run -v "${PWD}":"${PWD}" --workdir="${PWD}" ${KYVERNO} test .
+	docker run -v "${PWD}":"${PWD}" --workdir="${PWD}" ${KYVERNO} test .
 
 test-dir:
 	@TARGET_PATH=$(filter-out $@,$(MAKECMDGOALS)); \
