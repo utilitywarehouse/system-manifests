@@ -3,14 +3,26 @@ kind: Application
 metadata:
   name: test-missing-project-name
 spec:
+  destination:
+    namespace: argocd
   source:
     repoURL: git@github.com:utilitywarehouse/something
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  name: test-default-project
+spec:
+  project: default
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
   name: test-missing-source-path
 spec:
+  project: prj-sys-argocd
+  destination:
+    namespace: argocd
   source:
     repoURL: git@github.com:utilitywarehouse/something
 ---
@@ -19,6 +31,9 @@ kind: Application
 metadata:
   name: test-source-path-specified
 spec:
+  project: prj-sys-argocd
+  destination:
+    namespace: argocd
   source:
     repoURL: git@github.com:utilitywarehouse/something
     path: dev
@@ -28,6 +43,9 @@ kind: Application
 metadata:
   name: test-multiple-source-path-specified
 spec:
+  project: prj-sys-argocd
+  destination:
+    namespace: argocd
   sources:
     - repoURL: git@github.com:utilitywarehouse/something
       path: dev
@@ -39,6 +57,9 @@ kind: Application
 metadata:
   name: test-source-and-sources-both-specified
 spec:
+  project: prj-sys-argocd
+  destination:
+    namespace: argocd
   source:
     repoURL: git@github.com:utilitywarehouse/something
     path: dev
@@ -53,6 +74,9 @@ kind: Application
 metadata:
   name: test-source-path-chart-specified
 spec:
+  project: prj-sys-argocd
+  destination:
+    namespace: argocd
   source:
     repoURL: git@github.com:utilitywarehouse/something
     path: dev
@@ -63,6 +87,9 @@ kind: Application
 metadata:
   name: test-sources-chart-specified
 spec:
+  project: prj-sys-argocd
+  destination:
+    namespace: argocd
   sources:
     - repoURL: git@github.com:utilitywarehouse/something
       path: dev
@@ -72,15 +99,11 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: test-missing-destination-server
-spec:
-  destination:
-    namespace: argocd
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
   name: test-missing-destination-namespace
 spec:
+  project: prj-sys-argocd
   destination:
     server: https://kubernetes.default.svc
+  source:
+    repoURL: git@github.com:utilitywarehouse/something
+    path: dev
