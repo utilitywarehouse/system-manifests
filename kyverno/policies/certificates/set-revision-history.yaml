@@ -1,0 +1,23 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: set-certificates-revision-history-limit
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["cert-manager.io"]
+        apiVersions: ["v1"]
+        resources: ["certificates"]
+        operations: ["CREATE", "UPDATE"]
+  matchConditions:
+    - name: revision-history-is-not-set
+      expression: "!has(object.spec.revisionHistoryLimit)"
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: |
+          Object{
+            spec: Object.spec{
+              revisionHistoryLimit: 2
+            }
+          }
