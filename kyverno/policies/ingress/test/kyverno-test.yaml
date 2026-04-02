@@ -2,7 +2,10 @@ apiVersion: cli.kyverno.io/v1alpha1
 kind: Test
 metadata:
   name: test-ingress-and-traefik-resources
+clusterResources:
+  - cluster-resources.yaml
 policies:
+  - ../disallow-default-tsloptions.yaml
   - ../disallow-or-operator.yaml
   - ../disallow-wildcard-hostsni.yaml
   - ../external-dns-domain-label-length.yaml
@@ -12,7 +15,23 @@ resources:
   - test-disallow-wildcard-hostsni.yaml
   - test-external-dns-domain-label-length.yaml
   - test-require-ingressroute-host.yaml
+  - test-tlsoption.yaml
+userinfo: userinfo-admin.yaml
 results:
+  - policy: disallow-default-tlsoptions
+    rule: disallow-default-tlsoptions
+    isValidatingPolicy: true
+    resources: ["non-default"]
+    kind: TLSOption
+    result: skip
+
+  - policy: disallow-default-tlsoptions
+    rule: disallow-default-tlsoptions
+    isValidatingPolicy: true
+    resources: ["default"]
+    kind: TLSOption
+    result: fail
+
   # Test OR operator
   - policy: disallow-or-operator
     rule: default

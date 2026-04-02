@@ -1,0 +1,8 @@
+apiVersion: cli.kyverno.io/v1alpha1
+kind: UserInfo
+metadata:
+  name: ns-user
+userInfo:
+  username: non-admin-user
+  groups:
+    - system:authenticated
