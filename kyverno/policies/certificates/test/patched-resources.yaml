@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: without-revision-history
+  namespace: team-a
+spec:
+  revisionHistoryLimit: 2
+  dnsNames:
+    - "app.uw.systems"
+  issuerRef:
+    name: "selfsigned"
+    kind: ClusterIssuer

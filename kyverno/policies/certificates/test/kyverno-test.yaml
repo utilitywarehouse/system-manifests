@@ -7,6 +7,7 @@ clusterResources:
   - cluster-resources.yaml
 policies:
   - ../restrict-letsencrypt.yaml
+  - ../set-revision-history.yaml
 resources:
   - resources.yaml
 exceptions:
@@ -41,3 +42,16 @@ results:
     resources: ["letsencrypt-cert-not-approved"]
     kind: Certificate
     result: fail
+
+  - policy: set-certificates-revision-history-limit
+    resources: ["without-revision-history"]
+    patchedResources: patched-resources.yaml
+    kind: Certificate
+    result: pass
+    isMutatingPolicy: true
+
+  - policy: set-certificates-revision-history-limit
+    resources: ["with-revision-history"]
+    kind: Certificate
+    result: skip
+    isMutatingPolicy: true
