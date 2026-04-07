@@ -53,7 +53,6 @@ results:
 
   # Test Wildcard HostSNI for ingressRouteTCP resources
   - policy: disallow-wildcard-hostsni
-    rule: default
     resources:
       [
         "test-wildcard-hostsni-not-allowed",
@@ -63,13 +62,7 @@ results:
     kind: IngressRouteTCP
     result: fail
   - policy: disallow-wildcard-hostsni
-    rule: default
-    resources: ["test-wildcard-hostsni-match-missing"]
-    kind: IngressRouteTCP
-    result: skip
-  - policy: disallow-wildcard-hostsni
-    rule: default
-    resources: ["test-valid-hostsni"]
+    resources: ["test-valid-hostsni", "test-wildcard-hostsni-match-missing"]
     kind: IngressRouteTCP
     result: pass
 
