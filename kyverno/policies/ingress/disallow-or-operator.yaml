@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1alpha1
+kind: ValidatingPolicy
 metadata:
   name: disallow-or-operator
   annotations:
@@ -11,29 +11,22 @@ metadata:
       Using || can allow you to subvert other restrictions and hijack traffic
       with non-specific rules that match generic paths or headers
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: default
-      match:
-        any:
-          - resources:
-              kinds:
-                - IngressRoute
-                - IngressRouteTCP
-      preconditions:
-        all:
-          - key: "{{ request.operation }}"
-            operator: NotEquals
-            value: DELETE
-      validate:
-        message: "Route matches must not contain ||"
-        foreach:
-          - list: request.object.spec.routes
-            deny:
-              conditions:
-                all:
-                  - key: >-
-                      {{ element.match | regex_match('\|\|', @) }}
-                    operator: Equals
-                    value: true
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - traefik.containo.us
+          - traefik.io
+        apiVersions:
+          - "*"
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - ingressroutes
+          - ingressroutetcps
+  validations:
+    - expression: >-
+        object.spec.?routes.orValue([]).all(route, !route.?match.orValue('').contains('||'))
+      message: "Route matches must not contain ||"

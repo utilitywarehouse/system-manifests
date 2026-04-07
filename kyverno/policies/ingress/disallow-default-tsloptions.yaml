@@ -1,6 +1,5 @@
-# https://kyverno.io/policies/traefik/disallow_default_tlsoptions/disallow_default_tlsoptions/
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1alpha1
+kind: ValidatingPolicy
 metadata:
   name: disallow-default-tlsoptions
   annotations:
@@ -14,19 +13,23 @@ metadata:
       creating the `default` TLSOption is a restricted operation. This policy ensures that
       only a cluster-admin can create the `default` TLSOption resource.
 spec:
-  validationFailureAction: Enforce
-  background: false
-  rules:
-  - name: disallow-default-tlsoptions
-    match:
-      resources:
-        names:
-        - default
-        kinds:
-        - TLSOption
-    exclude:
-      clusterRoles:
-      - cluster-admin
-    validate:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - traefik.containo.us
+          - traefik.io
+        apiVersions:
+          - "*"
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - tlsoptions
+  matchConditions:
+    - name: is-default
+      expression: "object.metadata.name == 'default'"
+  validations:
+    - expression: "'system:masters' in request.userInfo.groups"
       message: "Only cluster administrators are allowed to set default TLSOptions."
-      deny: {}
