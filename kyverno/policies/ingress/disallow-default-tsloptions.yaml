@@ -18,7 +18,6 @@ spec:
   matchConstraints:
     resourceRules:
       - apiGroups:
-          - traefik.containo.us
           - traefik.io
         apiVersions:
           - "*"
