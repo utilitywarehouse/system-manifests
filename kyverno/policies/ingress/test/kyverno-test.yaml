@@ -9,6 +9,7 @@ policies:
   - ../disallow-or-operator.yaml
   - ../disallow-wildcard-hostsni.yaml
   - ../external-dns-domain-label-length.yaml
+  - ../require-ingress-host.yaml
   - ../require-ingressroute-host.yaml
 resources:
   - test-disallow-or-operator.yaml
@@ -34,12 +35,10 @@ results:
 
   # Test OR operator
   - policy: disallow-or-operator
-    rule: default
     resources: ["test-or-operator-not-allowed-IngressRouteTCP"]
     kind: IngressRouteTCP
     result: fail
   - policy: disallow-or-operator
-    rule: default
     resources:
       [
         "test-or-operator-not-allowed-IngressRoute",
@@ -48,7 +47,6 @@ results:
     kind: IngressRoute
     result: fail
   - policy: disallow-or-operator
-    rule: default
     resources: ["test-or-operator-valid"]
     kind: IngressRoute
     result: pass
@@ -74,6 +72,16 @@ results:
     resources: ["test-valid-hostsni"]
     kind: IngressRouteTCP
     result: pass
+
+  # Test Ingress Require Host
+  - policy: require-ingress-host
+    resources: ["with-host"]
+    kind: IngressRoute
+    result: pass
+  - policy: require-ingress-host
+    resources: ["without-host"]
+    kind: IngressRoute
+    result: fail
 
   # Test Ingress Route Require Host
   - policy: require-ingressroute-host

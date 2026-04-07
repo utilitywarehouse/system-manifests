@@ -4,7 +4,7 @@ metadata:
   name: test-or-operator-not-allowed-IngressRouteTCP
 spec:
   routes:
-  - match: HostSNI(`||`)
+    - match: HostSNI(`||`)
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -12,7 +12,7 @@ metadata:
   name: test-or-operator-not-allowed-IngressRoute
 spec:
   routes:
-  - match: Host(`||`)
+    - match: Host(`||`)
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -20,7 +20,7 @@ metadata:
   name: test-or-operator-complex-not-allowed-IngressRoute
 spec:
   routes:
-  - match: Host(`example.com || example.co.uk`)
+    - match: Host(`example.com || example.co.uk`)
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -28,4 +28,4 @@ metadata:
   name: test-or-operator-valid
 spec:
   routes:
-  - match: Host(`example.com`)
+    - match: Host(`example.com`)
