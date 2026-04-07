@@ -18,10 +18,21 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test-long-domain-label
+  name: test-long-valid-domain-label
   namespace: namespace
   annotations:
     external-dns.alpha.kubernetes.io/target: example.uw.systems
 spec:
   rules:
-    - host: "long-enough-label-for-txt-created-record-to-exceed-63-chars.test.uw.systems"
+    - host: "long-enough-label-for-txt-created-record-2-be-valid.test.uw.systems"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: test-long-invalid-domain-label
+  namespace: namespace
+  annotations:
+    external-dns.alpha.kubernetes.io/target: example.uw.systems
+spec:
+  rules:
+    - host: "long-enough-label-for-txt-created-record-2be-invalid.test.uw.systems"

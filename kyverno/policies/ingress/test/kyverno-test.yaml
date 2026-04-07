@@ -98,17 +98,14 @@ results:
 
   # Test External DNS naming constraints
   - policy: external-dns-domain-label-length
-    rule: domain-label-limit
     resources: ["no-external-dns-anno"]
     kind: Ingress
     result: skip
   - policy: external-dns-domain-label-length
-    rule: domain-label-limit
-    resources: ["test-short-domain-label"]
+    resources: ["test-short-domain-label", "test-long-valid-domain-label"]
     kind: Ingress
     result: pass
   - policy: external-dns-domain-label-length
-    rule: domain-label-limit
-    resources: ["test-long-domain-label"]
+    resources: ["test-long-invalid-domain-label"]
     kind: Ingress
     result: fail
