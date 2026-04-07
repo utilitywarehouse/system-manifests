@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1alpha1
+kind: ValidatingPolicy
 metadata:
   name: external-dns-domain-label-length
   annotations:
@@ -14,35 +14,31 @@ metadata:
       per DNS domain label which should be respected by the generated
       TXT records as well. Even though the 63 chars limit is for all labels,
       let's only check the one edited via external-DNS since the rest should be
-      problematic regardless. 
+      problematic regardless.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: domain-label-limit
-      # To be patched in environments that do not use infra as prefix
-      context:
-        - name: prefix
-          variable:
-            value: infra
-      match:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - networking.k8s.io
+        apiVersions:
+          - v1
+        operations:
+          - CREATE
+          - UPDATE
         resources:
-          kinds:
-            - Ingress # Starting with capital letter seems to be significant for policy validation on admission
-          annotations:
-            external-dns.alpha.kubernetes.io/target: "*" # This annotation will instruct external-DNS to create CNAME type records
-      preconditions:
-        all:
-          - key: "{{ request.operation }}"
-            operator: NotEquals
-            value: DELETE
-      validate:
-        message: "External-DNS TXT record domain label must be <= 63 chars"
-        foreach:
-          - list: request.object.spec.rules
-            deny:
-              conditions:
-                - key: >-
-                    {{ join('-', [prefix, 'cname', element.host.split(@, '.')[0]]) | length(@) }}
-                  operator: GreaterThan
-                  value: 63
+          - ingresses
+  matchConditions:
+    # This annotation will instruct external-DNS to create CNAME type records
+    - name: has-external-dns-target
+      expression: "'external-dns.alpha.kubernetes.io/target' in object.metadata.?annotations.orValue({})"
+  variables:
+    - name: prefix
+      expression: "'infra'"
+  validations:
+    - expression: >-
+        object.spec.?rules.orValue([]).all(rule,
+          size(variables.prefix + '-cname-' + rule.?host.orValue('').split('.')[0]) <= 63
+        )
+      message: "External-DNS TXT record domain label must be <= 63 chars"

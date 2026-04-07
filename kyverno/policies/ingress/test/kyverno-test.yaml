@@ -53,7 +53,6 @@ results:
 
   # Test Wildcard HostSNI for ingressRouteTCP resources
   - policy: disallow-wildcard-hostsni
-    rule: default
     resources:
       [
         "test-wildcard-hostsni-not-allowed",
@@ -63,13 +62,7 @@ results:
     kind: IngressRouteTCP
     result: fail
   - policy: disallow-wildcard-hostsni
-    rule: default
-    resources: ["test-wildcard-hostsni-match-missing"]
-    kind: IngressRouteTCP
-    result: skip
-  - policy: disallow-wildcard-hostsni
-    rule: default
-    resources: ["test-valid-hostsni"]
+    resources: ["test-valid-hostsni", "test-wildcard-hostsni-match-missing"]
     kind: IngressRouteTCP
     result: pass
 
@@ -85,7 +78,6 @@ results:
 
   # Test Ingress Route Require Host
   - policy: require-ingressroute-host
-    rule: default
     resources:
       [
         "test-require-ingressroute-host-missing",
@@ -94,7 +86,6 @@ results:
     kind: IngressRoute
     result: fail
   - policy: require-ingressroute-host
-    rule: default
     resources:
       [
         "test-require-ingressroute-host-valid",
@@ -105,17 +96,14 @@ results:
 
   # Test External DNS naming constraints
   - policy: external-dns-domain-label-length
-    rule: domain-label-limit
     resources: ["no-external-dns-anno"]
     kind: Ingress
     result: skip
   - policy: external-dns-domain-label-length
-    rule: domain-label-limit
-    resources: ["test-short-domain-label"]
+    resources: ["test-short-domain-label", "test-long-valid-domain-label"]
     kind: Ingress
     result: pass
   - policy: external-dns-domain-label-length
-    rule: domain-label-limit
-    resources: ["test-long-domain-label"]
+    resources: ["test-long-invalid-domain-label"]
     kind: Ingress
     result: fail
