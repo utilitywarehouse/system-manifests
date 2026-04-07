@@ -78,7 +78,6 @@ results:
 
   # Test Ingress Route Require Host
   - policy: require-ingressroute-host
-    rule: default
     resources:
       [
         "test-require-ingressroute-host-missing",
@@ -87,7 +86,6 @@ results:
     kind: IngressRoute
     result: fail
   - policy: require-ingressroute-host
-    rule: default
     resources:
       [
         "test-require-ingressroute-host-valid",
