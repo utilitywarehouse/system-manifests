@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1beta1
+kind: ValidatingPolicy
 metadata:
   name: require-delete-annotation-ns-label
   annotations:
@@ -11,26 +11,21 @@ metadata:
       Require namespaces to be annotated with 'uw.systems/delete-allowed: "true"'
       in order to allow deletion.
 spec:
-  validationFailureAction: Enforce
-  background: false
-  rules:
-  - name: require-annotation-before-deleting
-    match:
-      resources:
-        kinds:
-        - Namespace
-    preconditions:
-      all:
-      - key: "{{ request.operation }}"
-        operator: Equals
-        value: DELETE
-    validate:
-      message: >-
-        Namespace "{{request.object.metadata.name}}" must be annotated with: uw.systems/delete-allowed: "true" to be deleted
-      deny:
-        conditions:
-          all:
-          - key: "{{ request.object.metadata.annotations.\"uw.systems/delete-allowed\" || '' }}"
-            operator: AnyNotIn
-            value:
-            - "true"
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        operations:
+          - DELETE
+        resources:
+          - namespaces
+  validations:
+    - expression: >-
+        'uw.systems/delete-allowed' in oldObject.metadata.?annotations.orValue({}) &&
+        oldObject.metadata.annotations['uw.systems/delete-allowed'] == 'true'
+      messageExpression: >-
+        'Namespace "' + oldObject.metadata.name + '" must be annotated with: uw.systems/delete-allowed: "true" to be deleted'
