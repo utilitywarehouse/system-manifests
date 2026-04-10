@@ -32,7 +32,7 @@ spec:
       message: "An Application must define exactly one: either `spec.source` OR `spec.sources`."
 
     - expression: "has(object.spec.source) ? has(object.spec.source.path) : true"
-      message: "When using `spec.source`, a 'path' must be defined."
+      message: "When using `spec.source`, a `path` must be defined."
 
     - expression: "has(object.spec.sources) ? object.spec.sources.all(s, has(s.path)) : true"
       message: "Every entry in `spec.sources` must specify a `path`."
