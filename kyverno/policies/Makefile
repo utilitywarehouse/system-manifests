@@ -65,7 +65,7 @@ setup-network:
 .PHONY: test-all
 test-all: build setup-network
 	@echo "Running ALL chainsaw tests (Reuse: $(REUSE_CLUSTER))..."
-	docker run --rm -it \
+	docker run --rm \
 		--name chainsaw-runner \
 		--network kind \
 		-e REUSE_CLUSTER=$(REUSE_CLUSTER) \
@@ -80,7 +80,7 @@ test-target: build setup-network
 		exit 1; \
 	fi
 	@echo "Running tests for: kyverno/policies/$(DIR) (Reuse: $(REUSE_CLUSTER))"
-	docker run --rm -it \
+	docker run --rm \
 		--name chainsaw-runner \
 		--network kind \
 		-e REUSE_CLUSTER=$(REUSE_CLUSTER) \
