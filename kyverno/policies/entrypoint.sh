@@ -49,5 +49,12 @@ else
     echo "Skipping Kyverno installation (reusing existing cluster environment)."
 fi
 
+CHAINSAW_ARGS=("/repo/$TEST_TARGET" "--config" "/repo/kyverno/policies/.chainsaw.yaml")
+
+if [ "$SKIP_DELETE" = "true" ]; then
+    echo "🛑 SKIP_DELETE is active: Chainsaw will leave test resources in the cluster."
+    CHAINSAW_ARGS+=("--skip-delete")
+fi
+
 echo "Running Chainsaw tests against: $TEST_TARGET"
-chainsaw test "/repo/$TEST_TARGET" --config /repo/kyverno/policies/.chainsaw.yaml
+chainsaw test "${CHAINSAW_ARGS[@]}"

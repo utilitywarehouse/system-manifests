@@ -49,7 +49,7 @@ help:
 
 IMAGE_NAME := chainsaw-test-image
 REPO_DIR := $(shell git rev-parse --show-toplevel)
-
+SKIP_DELETE ?= false
 REUSE_CLUSTER ?= false
 
 
@@ -64,11 +64,12 @@ setup-network:
 
 .PHONY: test-all
 test-all: build setup-network
-	@echo "Running ALL chainsaw tests (Reuse: $(REUSE_CLUSTER))..."
+	@echo "Running ALL chainsaw tests (Reuse: $(REUSE_CLUSTER), Skip Delete: $(SKIP_DELETE))..."
 	docker run --rm \
 		--name chainsaw-runner \
 		--network kind \
 		-e REUSE_CLUSTER=$(REUSE_CLUSTER) \
+		-e SKIP_DELETE=$(SKIP_DELETE) \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(REPO_DIR):/repo \
 		$(IMAGE_NAME) "kyverno/policies"
@@ -79,11 +80,12 @@ test-target: build setup-network
 		echo "Error: DIR is not set. Usage: make test-target DIR=argocd"; \
 		exit 1; \
 	fi
-	@echo "Running tests for: kyverno/policies/$(DIR) (Reuse: $(REUSE_CLUSTER))"
+	@echo "Running tests for: kyverno/policies/$(DIR) (Reuse: $(REUSE_CLUSTER), Skip Delete: $(SKIP_DELETE))"
 	docker run --rm \
 		--name chainsaw-runner \
 		--network kind \
 		-e REUSE_CLUSTER=$(REUSE_CLUSTER) \
+		-e SKIP_DELETE=$(SKIP_DELETE) \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(REPO_DIR):/repo \
 		$(IMAGE_NAME) "kyverno/policies/$(DIR)"
@@ -102,4 +104,8 @@ kubectl:
 		echo "Error: CMD is not set. Usage: make kubectl CMD=\"get ns\""; \
 		exit 1; \
 	fi
-	@docker exec -it -e KUBECONFIG=/tmp/kubeconfig chainsaw-runner kubectl $(CMD)
+	@docker run --rm -it \
+		--network kind \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		--entrypoint bash \
+		$(IMAGE_NAME) -c "kind get kubeconfig --internal --name chainsaw-test-cluster > /tmp/kubeconfig && KUBECONFIG=/tmp/kubeconfig kubectl $(CMD)"
