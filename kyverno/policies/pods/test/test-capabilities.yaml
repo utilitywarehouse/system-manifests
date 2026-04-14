@@ -1,9 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: test-hostipc-not-set
-  labels:
-    app: test-hostIPC-not-set
+  name: test-capabilities-none
 spec:
   containers:
     - name: test
@@ -12,23 +10,25 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: test-hostipc-set-to-false
-  labels:
-    app: test-hostIPC-set-to-false
+  name: test-capabilities-allowed
 spec:
-  hostIPC: false
   containers:
     - name: test
       image: alpine
+      securityContext:
+        capabilities:
+          add:
+            - NET_BIND_SERVICE
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: test-hostipc-set-to-true
-  labels:
-    app: test-hostIPC-set-to-true
+  name: test-capabilities-forbidden
 spec:
-  hostIPC: true
   containers:
     - name: test
       image: alpine
+      securityContext:
+        capabilities:
+          add:
+            - SYS_TIME

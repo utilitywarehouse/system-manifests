@@ -1,0 +1,92 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-pod-security-policies
+spec:
+  steps:
+    - name: apply-policies
+      try:
+        - apply:
+            file: ../AppArmor.yaml
+        - apply:
+            file: ../capabilities.yaml
+        - apply:
+            file: ../hostIPC.yaml
+        - apply:
+            file: ../hostNetwork.yaml
+        - apply:
+            file: ../privilege-escalation.yaml
+
+        - assert:
+            timeout: 30s
+            file: policy-ready.yaml
+
+    - name: test-apparmor
+      try:
+        - apply:
+            file: test-apparmor.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-apparmor-unconfined
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Specifying other AppArmor profiles is disallowed'))": true
+
+    - name: test-pod-capabilities
+      try:
+        - apply:
+            file: test-capabilities.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-capabilities-forbidden
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Any capabilities added other than NET_BIND_SERVICE'))": true
+
+    - name: test-host-ipc
+      try:
+        - apply:
+            file: test-hostIPC.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-hostipc-set-to-true
+                check:
+                  ($error != null): true
+                  "(contains($error, 'HostIPC pods are disallowed'))": true
+
+    - name: test-host-network
+      try:
+        - apply:
+            file: test-hostNetwork.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-host-network-set-to-true
+                check:
+                  ($error != null): true
+                  "(contains($error, 'HostNetwork pods are disallowed'))": true
+
+    - name: test-privilege-escalation
+      try:
+        - apply:
+            file: test-privilege-escalation.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-privilege-escalation-set-to-true
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Privilege escalation is disallowed'))": true
