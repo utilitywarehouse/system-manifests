@@ -4,7 +4,7 @@ metadata:
   name: test-wildcard-hostsni-not-allowed
 spec:
   routes:
-  - match: HostSNI(`*`)
+    - match: HostSNI(`*`)
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRouteTCP
@@ -12,7 +12,7 @@ metadata:
   name: test-wildcard-subdomain-hostsni-not-allowed
 spec:
   routes:
-  - match: HostSNI(`*.example.com`)
+    - match: HostSNI(`*.example.com`)
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRouteTCP
@@ -20,18 +20,10 @@ metadata:
   name: test-wildcard-hostsni-not-allowed-multiple-routes
 spec:
   routes:
-  - match: HostSNI(`example.com`)
-    priority: 10
-  - match: HostSNI(`*`)
-    priority: 20
----
-apiVersion: traefik.io/v1alpha1
-kind: IngressRouteTCP
-metadata:
-  name: test-wildcard-hostsni-match-missing
-spec:
-  routes:
-  - priority: 10
+    - match: HostSNI(`example.com`)
+      priority: 10
+    - match: HostSNI(`*`)
+      priority: 20
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRouteTCP
@@ -39,4 +31,4 @@ metadata:
   name: test-valid-hostsni
 spec:
   routes:
-  - match: HostSNI(`example.com`)
+    - match: HostSNI(`example.com`)
