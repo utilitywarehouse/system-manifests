@@ -9,6 +9,7 @@ spec:
   issuerRef:
     name: "selfsigned"
     kind: ClusterIssuer
+  secretName: not-important
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -21,6 +22,7 @@ spec:
   issuerRef:
     name: "selfsigned"
     kind: ClusterIssuer
+  secretName: not-important
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -33,6 +35,7 @@ spec:
   issuerRef:
     name: "letsencrypt"
     kind: ClusterIssuer
+  secretName: not-important
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -45,6 +48,7 @@ spec:
   issuerRef:
     name: "letsencrypt"
     kind: ClusterIssuer
+  secretName: not-important
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -57,6 +61,7 @@ spec:
   issuerRef:
     name: "letsencrypt"
     kind: ClusterIssuer
+  secretName: not-important
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -70,6 +75,7 @@ spec:
   issuerRef:
     name: "selfsigned"
     kind: ClusterIssuer
+  secretName: not-important
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -82,3 +88,4 @@ spec:
   issuerRef:
     name: "selfsigned"
     kind: ClusterIssuer
+  secretName: not-important

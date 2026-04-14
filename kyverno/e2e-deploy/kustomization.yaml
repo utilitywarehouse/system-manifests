@@ -7,6 +7,7 @@ resources:
 
   # install CRDs required for testing
   # pre-installing crds saves time in terms of cache update
+  - certificates-crd.yaml
   - ../../argocd/cluster
 
 patches:

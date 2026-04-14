@@ -1,0 +1,109 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-certificates-policies
+spec:
+  steps:
+    - name: setup-prerequisites
+      try:
+        - apply:
+            file: prerequisite-resources.yaml
+
+        - apply:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRole
+              metadata:
+                name: kyverno-role
+                labels:
+                  rbac.authorization.k8s.io/aggregate-to-view: "true"
+              rules:
+                - apiGroups: ["cert-manager.io"]
+                  resources: ["certificates"]
+                  verbs: ["get", "list", "watch"]
+
+    - name: apply-policies-and-exceptions
+      try:
+        - apply:
+            file: ../restrict-letsencrypt.yaml
+        - apply:
+            file: ../set-revision-history.yaml
+        - apply:
+            file: exception.yaml
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: policies.kyverno.io/v1
+              kind: ValidatingPolicy
+              metadata:
+                name: restrict-letsencrypt-cluster-issuer
+              status:
+                conditionStatus:
+                  (conditions[?type == 'RBACPermissionsGranted']):
+                    - reason: Succeeded
+                      status: "True"
+                  (conditions[?type == 'WebhookConfigured']):
+                    - reason: Succeeded
+                      status: "True"
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: policies.kyverno.io/v1
+              kind: MutatingPolicy
+              metadata:
+                name: set-certificates-revision-history-limit
+              status:
+                conditionStatus:
+                  (conditions[?type == 'RBACPermissionsGranted']):
+                    - reason: Succeeded
+                      status: "True"
+                  (conditions[?type == 'WebhookConfigured']):
+                    - reason: Succeeded
+                      status: "True"
+
+    - name: test-resources
+      try:
+        - apply:
+            file: resources.yaml
+            expect:
+              # confirm validation failures
+              - match:
+                  apiVersion: cert-manager.io/v1
+                  kind: Certificate
+                  metadata:
+                    name: letsencrypt-cert
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'is restricted for visibility'))": true
+
+              - match:
+                  apiVersion: cert-manager.io/v1
+                  kind: Certificate
+                  metadata:
+                    name: letsencrypt-cert-not-approved
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'is restricted for visibility'))": true
+
+        # assert mutations
+        - assert:
+            resource:
+              apiVersion: cert-manager.io/v1
+              kind: Certificate
+              metadata:
+                name: without-revision-history
+                namespace: team-a
+              spec:
+                revisionHistoryLimit: 2
+
+        - assert:
+            resource:
+              apiVersion: cert-manager.io/v1
+              kind: Certificate
+              metadata:
+                name: with-revision-history
+                namespace: team-a
+              spec:
+                revisionHistoryLimit: 10
