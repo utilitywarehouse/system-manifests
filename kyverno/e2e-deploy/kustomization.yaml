@@ -9,6 +9,7 @@ resources:
   # pre-installing crds saves time in terms of cache update
   - certificates-crd.yaml
   - ../../argocd/cluster
+  - ../../traefik/cluster/crds/traefik/crds
 
 patches:
   - path: kyverno-admission-controller-patch.yaml

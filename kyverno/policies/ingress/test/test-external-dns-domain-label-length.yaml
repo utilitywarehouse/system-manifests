@@ -2,13 +2,14 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: no-external-dns-anno
-  namespace: namespace
+spec:
+  rules:
+    - host: "long-enough-label-for-txt-created-record-2be-invalid.test.uw.systems"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: test-short-domain-label
-  namespace: namespace
   annotations:
     external-dns.alpha.kubernetes.io/target: example.uw.systems
 spec:
@@ -19,7 +20,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: test-long-valid-domain-label
-  namespace: namespace
   annotations:
     external-dns.alpha.kubernetes.io/target: example.uw.systems
 spec:
@@ -30,7 +30,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: test-long-invalid-domain-label
-  namespace: namespace
   annotations:
     external-dns.alpha.kubernetes.io/target: example.uw.systems
 spec:

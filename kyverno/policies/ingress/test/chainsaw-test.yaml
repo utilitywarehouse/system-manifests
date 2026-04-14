@@ -1,0 +1,152 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-ingress-and-traefik-resources
+spec:
+  steps:
+    - name: setup-prerequisites
+      try:
+        - apply:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRole
+              metadata:
+                name: kyverno-ingress-role
+                labels:
+                  rbac.authorization.k8s.io/aggregate-to-view: "true"
+              rules:
+                - apiGroups: ["traefik.io"]
+                  resources: ["*"]
+                  verbs: ["get", "list", "watch"]
+
+    - name: apply-policies
+      try:
+        - apply:
+            file: ../disallow-default-tsloptions.yaml
+        - apply:
+            file: ../disallow-or-operator.yaml
+        - apply:
+            file: ../disallow-wildcard-hostsni.yaml
+        - apply:
+            file: ../external-dns-domain-label-length.yaml
+        - apply:
+            file: ../require-ingress-host.yaml
+        - apply:
+            file: ../require-ingressroute-host.yaml
+
+        - assert:
+            timeout: 30s
+            file: policy-ready.yaml
+
+    - name: test-tlsoption-non-admin
+      try:
+        - apply:
+            file: test-tlsoption.yaml
+            expect:
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: TLSOption
+                  metadata:
+                    name: default
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Only cluster administrators are allowed to set default TLSOptions'))": true
+
+    - name: test-ingress-validations
+      try:
+        - apply:
+            file: test-disallow-or-operator.yaml
+            expect:
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: IngressRouteTCP
+                  metadata:
+                    name: test-or-operator-not-allowed-ingressroutetcp
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Route matches must not contain ||'))": true
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: IngressRoute
+                  metadata:
+                    name: test-or-operator-not-allowed-ingressroute
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Route matches must not contain ||'))": true
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: IngressRoute
+                  metadata:
+                    name: test-or-operator-complex-not-allowed-ingressroute
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Route matches must not contain ||'))": true
+
+        - apply:
+            file: test-disallow-wildcard-hostsni.yaml
+            expect:
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: IngressRouteTCP
+                  metadata:
+                    name: test-wildcard-hostsni-not-allowed
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'HostSNI rules must not contain a wildcard host'))": true
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: IngressRouteTCP
+                  metadata:
+                    name: test-wildcard-subdomain-hostsni-not-allowed
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'HostSNI rules must not contain a wildcard host'))": true
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: IngressRouteTCP
+                  metadata:
+                    name: test-wildcard-hostsni-not-allowed-multiple-routes
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'HostSNI rules must not contain a wildcard host'))": true
+
+        - apply:
+            file: test-external-dns-domain-label-length.yaml
+            expect:
+              - match:
+                  apiVersion: networking.k8s.io/v1
+                  kind: Ingress
+                  metadata:
+                    name: test-long-invalid-domain-label
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'External-DNS TXT record domain label must be <= 63 chars'))": true
+
+        - apply:
+            file: test-require-ingressroute-host.yaml
+            expect:
+              - match:
+                  apiVersion: networking.k8s.io/v1
+                  kind: Ingress
+                  metadata:
+                    name: without-host
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'Ingresses must specify a host'))": true
+
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: IngressRoute
+                  metadata:
+                    name: test-require-ingressroute-host-missing
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'All route matches must contain a Host rule'))": true
+              - match:
+                  apiVersion: traefik.io/v1alpha1
+                  kind: IngressRoute
+                  metadata:
+                    name: test-require-ingressroute-bad-host
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'All route matches must contain a Host rule'))": true

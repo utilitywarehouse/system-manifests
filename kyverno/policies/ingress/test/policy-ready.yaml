@@ -1,0 +1,89 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: disallow-default-tlsoptions
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: disallow-or-operator
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: disallow-wildcard-hostsni
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: external-dns-domain-label-length
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-ingress-host
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-ingressroute-host
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
