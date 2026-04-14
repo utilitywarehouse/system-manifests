@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 TEST_TARGET=${1:-"kyverno/policies"}
 CLUSTER_NAME="chainsaw-test-cluster"
 
@@ -41,10 +43,10 @@ if [ "$CLUSTER_JUST_CREATED" = "true" ]; then
     kubectl wait --for=condition=Ready nodes --all --timeout=120s
 
     echo "Installing Kyverno..."
-    kubectl create -f https://github.com/kyverno/kyverno/raw/main/config/install-latest-testing.yaml
+    kustomize build /repo/kyverno/e2e-deploy | kubectl --namespace kube-system create -f -
 
     echo "Waiting for Kyverno to be ready..."
-    kubectl wait --namespace kyverno --for=condition=ready pod --all --timeout=120s
+    kubectl wait --namespace kube-system --for=condition=ready pods -l app.kubernetes.io/instance=kyverno --timeout=120s
 else
     echo "Skipping Kyverno installation (reusing existing cluster environment)."
 fi

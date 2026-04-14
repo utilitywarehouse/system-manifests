@@ -97,6 +97,8 @@ clean: setup-network
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(REPO_DIR):/repo \
 		$(IMAGE_NAME) "clean"
+	@docker stop chainsaw-test-cluster-control-plane chainsaw-runner
+	@docker rm chainsaw-test-cluster-control-plane chainsaw-runner
 
 .PHONY: kubectl
 kubectl:
