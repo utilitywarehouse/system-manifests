@@ -32,3 +32,31 @@ spec:
   containers:
     - name: test
       image: alpine
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: trident-disallow-host-ipc-pods
+  namespace: kube-system
+spec:
+  exceptions:
+    - policyName: disallow-host-ipc-pods
+      ruleNames: ["*"]
+  match:
+    any:
+      - resources:
+          namespaces:
+            - default
+          names:
+            - test-hostipc-set-to-true-exception*
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-hostipc-set-to-true-exception-allowed
+  namespace: default
+spec:
+  hostIPC: true
+  containers:
+    - name: test
+      image: alpine

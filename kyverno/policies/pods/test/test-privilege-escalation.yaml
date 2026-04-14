@@ -4,8 +4,8 @@ metadata:
   name: test-privilege-escalation-not-set
 spec:
   containers:
-  - name: test
-    image: test
+    - name: test
+      image: test
 ---
 apiVersion: v1
 kind: Pod
@@ -13,10 +13,10 @@ metadata:
   name: test-privilege-escalation-set-to-false
 spec:
   containers:
-  - name: test
-    image: test
-    securityContext:
-      allowPrivilegeEscalation: false
+    - name: test
+      image: test
+      securityContext:
+        allowPrivilegeEscalation: false
 ---
 apiVersion: v1
 kind: Pod
@@ -24,7 +24,36 @@ metadata:
   name: test-privilege-escalation-set-to-true
 spec:
   containers:
-  - name: test
-    image: test
-    securityContext:
-      allowPrivilegeEscalation: true
+    - name: test
+      image: test
+      securityContext:
+        allowPrivilegeEscalation: true
+---
+apiVersion: kyverno.io/v2
+kind: PolicyException
+metadata:
+  name: trident-disallow-privilege-escalation
+  namespace: kube-system
+spec:
+  exceptions:
+    - policyName: disallow-privilege-escalation
+      ruleNames: ["*"]
+  match:
+    any:
+      - resources:
+          namespaces:
+            - default
+          names:
+            - test-privilege-escalation-set-to-true-exception*
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-privilege-escalation-set-to-true-exception-allowed
+  namespace: default
+spec:
+  containers:
+    - name: test
+      image: test
+      securityContext:
+        allowPrivilegeEscalation: true
