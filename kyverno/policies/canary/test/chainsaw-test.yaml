@@ -1,0 +1,45 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-canary-rules
+spec:
+  steps:
+    - name: apply-canary
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: kyverno-canary-resource
+
+    - name: apply-policy
+      try:
+        - apply:
+            file: ../canary.yaml
+
+    - name: test-canary-patch
+      try:
+        - patch:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: kyverno-canary-resource
+                annotations:
+                  testing: "true"
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains($error || '', 'Found kyverno canary configMap in the cluster'))": true
+
+    - name: test-other-cm
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: argocd-cmd-params-cm
+              data:
+                application.namespaces: "*"

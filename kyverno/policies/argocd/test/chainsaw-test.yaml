@@ -8,17 +8,13 @@ spec:
     - name: install-argocd-crds
       try:
         - apply:
-            file: ../../../../argocd/cluster/upstream/CustomResourceDefinition.yaml
-
-        - apply:
             resource:
               apiVersion: rbac.authorization.k8s.io/v1
               kind: ClusterRole
               metadata:
                 name: kyverno-argocd-role
                 labels:
-                  rbac.kyverno.io/aggregate-to-background-controller: "true"
-                  rbac.kyverno.io/aggregate-to-reports-controller: "true"
+                  rbac.authorization.k8s.io/aggregate-to-view: "true"
               rules:
                 - apiGroups: ["argoproj.io"]
                   resources: ["applications"]
@@ -38,7 +34,12 @@ spec:
                 name: argocd-application-field-validation
               status:
                 conditionStatus:
-                  ready: true
+                  (conditions[?type == 'RBACPermissionsGranted']):
+                    - reason: Succeeded
+                      status: "True"
+                  (conditions[?type == 'WebhookConfigured']):
+                    - reason: Succeeded
+                      status: "True"
 
     - name: test-argocd-application-field-validation
       try:
