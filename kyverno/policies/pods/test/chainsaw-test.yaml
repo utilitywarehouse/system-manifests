@@ -15,6 +15,8 @@ spec:
         - apply:
             file: ../hostNetwork.yaml
         - apply:
+            file: ../hostPaths.yaml
+        - apply:
             file: ../privilege-escalation.yaml
 
         - assert:
@@ -76,6 +78,20 @@ spec:
                 check:
                   ($error != null): true
                   "(contains($error, 'HostNetwork pods are disallowed'))": true
+
+    - name: test-hostpath-volumes
+      try:
+        - apply:
+            file: test-hostpath.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-hostpath-forbidden
+                check:
+                  ($error != null): true
+                  "(contains($error, 'HostPath volumes are not allowed.'))": true
 
     - name: test-privilege-escalation
       try:

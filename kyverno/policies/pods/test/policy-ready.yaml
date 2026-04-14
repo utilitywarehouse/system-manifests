@@ -41,6 +41,16 @@ status:
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
+  name: hostpath-vols
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
   name: disallow-privilege-escalation
 status:
   conditions:
