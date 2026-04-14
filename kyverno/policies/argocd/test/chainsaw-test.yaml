@@ -1,0 +1,125 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-argocd-policies
+spec:
+  steps:
+    # Install the local ArgoCD CRDs and setup RBAC
+    - name: install-argocd-crds
+      try:
+        - apply:
+            file: ../../../../argocd/cluster/upstream/CustomResourceDefinition.yaml
+
+        - apply:
+            resource:
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRole
+              metadata:
+                name: kyverno-argocd-role
+                labels:
+                  rbac.kyverno.io/aggregate-to-background-controller: "true"
+                  rbac.kyverno.io/aggregate-to-reports-controller: "true"
+              rules:
+                - apiGroups: ["argoproj.io"]
+                  resources: ["applications"]
+                  verbs: ["get", "list", "watch"]
+
+    - name: apply-policy
+      try:
+        - apply:
+            file: ../application-field-validation.yaml
+
+        - assert:
+            timeout: 120s
+            resource:
+              apiVersion: policies.kyverno.io/v1
+              kind: ValidatingPolicy
+              metadata:
+                name: argocd-application-field-validation
+              status:
+                conditionStatus:
+                  ready: true
+
+    - name: test-argocd-application-field-validation
+      try:
+        - apply:
+            file: test-application-field-validation.yaml
+            expect:
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-source-path-specified
+                check:
+                  ($error == null): true
+
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-multiple-source-path-specified
+                check:
+                  ($error == null): true
+
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-default-project
+                check:
+                  ($error != null): true
+                  "(contains($error || '', 'The `default` is a privileged project and it may not be used in an Application'))": true
+
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-missing-project-name
+                check:
+                  ($error != null): true
+                  "(contains($error, 'spec.project: Required value'))": true
+
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-missing-source-path
+                check:
+                  ($error != null): true
+                  "(contains($error, 'When using `spec.source`, a `path` must be defined'))": true
+
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-source-and-sources-both-specified
+                check:
+                  ($error != null): true
+                  "(contains($error, 'An Application must define exactly one: either `spec.source` OR `spec.sources`'))": true
+
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-source-path-chart-specified
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Helm charts are not permitted in `spec.source`. Please use a git path'))": true
+
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-sources-chart-specified
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Every entry in `spec.sources` must specify a `path`'))": true
+
+              - match:
+                  apiVersion: argoproj.io/v1alpha1
+                  kind: Application
+                  metadata:
+                    name: test-missing-destination-namespace
+                check:
+                  ($error != null): true
+                  "(contains($error, '`spec.destination.namespace` should not be empty'))": true

@@ -1,0 +1,120 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-namespace-policies
+spec:
+  steps:
+    - name: apply-policies
+      try:
+        - apply:
+            file: ../ensure-ns-name-label.yaml
+        - apply:
+            file: ../require-annotation-to-delete-ns.yaml
+        - apply:
+            file: ../require-ns-owner-label.yaml
+
+    - name: test-require-ns-owner-label
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: missing-owner
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains($error, 'The label `uw.systems/owner` is required'))": true
+
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: invalid-owner
+                labels:
+                  uw.systems/owner: invalid
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains($error, 'The label `uw.systems/owner` is required'))": true
+
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: valid-owner
+                labels:
+                  uw.systems/owner: system
+            expect:
+              - check:
+                  ($error == null): true
+
+    - name: test-ensure-ns-name-label
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: ns-with-no-name-label
+                labels:
+                  uw.systems/owner: system
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: ns-with-no-name-label
+                labels:
+                  uw.systems/owner: system
+                  name: ns-with-no-name-label
+
+    - name: test-require-annotation-to-delete-ns
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: no-valid-delete-annotation
+                labels:
+                  uw.systems/owner: system
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: valid-delete-annotation
+                annotations:
+                  uw.systems/delete-allowed: "true"
+                labels:
+                  uw.systems/owner: system
+
+        - delete:
+            ref:
+              apiVersion: v1
+              kind: Namespace
+              name: no-valid-delete-annotation
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains($error, 'must be annotated with: uw.systems/delete-allowed:'))": true
+        - delete:
+            ref:
+              apiVersion: v1
+              kind: Namespace
+              name: valid-delete-annotation
+            expect:
+              - check:
+                  ($error == null): true
+
+    # Tear down delete policy to allow Chainsaw cleanup
+    - name: remove-delete-policy
+      try:
+        - delete:
+            ref:
+              apiVersion: policies.kyverno.io/v1
+              kind: ValidatingPolicy
+              name: require-delete-annotation-ns-label

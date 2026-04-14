@@ -1,0 +1,12 @@
+# remove prod only patches
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kyverno-admission-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    spec:
+      tolerations: null
+      nodeSelector: null
