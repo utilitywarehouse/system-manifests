@@ -60,6 +60,12 @@ spec:
         app: test
     spec:
       initContainers:
+        - name: init-test0
+          image: test
+          resources:
+            limits:
+              cpu: 6
+              memory: 24Gi
         - name: init-test
           image: test
           resources:
@@ -89,6 +95,12 @@ spec:
         app: test
     spec:
       containers:
+        - name: test0
+          image: test
+          resources:
+            limits:
+              cpu: 5
+              memory: 24Gi
         - name: test
           image: test
           resources:
@@ -111,6 +123,12 @@ spec:
         app: test
     spec:
       initContainers:
+        - name: init-test0
+          image: test
+          resources:
+            limits:
+              cpu: 6
+              memory: 20Gi
         - name: init-test
           image: test
           resources:
@@ -146,6 +164,12 @@ spec:
             limits:
               cpu: 6
               memory: 25Gi
+        - name: test1
+          image: test
+          resources:
+            limits:
+              cpu: 6
+              memory: 20Gi
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -339,6 +363,7 @@ spec:
     spec:
       template:
         spec:
+          restartPolicy: Never
           containers:
             - name: test
               image: test
@@ -356,6 +381,7 @@ spec:
     spec:
       template:
         spec:
+          restartPolicy: Never
           containers:
             - name: test
               image: test
