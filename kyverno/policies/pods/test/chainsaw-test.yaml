@@ -17,7 +17,23 @@ spec:
         - apply:
             file: ../hostPaths.yaml
         - apply:
+            file: ../hostPID.yaml
+        - apply:
+            file: ../hostPorts.yaml
+        - apply:
+            file: ../pod-node-restriction.yaml
+        - apply:
             file: ../privilege-escalation.yaml
+        - apply:
+            file: ../privileged.yaml
+        - apply:
+            file: ../procMount.yaml
+        - apply:
+            file: ../Seccomp.yaml
+        - apply:
+            file: ../SELinux.yaml
+        - apply:
+            file: ../sysctls.yaml
 
         - assert:
             timeout: 30s
@@ -93,10 +109,52 @@ spec:
                   ($error != null): true
                   "(contains($error, 'HostPath volumes are not allowed.'))": true
 
-    - name: test-privilege-escalation
+    - name: test-host-pid-and-ports
       try:
         - apply:
-            file: test-privilege-escalation.yaml
+            file: test-host-pid-ports.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-hostpid-true
+                check:
+                  ($error != null): true
+                  "(contains($error, 'HostPID pods are disallowed'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-hostport-forbidden
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Use of host ports is disallowed'))": true
+
+    - name: test-node-scheduling
+      try:
+        - apply:
+            file: test-scheduling.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-scheduling-master-forbidden
+                check:
+                  ($error != null): true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-scheduling-control-plane-forbidden
+                check:
+                  ($error != null): true
+
+    - name: test-privilege-combined
+      try:
+        - apply:
+            file: test-privilege-combined.yaml
             expect:
               - match:
                   apiVersion: v1
@@ -106,3 +164,61 @@ spec:
                 check:
                   ($error != null): true
                   "(contains($error, 'Privilege escalation is disallowed'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-privileged-container-fail
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Privileged mode is disallowed'))": true
+
+    - name: test-proc-mount
+      try:
+        - apply:
+            file: test-procmount.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-procmount-init-forbidden
+                check:
+                  ($error != null): true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-procmount-unmasked
+                check:
+                  ($error != null): true
+
+    - name: test-security-settings
+      try:
+        - apply:
+            file: test-security-settings.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-seccomp-init-forbidden
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Use of custom Seccomp profiles is disallowed'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-selinux-forbidden
+                check:
+                  ($error != null): true
+                  # Note: This checks for either of the two SELinux rule error messages
+                  "(contains($error, 'Setting the SELinux type is restricted') || contains($error, 'Setting the SELinux user or role is forbidden'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-sysctls-forbidden
+                check:
+                  ($error != null): true

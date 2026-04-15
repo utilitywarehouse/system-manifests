@@ -51,7 +51,87 @@ status:
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
+  name: disallow-host-pid-pods
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-host-ports
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-scheduling-to-master-nodes
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
   name: disallow-privilege-escalation
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-privileged-containers
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-proc-mount
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-seccomp
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-selinux
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-sysctls
 status:
   conditions:
     - reason: Succeeded

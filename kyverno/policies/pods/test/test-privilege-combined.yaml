@@ -57,3 +57,26 @@ spec:
       image: test
       securityContext:
         allowPrivilegeEscalation: true
+---
+# Privileged Container Tests
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-privileged-container-fail
+spec:
+  containers:
+    - name: test
+      image: alpine
+      securityContext:
+        privileged: true
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-privileged-container-pass
+spec:
+  containers:
+    - name: test
+      image: alpine
+      securityContext:
+        privileged: false
