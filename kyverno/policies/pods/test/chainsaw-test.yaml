@@ -24,6 +24,8 @@ spec:
             file: ../pod-node-restriction.yaml
         - apply:
             file: ../privilege-escalation.yaml
+        - apply:
+            file: ../privileged.yaml
 
         - assert:
             timeout: 30s
@@ -141,10 +143,10 @@ spec:
                 check:
                   ($error != null): true
 
-    - name: test-privilege-escalation
+    - name: test-privilege-combined
       try:
         - apply:
-            file: test-privilege-escalation.yaml
+            file: test-privilege-combined.yaml
             expect:
               - match:
                   apiVersion: v1
@@ -154,3 +156,11 @@ spec:
                 check:
                   ($error != null): true
                   "(contains($error, 'Privilege escalation is disallowed'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-privileged-container-fail
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Privileged mode is disallowed'))": true
