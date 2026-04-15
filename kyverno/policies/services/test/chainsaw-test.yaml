@@ -1,0 +1,109 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-service-policies
+spec:
+  steps:
+    - name: setup-prerequisites
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: sys-ingress-certs
+                labels:
+                  uw.systems/owner: system
+
+    - name: apply-policies
+      try:
+        - apply: { file: ../externalIPs.yaml }
+        - apply: { file: ../externalName.yaml }
+        - apply: { file: ../loadBalancerIP.yaml }
+        - apply: { file: ../nodePort.yaml }
+        - apply: { file: ../semaphore-service-mirror-length.yaml }
+        - assert:
+            timeout: 30s
+            file: policy-ready.yaml
+
+    - name: test-external-ips
+      try:
+        - apply:
+            file: test-externalIPs.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Service
+                  metadata: { name: test-externalip-not-allowed }
+                check:
+                  ($error != null): true
+                  "(contains($error, 'externalIPs are not allowed'))": true
+
+    - name: test-external-name
+      try:
+        - apply:
+            file: test-externalName.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Service
+                  metadata: { name: test-externalname-block }
+                check:
+                  ($error != null): true
+                  "(contains($error, 'ExternalName cannot point to localhost'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Service
+                  metadata: { name: test-externalname-as-ip-block }
+                check:
+                  ($error != null): true
+                  "(contains($error, 'ExternalName cannot point to localhost'))": true
+
+    - name: test-load-balancer-ip
+      try:
+        - apply:
+            file: test-loadbalancerIP.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Service
+                  metadata: { name: test-loadbalancerip-not-allowed }
+                check:
+                  ($error != null): true
+                  "(contains($error, 'loadBalancerIP is not allowed.'))": true
+
+    - name: test-node-port
+      try:
+        - apply:
+            file: test-nodePort.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Service
+                  metadata: { name: test-nodeport-not-allowed }
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Services of type NodePort are not allowed.'))": true
+
+    - name: test-mirror-name-length
+      try:
+        - apply:
+            file: test-semaphore-service-mirror-length.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Service
+                  metadata:
+                    {
+                      name: test-very-very-very-very-very-very-very-very-long-name-svc,
+                    }
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Mirror service controller should be able to generate 63 chars long'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Service
+                  metadata: { name: broadband-product-availability-app }
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Mirror service controller should be able to generate 63 chars long'))": true

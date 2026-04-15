@@ -1,0 +1,49 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-external-ips
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: no-localhost-service
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-load-balancer-ip
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-nodeport
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: mirror-name-length
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
