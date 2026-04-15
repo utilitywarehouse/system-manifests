@@ -107,3 +107,33 @@ status:
     - reason: Succeeded
       status: "True"
       type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-seccomp
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: disallow-selinux
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: restrict-sysctls
+status:
+  conditions:
+    - reason: Succeeded
+      status: "True"
+      type: Ready

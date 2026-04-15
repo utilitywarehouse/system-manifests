@@ -28,6 +28,12 @@ spec:
             file: ../privileged.yaml
         - apply:
             file: ../procMount.yaml
+        - apply:
+            file: ../Seccomp.yaml
+        - apply:
+            file: ../SELinux.yaml
+        - apply:
+            file: ../sysctls.yaml
 
         - assert:
             timeout: 30s
@@ -184,5 +190,35 @@ spec:
                   kind: Pod
                   metadata:
                     name: test-procmount-unmasked
+                check:
+                  ($error != null): true
+
+    - name: test-security-settings
+      try:
+        - apply:
+            file: test-security-settings.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-seccomp-init-forbidden
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Use of custom Seccomp profiles is disallowed'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-selinux-forbidden
+                check:
+                  ($error != null): true
+                  # Note: This checks for either of the two SELinux rule error messages
+                  "(contains($error, 'Setting the SELinux type is restricted') || contains($error, 'Setting the SELinux user or role is forbidden'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-sysctls-forbidden
                 check:
                   ($error != null): true
