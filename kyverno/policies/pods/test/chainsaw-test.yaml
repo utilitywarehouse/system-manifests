@@ -21,6 +21,8 @@ spec:
         - apply:
             file: ../hostPorts.yaml
         - apply:
+            file: ../pod-node-restriction.yaml
+        - apply:
             file: ../privilege-escalation.yaml
 
         - assert:
@@ -118,6 +120,26 @@ spec:
                 check:
                   ($error != null): true
                   "(contains($error, 'Use of host ports is disallowed'))": true
+
+    - name: test-node-scheduling
+      try:
+        - apply:
+            file: test-scheduling.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-scheduling-master-forbidden
+                check:
+                  ($error != null): true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-scheduling-control-plane-forbidden
+                check:
+                  ($error != null): true
 
     - name: test-privilege-escalation
       try:
