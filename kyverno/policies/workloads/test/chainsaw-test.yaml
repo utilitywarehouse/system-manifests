@@ -1,0 +1,121 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-resource-limits
+spec:
+  steps:
+    - name: apply-policy
+      try:
+        - apply:
+            file: ../resource-limits.yaml
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: kyverno.io/v1
+              kind: ClusterPolicy
+              metadata:
+                name: restrict-workload-resource-limits
+              status:
+                conditions:
+                  - reason: Succeeded
+                    status: "True"
+                    type: Ready
+
+    - name: test-workload-resources
+      try:
+        - apply:
+            file: test-resource-limits.yaml
+            expect:
+              # CPU Limit Failures
+              - match:
+                  apiVersion: apps/v1
+                  kind: Deployment
+                  metadata:
+                    name: test-deployment-resource-limits-cpu-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+              - match:
+                  apiVersion: apps/v1
+                  kind: Deployment
+                  metadata:
+                    name: test-deployment-resource-limits-init-cpu-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+              - match:
+                  apiVersion: apps/v1
+                  kind: DaemonSet
+                  metadata:
+                    name: test-daemonset-cpu-limit-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+              - match:
+                  apiVersion: apps/v1
+                  kind: DaemonSet
+                  metadata:
+                    name: test-daemonset-cpu-limit-millicores-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+              - match:
+                  apiVersion: apps/v1
+                  kind: DaemonSet
+                  metadata:
+                    name: test-daemonset-cpu-limit-decimal-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+
+              # Memory Limit Failures
+              - match:
+                  apiVersion: apps/v1
+                  kind: Deployment
+                  metadata:
+                    name: test-deployment-resource-limits-memory-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+              - match:
+                  apiVersion: apps/v1
+                  kind: Deployment
+                  metadata:
+                    name: test-deployment-resource-limits-init-memory-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+              - match:
+                  apiVersion: batch/v1
+                  kind: Job
+                  metadata:
+                    name: test-job-memory-limit-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+              - match:
+                  apiVersion: batch/v1
+                  kind: CronJob
+                  metadata:
+                    name: test-cronjob-memory-limit-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+              - match:
+                  apiVersion: batch/v1
+                  kind: CronJob
+                  metadata:
+                    name: test-cronjob-memory-limit-mi-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+
+              # Combined Failures (StatefulSet)
+              - match:
+                  apiVersion: apps/v1
+                  kind: StatefulSet
+                  metadata:
+                    name: test-statefulset-resource-limits-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'CPU limit cannot exceed 6 cores') || contains($error, 'Memory limit cannot exceed 24Gi'))": true

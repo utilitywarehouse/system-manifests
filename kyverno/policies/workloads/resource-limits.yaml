@@ -14,6 +14,11 @@ spec:
   rules:
     - name: restrict-cpu-limits
       match:
+        # Make sure resource limits policy only applies to:
+        # Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs and CronJobs
+        # and no longer apply to Pods ensuring that existing resources continue
+        # running without disruption while enforcing limits only on new or
+        # updated workload controllers.
         resources:
           kinds:
             - Deployment
