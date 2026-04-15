@@ -17,6 +17,10 @@ spec:
         - apply:
             file: ../hostPaths.yaml
         - apply:
+            file: ../hostPID.yaml
+        - apply:
+            file: ../hostPorts.yaml
+        - apply:
             file: ../privilege-escalation.yaml
 
         - assert:
@@ -92,6 +96,28 @@ spec:
                 check:
                   ($error != null): true
                   "(contains($error, 'HostPath volumes are not allowed.'))": true
+
+    - name: test-host-pid-and-ports
+      try:
+        - apply:
+            file: test-host-pid-ports.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-hostpid-true
+                check:
+                  ($error != null): true
+                  "(contains($error, 'HostPID pods are disallowed'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-hostport-forbidden
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Use of host ports is disallowed'))": true
 
     - name: test-privilege-escalation
       try:
