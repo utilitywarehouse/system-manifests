@@ -35,4 +35,4 @@ spec:
         pattern:
           spec:
             (type): ExternalName
-            externalName: "!localhost"
+            externalName: "!localhost && !127.0.0.1"
