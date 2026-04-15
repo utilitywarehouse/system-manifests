@@ -26,6 +26,8 @@ spec:
             file: ../privilege-escalation.yaml
         - apply:
             file: ../privileged.yaml
+        - apply:
+            file: ../procMount.yaml
 
         - assert:
             timeout: 30s
@@ -164,3 +166,23 @@ spec:
                 check:
                   ($error != null): true
                   "(contains($error, 'Privileged mode is disallowed'))": true
+
+    - name: test-proc-mount
+      try:
+        - apply:
+            file: test-procmount.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-procmount-init-forbidden
+                check:
+                  ($error != null): true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-procmount-unmasked
+                check:
+                  ($error != null): true
