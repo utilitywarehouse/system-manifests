@@ -1,23 +1,4 @@
 SHELL := /bin/bash
-
-KYVERNO = reg.kyverno.io/kyverno/kyverno-cli:latest
-# policy tests references custom CRDs from diff base
-repo_base_path = $(shell git rev-parse --show-toplevel)
-
-.PHONY: test test-dir
-
-test:
-	docker run -v "${repo_base_path}":"${repo_base_path}" --workdir="${repo_base_path}" ${KYVERNO} test "${repo_base_path}/kyverno/policies"
-
-test-dir:
-	@TARGET_PATH=$(filter-out $@,$(MAKECMDGOALS)); \
-	if [ -z "$$TARGET_PATH" ]; then \
-		echo "Error: path not specified. Usage: make test-dir path/to/policies"; \
-		exit 1; \
-	fi; \
-	docker run -v "${repo_base_path}:${repo_base_path}" --workdir="${repo_base_path}" ${KYVERNO} test "${repo_base_path}/$$TARGET_PATH"
-
-# Make 'help' the default target if no target is specified
 .DEFAULT_GOAL := help
 
 .PHONY: help
@@ -30,6 +11,7 @@ help:
 	@echo "  test-all      Run all chainsaw tests across all policies."
 	@echo "  test-target   Run tests for a specific policy directory. (Requires DIR=<name>)"
 	@echo "  clean         Destroy the persistent kind cluster and remove debug kubeconfigs."
+	@echo "  kubectl       Run kubectl commands against the persistent test cluster"
 	@echo ""
 	@echo "Variables for Local Dev:"
 	@echo "  DIR           Target directory for 'test-target' (e.g., DIR=argocd)."
