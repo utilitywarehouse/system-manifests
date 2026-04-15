@@ -112,7 +112,5 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run Kyverno tests
-        run: make test
       - name: Run Kyverno chainsaw tests
         run: make test-all
