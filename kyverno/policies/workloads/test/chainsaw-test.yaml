@@ -11,15 +11,18 @@ spec:
         - assert:
             timeout: 30s
             resource:
-              apiVersion: kyverno.io/v1
-              kind: ClusterPolicy
+              apiVersion: policies.kyverno.io/v1
+              kind: ValidatingPolicy
               metadata:
                 name: restrict-workload-resource-limits
               status:
-                conditions:
-                  - reason: Succeeded
-                    status: "True"
-                    type: Ready
+                conditionStatus:
+                  (conditions[?type == 'RBACPermissionsGranted']):
+                    - reason: Succeeded
+                      status: "True"
+                  (conditions[?type == 'WebhookConfigured']):
+                    - reason: Succeeded
+                      status: "True"
 
     - name: test-workload-resources
       try:
@@ -106,6 +109,14 @@ spec:
                   kind: CronJob
                   metadata:
                     name: test-cronjob-memory-limit-mi-too-high
+                check:
+                  ($error != null): true
+                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+              - match:
+                  apiVersion: batch/v1
+                  kind: Job
+                  metadata:
+                    name: test-job-memory-limit-too-high
                 check:
                   ($error != null): true
                   "(contains($error, 'Memory limit cannot exceed 24Gi'))": true

@@ -1,6 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: test-deployment-resource-not-set
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: test-deployment-resource-limits-not-set
 spec:
   replicas: 1
@@ -70,7 +88,7 @@ spec:
           image: test
           resources:
             limits:
-              cpu: 7
+              cpu: 7000m
               memory: 24Gi
       containers:
         - name: test
@@ -388,3 +406,33 @@ spec:
               resources:
                 limits:
                   memory: "25000Mi"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-job-memory-limit-ok
+spec:
+  template:
+    spec:
+      containers:
+        - name: test
+          image: alpine
+          resources:
+            limits:
+              memory: "24Gi"
+      restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: test-job-memory-limit-too-high
+spec:
+  template:
+    spec:
+      containers:
+        - name: test
+          image: alpine
+          resources:
+            limits:
+              memory: "25Gi"
+      restartPolicy: Never
