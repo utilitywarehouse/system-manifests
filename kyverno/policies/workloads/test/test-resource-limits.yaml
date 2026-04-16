@@ -1,6 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: test-deployment-resource-not-set
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+        - name: test
+          image: test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: test-deployment-resource-limits-not-set
 spec:
   replicas: 1
