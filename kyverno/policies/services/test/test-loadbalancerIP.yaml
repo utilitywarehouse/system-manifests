@@ -23,30 +23,21 @@ spec:
       protocol: TCP
       targetPort: 30000
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: restrict-load-balancer-ip-exception
   namespace: kube-system
 spec:
-  exceptions:
-    - policyName: restrict-load-balancer-ip
-      ruleNames: ["*"]
-  match:
-    any:
-      - resources:
-          kinds:
-            - Service
-          namespaces:
-            - default
-          names:
-            - test-loadbalancerip-exception-allowed
-  conditions:
-    all:
-      - key: "{{ request.object.spec.loadBalancerIP }}"
-        operator: AllIn
-        value:
-          - "10.1.2.3"
+  policyRefs:
+    - name: restrict-load-balancer-ip
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: allow-specific-ip
+      expression: >-
+        object.metadata.namespace == 'default' &&
+        object.metadata.name == 'test-loadbalancerip-exception-allowed' &&
+        object.spec.loadBalancerIP == '10.1.2.3'
 ---
 apiVersion: v1
 kind: Service

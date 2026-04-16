@@ -25,6 +25,8 @@ spec:
         - assert:
             timeout: 30s
             file: policy-ready.yaml
+        - sleep:
+            duration: 10s
 
     - name: test-external-ips
       try:

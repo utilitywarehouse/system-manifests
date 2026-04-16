@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: no-localhost-service
   annotations:
@@ -12,27 +12,36 @@ metadata:
       vulnerabilities in some Ingress controllers. This policy audits Services of type ExternalName
       if the externalName field refers to localhost.
 spec:
-  validationFailureAction: Enforce
-  background: false # Disable due to warning events noise: https://github.com/kyverno/kyverno/issues/4093
-  rules:
-    - name: default
-      match:
-        any:
-          - resources:
-              kinds:
-                - Service
-      # Allow sys-ingress-certs services to use this for the definition of
-      # dummy cert loader services.
-      exclude:
-        any:
-          - resources:
-              namespaces:
-                - sys-ingress-certs
-              kinds:
-                - Service
-      validate:
-        message: "Service of type ExternalName cannot point to localhost."
-        pattern:
-          spec:
-            (type): ExternalName
-            externalName: "!localhost && !127.0.0.1"
+  validationActions:
+    - Deny
+  evaluation:
+    background:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["services"]
+  validations:
+    - expression: >-
+        !(
+          has(object.spec.type) && object.spec.type == 'ExternalName' &&
+          has(object.spec.externalName) && object.spec.externalName in ['localhost', '127.0.0.1']
+        )
+      message: "Service of type ExternalName cannot point to localhost."
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: no-localhost-service-exception
+  namespace: kube-system
+spec:
+  policyRefs:
+    - name: no-localhost-service
+      kind: ValidatingPolicy
+  matchConditions:
+    # Allow sys-ingress-certs services to use this for the definition of
+    # dummy cert loader services.
+    - name: allow-sys-ingress-certs-namespace
+      expression: "object.metadata.namespace == 'sys-ingress-certs'"
