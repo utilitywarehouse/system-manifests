@@ -7,6 +7,6 @@ resources:
   - ingress/
   - namespaces/
   - pods/
-  - serviceaccounts/
   - services/
+  - vault/
   - workloads/

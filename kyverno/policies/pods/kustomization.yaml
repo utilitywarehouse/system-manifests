@@ -8,7 +8,6 @@ resources:
   - hostPaths.yaml
   - hostPID.yaml
   - hostPorts.yaml
-  - injectSidecar.yaml
   - pod-node-restriction.yaml
   - privileged.yaml
   - privilege-escalation.yaml

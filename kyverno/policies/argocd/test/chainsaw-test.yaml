@@ -69,7 +69,7 @@ spec:
                     name: test-default-project
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'The `default` is a privileged project and it may not be used in an Application'))": true
+                  "(contains(to_string($error), 'The `default` is a privileged project and it may not be used in an Application'))": true
 
               - match:
                   apiVersion: argoproj.io/v1alpha1
@@ -78,7 +78,7 @@ spec:
                     name: test-missing-project-name
                 check:
                   ($error != null): true
-                  "(contains($error, 'spec.project: Required value'))": true
+                  "(contains(to_string($error), 'spec.project: Required value'))": true
 
               - match:
                   apiVersion: argoproj.io/v1alpha1
@@ -87,7 +87,7 @@ spec:
                     name: test-missing-source-path
                 check:
                   ($error != null): true
-                  "(contains($error, 'When using `spec.source`, a `path` must be defined'))": true
+                  "(contains(to_string($error), 'When using `spec.source`, a `path` must be defined'))": true
 
               - match:
                   apiVersion: argoproj.io/v1alpha1
@@ -96,7 +96,7 @@ spec:
                     name: test-source-and-sources-both-specified
                 check:
                   ($error != null): true
-                  "(contains($error, 'An Application must define exactly one: either `spec.source` OR `spec.sources`'))": true
+                  "(contains(to_string($error), 'An Application must define exactly one: either `spec.source` OR `spec.sources`'))": true
 
               - match:
                   apiVersion: argoproj.io/v1alpha1
@@ -105,7 +105,7 @@ spec:
                     name: test-source-path-chart-specified
                 check:
                   ($error != null): true
-                  "(contains($error, 'Helm charts are not permitted in `spec.source`. Please use a git path'))": true
+                  "(contains(to_string($error), 'Helm charts are not permitted in `spec.source`. Please use a git path'))": true
 
               - match:
                   apiVersion: argoproj.io/v1alpha1
@@ -114,7 +114,7 @@ spec:
                     name: test-sources-chart-specified
                 check:
                   ($error != null): true
-                  "(contains($error, 'Every entry in `spec.sources` must specify a `path`'))": true
+                  "(contains(to_string($error), 'Every entry in `spec.sources` must specify a `path`'))": true
 
               - match:
                   apiVersion: argoproj.io/v1alpha1
@@ -123,4 +123,4 @@ spec:
                     name: test-missing-destination-namespace
                 check:
                   ($error != null): true
-                  "(contains($error, '`spec.destination.namespace` should not be empty'))": true
+                  "(contains(to_string($error), '`spec.destination.namespace` should not be empty'))": true

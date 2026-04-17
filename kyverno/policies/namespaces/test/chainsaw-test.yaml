@@ -24,7 +24,7 @@ spec:
             expect:
               - check:
                   ($error != null): true
-                  "(contains($error, 'The label `uw.systems/owner` is required'))": true
+                  "(contains(to_string($error), 'The label `uw.systems/owner` is required'))": true
 
         - apply:
             resource:
@@ -37,7 +37,7 @@ spec:
             expect:
               - check:
                   ($error != null): true
-                  "(contains($error, 'The label `uw.systems/owner` is required'))": true
+                  "(contains(to_string($error), 'The label `uw.systems/owner` is required'))": true
 
         - apply:
             resource:
@@ -100,7 +100,7 @@ spec:
             expect:
               - check:
                   ($error != null): true
-                  "(contains($error, 'must be annotated with: uw.systems/delete-allowed:'))": true
+                  "(contains(to_string($error), 'must be annotated with: uw.systems/delete-allowed:'))": true
         - delete:
             ref:
               apiVersion: v1
