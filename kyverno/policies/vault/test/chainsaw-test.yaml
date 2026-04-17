@@ -9,6 +9,11 @@ spec:
         - apply:
             file: ../vault-annotation.yaml
 
+        # Simulate CI/CD templating
+        - script:
+            content: |
+              sed 's/{{ VKAC_ENVIRONMENT }}/test-env/g; s/{{ POD_NAMESPACE }}/test-namespace/g;' ../injectSidecar.yaml | kubectl apply -f -
+
         - assert:
             timeout: 30s
             resource:
@@ -24,6 +29,18 @@ spec:
                   (conditions[?type == 'WebhookConfigured']):
                     - reason: Succeeded
                       status: "True"
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: kyverno.io/v1
+              kind: ClusterPolicy
+              metadata:
+                name: inject-sidecar
+              status:
+                conditions:
+                  - reason: Succeeded
+                    status: "True"
+                    type: Ready
 
     - name: test-vault-annotation
       try:
@@ -38,3 +55,540 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'The annotation `vault.uw.systems/aws-role` must contain a valid role arn'))": true
+
+    - name: create-test-pods
+      try:
+        - apply:
+            file: test-inject-sidecar.yaml
+
+    - name: inject-vault-credentials-agent-aws
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-uw
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec: &aws-spec
+                initContainers:
+                  - name: vault-credentials-agent
+                    <<: &aws-agent-base
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+                      restartPolicy: Always
+                      startupProbe:
+                        exec:
+                          command:
+                            - /bin/sh
+                            - -c
+                            - |
+                              while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                      args:
+                        - sidecar
+                        - -vault-role=test-env_aws_test-namespace_default
+                      env:
+                        - &vault-caurl
+                          name: VAULT_CAURL
+                          value: "http://vault-ca-cert.sys-vault:8100"
+                        - &vault-addr
+                          name: VAULT_ADDR
+                          value: "https://vault.sys-vault:8200"
+                      ports:
+                        - name: metrics
+                          containerPort: 8099
+                          protocol: TCP
+                      resources:
+                        requests:
+                          cpu: "0"
+                          memory: 25Mi
+                        limits:
+                          cpu: "1"
+                          memory: 100Mi
+                containers:
+                  - name: app
+                    env: &app-aws-env
+                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                        value: "http://127.0.0.1:8098/credentials"
+                  - name: backend
+                    env: *app-aws-env
+
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-tumblr
+                annotations:
+                  injector.tumblr.com/status: "injected"
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec: *aws-spec
+
+    - name: inject-vault-credentials-agent-aws-gcp
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-gcp-uw
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec: &aws-gcp-spec
+                initContainers:
+                  - name: vault-credentials-agent-aws
+                    <<: *aws-agent-base
+                  - name: vault-credentials-agent-gcp
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+                    restartPolicy: Always
+                    startupProbe:
+                      exec:
+                        command:
+                          - /bin/sh
+                          - -c
+                          - |
+                            while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                    args:
+                      - sidecar
+                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - -secret-type=access_token
+                      - -listen-address=127.0.0.1:8198
+                      - -operational-address=:8199
+                    env:
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8198"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8198"
+                      - *vault-caurl
+                      - *vault-addr
+                    ports:
+                      - name: metrics
+                        containerPort: 8199
+                        protocol: TCP
+                    resources:
+                      requests:
+                        cpu: "0"
+                        memory: 25Mi
+                      limits:
+                        cpu: "1"
+                        memory: 100Mi
+                  - name: init
+                    env: &app-aws-gcp-env
+                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                        value: "http://127.0.0.1:8098/credentials"
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8198"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8198"
+                containers:
+                  - name: app
+                    env: *app-aws-gcp-env
+                  - name: backend
+                    env: *app-aws-gcp-env
+
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-gcp-tumblr
+                annotations:
+                  injector.tumblr.com/status: "injected"
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec: *aws-gcp-spec
+
+    - name: inject-vault-credentials-agent-gcp-key
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-gcp-key
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec:
+                volumes:
+                  - name: gcp
+                    emptyDir: {}
+                  - projected:
+                      defaultMode: 420
+                initContainers:
+                  - name: vault-credentials-agent
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+                    restartPolicy: Always
+                    startupProbe:
+                      exec:
+                        command:
+                          - test
+                          - -e
+                          - /gcp/sa.json
+                      failureThreshold: 5
+                      periodSeconds: 15
+                    args:
+                      - sidecar
+                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - -secret-type=service_account_key
+                    env:
+                      - name: GOOGLE_APPLICATION_CREDENTIALS
+                        value: "/gcp/sa.json"
+                      - *vault-caurl
+                      - *vault-addr
+                    ports:
+                      - name: metrics
+                        containerPort: 8099
+                        protocol: TCP
+                    resources:
+                      requests:
+                        cpu: "0"
+                        memory: 25Mi
+                      limits:
+                        cpu: "1"
+                        memory: 100Mi
+                    volumeMounts:
+                      - name: gcp
+                        mountPath: /gcp
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                containers:
+                  - name: app
+                    env:
+                      - name: GOOGLE_APPLICATION_CREDENTIALS
+                        value: "/gcp/sa.json"
+                    volumeMounts:
+                      - name: gcp
+                        mountPath: /gcp
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+
+    - name: inject-vault-credentials-agent-gcp-token
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-gcp-token
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec:
+                initContainers:
+                  - name: vault-credentials-agent
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+                    restartPolicy: Always
+                    startupProbe:
+                      exec:
+                        command:
+                          - /bin/sh
+                          - -c
+                          - |
+                            while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                    args:
+                      - sidecar
+                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - -secret-type=access_token
+                    env:
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8098"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8098"
+                      - *vault-caurl
+                      - *vault-addr
+                    ports:
+                      - name: metrics
+                        containerPort: 8099
+                        protocol: TCP
+                    resources:
+                      requests:
+                        cpu: "0"
+                        memory: 25Mi
+                      limits:
+                        cpu: "1"
+                        memory: 100Mi
+                containers:
+                  - name: app
+                    env:
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8098"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8098"
+
+    - name: inject-vault-credentials-agent-aws-gcp-key
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-gcp-key
+              spec:
+                volumes:
+                  - name: gcp
+                    emptyDir: {}
+                  - projected:
+                      defaultMode: 420
+                initContainers:
+                  - name: vault-credentials-agent-aws
+                    <<: *aws-agent-base
+                  - name: vault-credentials-agent-gcp
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+                    restartPolicy: Always
+                    startupProbe:
+                      exec:
+                        command:
+                          - test
+                          - -e
+                          - /gcp/sa.json
+                      failureThreshold: 5
+                      periodSeconds: 15
+                    args:
+                      - sidecar
+                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - -secret-type=service_account_key
+                      - -listen-address=127.0.0.1:8198
+                      - -operational-address=:8199
+                    env:
+                      - name: GOOGLE_APPLICATION_CREDENTIALS
+                        value: "/gcp/sa.json"
+                      - *vault-caurl
+                      - *vault-addr
+                    ports:
+                      - name: metrics
+                        containerPort: 8199
+                        protocol: TCP
+                    resources:
+                      requests:
+                        cpu: "0"
+                        memory: 25Mi
+                      limits:
+                        cpu: "1"
+                        memory: 100Mi
+                    volumeMounts:
+                      - name: gcp
+                        mountPath: /gcp
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                containers:
+                  - name: app
+                    env:
+                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                        value: "http://127.0.0.1:8098/credentials"
+                      - name: GOOGLE_APPLICATION_CREDENTIALS
+                        value: "/gcp/sa.json"
+                    volumeMounts:
+                      - name: gcp
+                        mountPath: /gcp
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+
+    - name: inject-vault-init-container-aws
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-init-aws-uw
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec: &init-aws-spec
+                volumes:
+                  - name: vault-aws-credentials
+                    emptyDir: {}
+                  - projected:
+                      defaultMode: 420
+                initContainers:
+                  - name: vault-credentials
+                    image: docker.io/hashicorp/vault:1.15.2
+                    command:
+                      - sh
+                      - -c
+                      - |
+                        echo '
+                        exit_after_auth = true
+                        auto_auth {
+                                method "kubernetes" {
+                                    mount_path = "auth/kubernetes"
+                                    config = {
+                                        role = "test-env_aws_test-namespace_default"
+                                    }
+                                    exit_on_err = true
+                                }
+
+                                sink "file" {
+                                    config = {
+                                        path = "/home/vault/.vault-token"
+                                    }
+                                }
+                        }
+                        template {
+                            destination = "/etc/aws/credentials"
+                            contents = <<EOT
+                        {{ with secret "aws/sts/test-env_aws_test-namespace_default" -}}
+                        [default]
+                        aws_access_key_id={{ .Data.access_key }}
+                        aws_secret_access_key={{ .Data.secret_key }}
+                        aws_session_token={{ .Data.security_token }}
+
+                        ; debug info
+                        ; request_id={{ .RequestID }}
+                        ; lease_id={{ .LeaseID }}
+                        ; renewable={{ .Renewable }}
+                        ; lease_duration={{ .LeaseDuration }}
+                        ; arn={{ .Data.arn }}
+                        ; warnings={{ .Warnings }}
+
+                        {{ end -}}
+                        EOT
+                        }
+                        ' > config.hcl
+                        /usr/bin/dumb-init -- wget -qO ca.crt $VAULT_CAURL && vault agent -ca-cert ca.crt -config=config.hcl
+                    env:
+                      - name: AWS_SHARED_CREDENTIALS_FILE
+                        value: "/etc/aws/credentials"
+                      - *vault-caurl
+                      - *vault-addr
+                    volumeMounts:
+                      - name: vault-aws-credentials
+                        mountPath: /etc/aws
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                containers:
+                  - name: app
+                    env:
+                      - name: AWS_SHARED_CREDENTIALS_FILE
+                        value: "/etc/aws/credentials"
+                    volumeMounts:
+                      - name: vault-aws-credentials
+                        mountPath: /etc/aws
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-init-aws-tumblr
+                annotations:
+                  injector.tumblr.com/status: "injected"
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec: *init-aws-spec
+
+    - name: inject-vault-credentials-agent-aws-fail-open
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-fail-open
+              spec:
+                initContainers:
+                  - name: vault-credentials-agent
+                    <<: &aws-fail-open-base
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+                      restartPolicy: Always
+                      args:
+                        - sidecar
+                        - -vault-role=test-env_aws_test-namespace_default
+                      env:
+                        - *vault-caurl
+                        - *vault-addr
+                      ports:
+                        - name: metrics
+                          containerPort: 8099
+                          protocol: TCP
+                      resources:
+                        requests:
+                          cpu: "0"
+                          memory: 25Mi
+                        limits:
+                          cpu: "1"
+                          memory: 100Mi
+                      (startupProbe == null): true
+                containers:
+                  - name: app
+                    env: *app-aws-env
+
+    - name: inject-vault-credentials-agent-aws-gcp-fail-open
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-gcp-fail-open
+              spec:
+                initContainers:
+                  - name: vault-credentials-agent-aws
+                    <<: *aws-fail-open-base
+                  - name: vault-credentials-agent-gcp
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+                    restartPolicy: Always
+                    args:
+                      - sidecar
+                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - -secret-type=access_token
+                      - -listen-address=127.0.0.1:8198
+                      - -operational-address=:8199
+                    env:
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8198"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8198"
+                      - *vault-caurl
+                      - *vault-addr
+                    ports:
+                      - name: metrics
+                        containerPort: 8199
+                        protocol: TCP
+                    resources:
+                      requests:
+                        cpu: "0"
+                        memory: 25Mi
+                      limits:
+                        cpu: "1"
+                        memory: 100Mi
+                    (startupProbe == null): true
+                containers:
+                  - name: app
+                    env: *app-aws-gcp-env
+
+    - name: inject-vault-credentials-agent-gcp-token-fail-open
+      try:
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-gcp-token-fail-open
+              spec:
+                initContainers:
+                  - name: vault-credentials-agent
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+                    restartPolicy: Always
+                    args:
+                      - sidecar
+                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - -secret-type=access_token
+                    env:
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8098"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8098"
+                      - *vault-caurl
+                      - *vault-addr
+                    ports:
+                      - name: metrics
+                        containerPort: 8099
+                        protocol: TCP
+                    resources:
+                      requests:
+                        cpu: "0"
+                        memory: 25Mi
+                      limits:
+                        cpu: "1"
+                        memory: 100Mi
+                    (startupProbe == null): true
+                containers:
+                  - name: app
+                    env:
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8098"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8098"
