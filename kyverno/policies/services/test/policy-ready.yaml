@@ -1,49 +1,64 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-external-ips
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: no-localhost-service
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-load-balancer-ip
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-nodeport
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: mirror-name-length
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"

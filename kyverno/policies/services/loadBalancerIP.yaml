@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-load-balancer-ip
   annotations:
@@ -13,17 +13,14 @@ metadata:
       addresses, in order to avoid someone hijacking an external service IP
       from their service.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: default
-      match:
-        any:
-          - resources:
-              kinds:
-                - Service
-      validate:
-        message: "loadBalancerIP is not allowed."
-        pattern:
-          spec:
-            =(loadBalancerIP): "null"
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["services"]
+  validations:
+    - expression: "!has(object.spec.loadBalancerIP)"
+      message: "loadBalancerIP is not allowed."

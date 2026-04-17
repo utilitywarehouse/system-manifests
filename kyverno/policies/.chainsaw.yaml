@@ -7,6 +7,13 @@ metadata:
 spec:
   parallel: 1
   fullName: true
+  timeouts:
+    apply: 1m30s
+    assert: 1m30s
+    cleanup: 1m30s
+    delete: 1m30s
+    error: 1m30s
+    exec: 1m30s
   # add required labels to all temp NS created by chainsaw
   namespaceTemplate:
     metadata:

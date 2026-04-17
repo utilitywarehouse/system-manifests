@@ -1,6 +1,6 @@
 # https://kyverno.io/policies/best-practices/restrict-service-external-ips/restrict-service-external-ips/
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-external-ips
   annotations:
@@ -14,19 +14,14 @@ metadata:
       See: https://github.com/kyverno/kyverno/issues/1367. This policy validates
       that the `externalIPs` field is not set on a Service.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-  - name: default
-    match:
-      resources:
-        kinds:
-        - Service
-    validate:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["services"]
+  validations:
+    - expression: "!has(object.spec.externalIPs) || size(object.spec.externalIPs) == 0"
       message: "externalIPs are not allowed."
-      pattern:
-        spec:
-          # restrict external IP addresses
-          # you can alternatively restrict to a known set of addresses using:
-          #     =(externalIPs): ["37.10.11.53", "153.10.20.1"]
-          X(externalIPs): "null"
