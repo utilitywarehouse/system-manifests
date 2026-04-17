@@ -12,15 +12,18 @@ spec:
         - assert:
             timeout: 30s
             resource:
-              apiVersion: kyverno.io/v1
-              kind: ClusterPolicy
+              apiVersion: policies.kyverno.io/v1
+              kind: ValidatingPolicy
               metadata:
                 name: vault-aws-role-arn
               status:
-                conditions:
-                  - reason: Succeeded
-                    status: "True"
-                    type: Ready
+                conditionStatus:
+                  (conditions[?type == 'RBACPermissionsGranted']):
+                    - reason: Succeeded
+                      status: "True"
+                  (conditions[?type == 'WebhookConfigured']):
+                    - reason: Succeeded
+                      status: "True"
 
     - name: test-vault-annotation
       try:
