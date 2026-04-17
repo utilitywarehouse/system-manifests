@@ -50,7 +50,7 @@ spec:
                     name: default
                 check:
                   ($error != null): true
-                  "(contains($error, 'Only cluster administrators are allowed to set default TLSOptions'))": true
+                  "(contains(to_string($error), 'Only cluster administrators are allowed to set default TLSOptions'))": true
 
     - name: test-ingress-validations
       try:
@@ -64,7 +64,7 @@ spec:
                     name: test-or-operator-not-allowed-ingressroutetcp
                 check:
                   ($error != null): true
-                  "(contains($error, 'Route matches must not contain ||'))": true
+                  "(contains(to_string($error), 'Route matches must not contain ||'))": true
               - match:
                   apiVersion: traefik.io/v1alpha1
                   kind: IngressRoute
@@ -72,7 +72,7 @@ spec:
                     name: test-or-operator-not-allowed-ingressroute
                 check:
                   ($error != null): true
-                  "(contains($error, 'Route matches must not contain ||'))": true
+                  "(contains(to_string($error), 'Route matches must not contain ||'))": true
               - match:
                   apiVersion: traefik.io/v1alpha1
                   kind: IngressRoute
@@ -80,7 +80,7 @@ spec:
                     name: test-or-operator-complex-not-allowed-ingressroute
                 check:
                   ($error != null): true
-                  "(contains($error, 'Route matches must not contain ||'))": true
+                  "(contains(to_string($error), 'Route matches must not contain ||'))": true
 
         - apply:
             file: test-disallow-wildcard-hostsni.yaml
@@ -92,7 +92,7 @@ spec:
                     name: test-wildcard-hostsni-not-allowed
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'HostSNI rules must not contain a wildcard host'))": true
+                  "(contains(to_string($error), 'HostSNI rules must not contain a wildcard host'))": true
               - match:
                   apiVersion: traefik.io/v1alpha1
                   kind: IngressRouteTCP
@@ -100,7 +100,7 @@ spec:
                     name: test-wildcard-subdomain-hostsni-not-allowed
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'HostSNI rules must not contain a wildcard host'))": true
+                  "(contains(to_string($error), 'HostSNI rules must not contain a wildcard host'))": true
               - match:
                   apiVersion: traefik.io/v1alpha1
                   kind: IngressRouteTCP
@@ -108,7 +108,7 @@ spec:
                     name: test-wildcard-hostsni-not-allowed-multiple-routes
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'HostSNI rules must not contain a wildcard host'))": true
+                  "(contains(to_string($error), 'HostSNI rules must not contain a wildcard host'))": true
 
         - apply:
             file: test-external-dns-domain-label-length.yaml
@@ -120,7 +120,7 @@ spec:
                     name: test-long-invalid-domain-label
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'External-DNS TXT record domain label must be <= 63 chars'))": true
+                  "(contains(to_string($error), 'External-DNS TXT record domain label must be <= 63 chars'))": true
 
         - apply:
             file: test-require-ingressroute-host.yaml
@@ -132,7 +132,7 @@ spec:
                     name: without-host
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'Ingresses must specify a host'))": true
+                  "(contains(to_string($error), 'Ingresses must specify a host'))": true
 
               - match:
                   apiVersion: traefik.io/v1alpha1
@@ -141,7 +141,7 @@ spec:
                     name: test-require-ingressroute-host-missing
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'All route matches must contain a Host rule'))": true
+                  "(contains(to_string($error), 'All route matches must contain a Host rule'))": true
               - match:
                   apiVersion: traefik.io/v1alpha1
                   kind: IngressRoute
@@ -149,4 +149,4 @@ spec:
                     name: test-require-ingressroute-bad-host
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'All route matches must contain a Host rule'))": true
+                  "(contains(to_string($error), 'All route matches must contain a Host rule'))": true

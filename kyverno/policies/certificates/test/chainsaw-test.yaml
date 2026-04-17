@@ -76,7 +76,7 @@ spec:
                     name: letsencrypt-cert
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'is restricted for visibility'))": true
+                  "(contains(to_string($error), 'is restricted for visibility'))": true
 
               - match:
                   apiVersion: cert-manager.io/v1
@@ -85,7 +85,7 @@ spec:
                     name: letsencrypt-cert-not-approved
                 check:
                   ($error != null): true
-                  "(contains($error || '', 'is restricted for visibility'))": true
+                  "(contains(to_string($error), 'is restricted for visibility'))": true
 
         # assert mutations
         - assert:

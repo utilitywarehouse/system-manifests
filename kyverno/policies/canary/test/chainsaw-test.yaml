@@ -31,7 +31,7 @@ spec:
             expect:
               - check:
                   ($error != null): true
-                  "(contains($error || '', 'Found kyverno canary configMap in the cluster'))": true
+                  "(contains(to_string($error), 'Found kyverno canary configMap in the cluster'))": true
 
     - name: test-other-cm
       try:

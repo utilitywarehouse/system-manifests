@@ -37,7 +37,7 @@ spec:
                     name: test-deployment-resource-limits-cpu-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+                  "(contains(to_string($error), 'CPU limit cannot exceed 6 cores'))": true
               - match:
                   apiVersion: apps/v1
                   kind: Deployment
@@ -45,7 +45,7 @@ spec:
                     name: test-deployment-resource-limits-init-cpu-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+                  "(contains(to_string($error), 'CPU limit cannot exceed 6 cores'))": true
               - match:
                   apiVersion: apps/v1
                   kind: DaemonSet
@@ -53,7 +53,7 @@ spec:
                     name: test-daemonset-cpu-limit-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+                  "(contains(to_string($error), 'CPU limit cannot exceed 6 cores'))": true
               - match:
                   apiVersion: apps/v1
                   kind: DaemonSet
@@ -61,7 +61,7 @@ spec:
                     name: test-daemonset-cpu-limit-millicores-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+                  "(contains(to_string($error), 'CPU limit cannot exceed 6 cores'))": true
               - match:
                   apiVersion: apps/v1
                   kind: DaemonSet
@@ -69,7 +69,7 @@ spec:
                     name: test-daemonset-cpu-limit-decimal-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'CPU limit cannot exceed 6 cores'))": true
+                  "(contains(to_string($error), 'CPU limit cannot exceed 6 cores'))": true
 
               # Memory Limit Failures
               - match:
@@ -79,7 +79,7 @@ spec:
                     name: test-deployment-resource-limits-memory-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+                  "(contains(to_string($error), 'Memory limit cannot exceed 24Gi'))": true
               - match:
                   apiVersion: apps/v1
                   kind: Deployment
@@ -87,7 +87,7 @@ spec:
                     name: test-deployment-resource-limits-init-memory-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+                  "(contains(to_string($error), 'Memory limit cannot exceed 24Gi'))": true
               - match:
                   apiVersion: batch/v1
                   kind: Job
@@ -95,7 +95,7 @@ spec:
                     name: test-job-memory-limit-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+                  "(contains(to_string($error), 'Memory limit cannot exceed 24Gi'))": true
               - match:
                   apiVersion: batch/v1
                   kind: CronJob
@@ -103,7 +103,7 @@ spec:
                     name: test-cronjob-memory-limit-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+                  "(contains(to_string($error), 'Memory limit cannot exceed 24Gi'))": true
               - match:
                   apiVersion: batch/v1
                   kind: CronJob
@@ -111,7 +111,7 @@ spec:
                     name: test-cronjob-memory-limit-mi-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+                  "(contains(to_string($error), 'Memory limit cannot exceed 24Gi'))": true
               - match:
                   apiVersion: batch/v1
                   kind: Job
@@ -119,7 +119,7 @@ spec:
                     name: test-job-memory-limit-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'Memory limit cannot exceed 24Gi'))": true
+                  "(contains(to_string($error), 'Memory limit cannot exceed 24Gi'))": true
 
               # Combined Failures (StatefulSet)
               - match:
@@ -129,4 +129,4 @@ spec:
                     name: test-statefulset-resource-limits-too-high
                 check:
                   ($error != null): true
-                  "(contains($error, 'CPU limit cannot exceed 6 cores') || contains($error, 'Memory limit cannot exceed 24Gi'))": true
+                  "(contains(to_string($error), 'CPU limit cannot exceed 6 cores') || contains($error, 'Memory limit cannot exceed 24Gi'))": true

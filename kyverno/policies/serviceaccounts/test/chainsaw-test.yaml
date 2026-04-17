@@ -34,4 +34,4 @@ spec:
                     name: test-invalid-annotation
                 check:
                   ($error != null): true
-                  "(contains($error, 'The annotation `vault.uw.systems/aws-role` must contain a valid role arn'))": true
+                  "(contains(to_string($error), 'The annotation `vault.uw.systems/aws-role` must contain a valid role arn'))": true
