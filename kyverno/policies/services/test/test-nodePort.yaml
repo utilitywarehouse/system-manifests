@@ -37,7 +37,7 @@ spec:
       expression: >-
         object.metadata.namespace == 'default' &&
         object.metadata.name == 'test-nodeport-exception-allowed' &&
-        object.spec.ports.all(p, !has(p.nodePort) || p.nodePort == 30960)
+        object.spec.ports.all(p, !has(p.nodePort) || p.nodePort == 30961)
 ---
 apiVersion: v1
 kind: Service
@@ -48,7 +48,7 @@ spec:
   type: NodePort
   ports:
     - name: udp
-      nodePort: 30960
+      nodePort: 30961
       port: 9060
       protocol: UDP
       targetPort: 9060

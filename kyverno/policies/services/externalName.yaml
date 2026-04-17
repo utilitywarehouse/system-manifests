@@ -14,9 +14,6 @@ metadata:
 spec:
   validationActions:
     - Deny
-  evaluation:
-    background:
-      enabled: false
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
