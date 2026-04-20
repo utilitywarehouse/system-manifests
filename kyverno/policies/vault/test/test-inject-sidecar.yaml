@@ -1,0 +1,116 @@
+# Pods for Rule: inject-vault-credentials-agent-aws
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-tumblr
+  annotations:
+    injector.tumblr.com/request: "vault-sidecar-aws"
+spec:
+  containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-uw
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws"
+spec:
+  containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
+---
+# Pods for Rule: inject-vault-credentials-agent-aws-gcp
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-gcp-tumblr
+  annotations:
+    injector.tumblr.com/request: "vault-sidecar-aws-gcp"
+spec:
+  initContainers: [{ name: init, image: alpine }]
+  containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-gcp-uw
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp"
+spec:
+  initContainers: [{ name: init, image: alpine }]
+  containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
+---
+# Pod for Rule: inject-vault-credentials-agent-gcp-key
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-gcp-key
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-key"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+# Pod for Rule: inject-vault-credentials-agent-gcp-token
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-gcp-token
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-token"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+# Pod for Rule: inject-vault-credentials-agent-aws-gcp-key
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-gcp-key
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp-key"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+# Pods for Rule: inject-vault-init-container-aws
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-init-aws-tumblr
+  annotations:
+    injector.tumblr.com/request: "vault-init-container-aws"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-init-aws-uw
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-init-container-aws"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+# Fail-open Variants
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-fail-open
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-fail-open"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-gcp-fail-open
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp-fail-open"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-gcp-token-fail-open
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-token-fail-open"
+spec:
+  containers: [{ name: app, image: alpine }]
