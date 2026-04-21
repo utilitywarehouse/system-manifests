@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-seccomp
   annotations:
@@ -12,37 +12,29 @@ metadata:
       requiring Kubernetes v1.19 or later, ensures that seccomp is unset or 
       set to `RuntimeDefault` or `Localhost`.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: check-seccomp
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      validate:
-        message: >-
-          Use of custom Seccomp profiles is disallowed. The fields
-          spec.securityContext.seccompProfile.type,
-          spec.containers[*].securityContext.seccompProfile.type,
-          spec.initContainers[*].securityContext.seccompProfile.type, and
-          spec.ephemeralContainers[*].securityContext.seccompProfile.type
-          must be unset or set to `RuntimeDefault` or `Localhost`.
-        pattern:
-          spec:
-            =(securityContext):
-              =(seccompProfile):
-                =(type): "RuntimeDefault | Localhost"
-            =(ephemeralContainers):
-              - =(securityContext):
-                  =(seccompProfile):
-                    =(type): "RuntimeDefault | Localhost"
-            =(initContainers):
-              - =(securityContext):
-                  =(seccompProfile):
-                    =(type): "RuntimeDefault | Localhost"
-            containers:
-              - =(securityContext):
-                  =(seccompProfile):
-                    =(type): "RuntimeDefault | Localhost"
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allContainers
+      expression: >-
+        object.spec.?containers.orValue([]) + 
+        object.spec.?initContainers.orValue([]) + 
+        object.spec.?ephemeralContainers.orValue([])
+  validations:
+    - message: >-
+        Use of custom Seccomp profiles is disallowed. The fields
+        spec.securityContext.seccompProfile.type,
+        spec.containers[*].securityContext.seccompProfile.type,
+        spec.initContainers[*].securityContext.seccompProfile.type, and
+        spec.ephemeralContainers[*].securityContext.seccompProfile.type
+        must be unset or set to `RuntimeDefault` or `Localhost`.
+      expression: >-
+        object.spec.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost'] &&
+        variables.allContainers.all(c, 
+          c.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost']
+        )

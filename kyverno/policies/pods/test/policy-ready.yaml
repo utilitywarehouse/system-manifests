@@ -163,32 +163,47 @@ status:
         reason: Succeeded
         status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-seccomp
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-selinux
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-sysctls
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
