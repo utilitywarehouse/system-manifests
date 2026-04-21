@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-host-pid-pods
   annotations:
@@ -10,19 +10,15 @@ metadata:
     policies.kyverno.io/description: >-
       This policy ensures Pods cannot use host's PID.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: default
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      validate:
-        message: >-
-          HostPID pods are disallowed. The field spec.hostPID must be unset or
-          set to `false`.
-        pattern:
-          spec:
-            =(hostPID): "false"
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - message: >-
+        HostPID pods are disallowed. The field spec.hostPID must be unset or
+        set to `false`.
+      expression: "!has(object.spec.hostPID) || object.spec.hostPID == false"

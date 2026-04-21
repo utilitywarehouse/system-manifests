@@ -175,6 +175,17 @@ spec:
                   ($error != null): true
                   "(contains(to_string($error), 'Use of host ports is disallowed'))": true
 
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-hostport-exception-deployment-allow
+                namespace: kube-system
+              status:
+                updatedReplicas: 1
+
     - name: test-node-scheduling
       try:
         - apply:
