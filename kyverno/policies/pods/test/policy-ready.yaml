@@ -118,25 +118,35 @@ status:
         reason: Succeeded
         status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-privilege-escalation
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-privileged-containers
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy

@@ -29,22 +29,21 @@ spec:
       securityContext:
         allowPrivilegeEscalation: true
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: trident-disallow-privilege-escalation
   namespace: kube-system
 spec:
-  exceptions:
-    - policyName: disallow-privilege-escalation
-      ruleNames: ["*"]
-  match:
-    any:
-      - resources:
-          namespaces:
-            - default
-          names:
-            - test-privilege-escalation-set-to-true-exception*
+  policyRefs:
+    - name: disallow-privilege-escalation
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'default'"
+
+    - name: for-given-app
+      expression: "object.metadata.name.startsWith('test-privilege-escalation-set-to-true-exception')"
 ---
 apiVersion: v1
 kind: Pod
