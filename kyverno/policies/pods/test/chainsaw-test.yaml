@@ -142,6 +142,17 @@ spec:
                   ($error != null): true
                   "(contains(to_string($error), 'HostPath volumes are not allowed.'))": true
 
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-hostpath-exception-deployment-allow
+                namespace: kube-system
+              status:
+                updatedReplicas: 1
+
     - name: test-host-pid-and-ports
       try:
         - apply:

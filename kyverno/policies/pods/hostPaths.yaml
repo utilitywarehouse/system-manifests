@@ -1,6 +1,6 @@
 # Based on: https://kyverno.io/policies/other/limit-hostpath-vols/limit-hostpath-vols/
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: hostpath-vols
   annotations:
@@ -12,25 +12,15 @@ metadata:
       hostPath volumes consume the underlying node's file system. Mounting host
       paths should be disabled by default, except for specific cases
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: restrict-hostpath-volumes
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      preconditions:
-        all:
-          - key: "{{ request.operation }}"
-            operator: NotEquals
-            value: DELETE
-      validate:
-        message: HostPath volumes are not allowed.
-        deny:
-          conditions:
-            all:
-              - key: "{{ request.object.spec.volumes || `[]` | [?hostPath] | length(@) }}"
-                operator: GreaterThanOrEquals
-                value: 1
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  validations:
+    - message: HostPath volumes are not allowed.
+      expression: >-
+        !has(object.spec.volumes) ||
+        object.spec.volumes.all(v, !has(v.hostPath))
