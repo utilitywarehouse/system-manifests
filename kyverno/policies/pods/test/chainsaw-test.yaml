@@ -67,6 +67,17 @@ spec:
                   ($error != null): true
                   "(contains(to_string($error), 'Any capabilities added other than NET_BIND_SERVICE'))": true
 
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-capabilities-exception-deployment-allowed
+                namespace: default
+              status:
+                updatedReplicas: 1
+
     - name: test-host-ipc
       try:
         - apply:
