@@ -117,6 +117,17 @@ spec:
                   ($error != null): true
                   "(contains(to_string($error), 'HostNetwork pods are disallowed'))": true
 
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-host-network-set-to-true-exception-deployment-allow
+                namespace: default
+              status:
+                updatedReplicas: 1
+
     - name: test-hostpath-volumes
       try:
         - apply:

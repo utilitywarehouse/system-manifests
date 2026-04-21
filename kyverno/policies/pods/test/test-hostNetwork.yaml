@@ -33,22 +33,21 @@ spec:
     - name: test
       image: alpine
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: etcd-backup-disallow-host-network-pods
   namespace: kube-system
 spec:
-  exceptions:
-    - policyName: disallow-host-network-pods
-      ruleNames: ["*"]
-  match:
-    any:
-      - resources:
-          namespaces:
-            - default
-          names:
-            - test-host-network-set-to-true-exception*
+  policyRefs:
+    - name: disallow-host-network-pods
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'default'"
+
+    - name: for-given-app
+      expression: "object.metadata.name.startsWith('test-host-network-set-to-true-exception')"
 ---
 apiVersion: v1
 kind: Pod
@@ -60,3 +59,23 @@ spec:
   containers:
     - name: test
       image: alpine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-host-network-set-to-true-exception-deployment-allow
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-host-network-set-to-true-exception-deployment-allow
+  template:
+    metadata:
+      labels:
+        app: test-host-network-set-to-true-exception-deployment-allow
+    spec:
+      hostNetwork: true
+      containers:
+        - name: test
+          image: alpine
