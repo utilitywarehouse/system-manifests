@@ -67,6 +67,17 @@ spec:
                   ($error != null): true
                   "(contains(to_string($error), 'Any capabilities added other than NET_BIND_SERVICE'))": true
 
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-capabilities-exception-deployment-allowed
+                namespace: default
+              status:
+                updatedReplicas: 1
+
     - name: test-host-ipc
       try:
         - apply:
@@ -80,6 +91,17 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'HostIPC pods are disallowed'))": true
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-hostipc-set-to-true-exception-deployment-allow
+                namespace: default
+              status:
+                updatedReplicas: 1
 
     - name: test-host-network
       try:
@@ -95,6 +117,17 @@ spec:
                   ($error != null): true
                   "(contains(to_string($error), 'HostNetwork pods are disallowed'))": true
 
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-host-network-set-to-true-exception-deployment-allow
+                namespace: default
+              status:
+                updatedReplicas: 1
+
     - name: test-hostpath-volumes
       try:
         - apply:
@@ -108,6 +141,17 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'HostPath volumes are not allowed.'))": true
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-hostpath-exception-deployment-allow
+                namespace: kube-system
+              status:
+                updatedReplicas: 1
 
     - name: test-host-pid-and-ports
       try:
@@ -130,6 +174,17 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'Use of host ports is disallowed'))": true
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-hostport-exception-deployment-allow
+                namespace: kube-system
+              status:
+                updatedReplicas: 1
 
     - name: test-node-scheduling
       try:

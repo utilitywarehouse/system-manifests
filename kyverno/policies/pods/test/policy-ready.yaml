@@ -1,139 +1,209 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-apparmor-profiles
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: pod-capabilities
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-host-ipc-pods
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-host-network-pods
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: hostpath-vols
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-host-pid-pods
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-host-ports
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-scheduling-to-master-nodes
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-privilege-escalation
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-privileged-containers
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-proc-mount
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-seccomp
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-selinux
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-sysctls
 status:
-  conditions:
-    - reason: Succeeded
-      status: "True"
-      type: Ready
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - message: Policy is ready for reporting.
+        reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - message: Webhook configured.
+        reason: Succeeded
+        status: "True"

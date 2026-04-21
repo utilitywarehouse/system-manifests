@@ -1,6 +1,6 @@
 # https://kyverno.io/policies/pod-security/baseline/disallow-privileged-containers/disallow-privileged-containers/
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-privileged-containers
   annotations:
@@ -12,27 +12,24 @@ metadata:
       Privileged mode disables most security mechanisms and must not be allowed. This policy
       ensures Pods do not call for privileged mode.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: default
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      validate:
-        message: >-
-          Privileged mode is disallowed. The fields spec.containers[*].securityContext.privileged
-          and spec.initContainers[*].securityContext.privileged must be unset or set to `false`.
-        pattern:
-          spec:
-            =(ephemeralContainers):
-              - =(securityContext):
-                  =(privileged): "false"
-            =(initContainers):
-              - =(securityContext):
-                  =(privileged): "false"
-            containers:
-              - =(securityContext):
-                  =(privileged): "false"
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allContainers
+      expression: >-
+        object.spec.?containers.orValue([]) + 
+        object.spec.?initContainers.orValue([]) + 
+        object.spec.?ephemeralContainers.orValue([])
+  validations:
+    - expression: >-
+        variables.allContainers.all(c, 
+          c.?securityContext.?privileged.orValue(false) == false
+        )
+      messageExpression: >-
+        'Privileged mode is disallowed. The following containers have privileged set to true: ' + 
+        variables.allContainers.filter(c, c.?securityContext.?privileged.orValue(false) == true).map(c, c.name).join(', ')

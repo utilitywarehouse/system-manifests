@@ -58,3 +58,24 @@ spec:
   containers:
     - name: test
       image: alpine
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    name: sys-mon
+    uw.systems/owner: system
+  name: sys-mon
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-scheduling-excluded-namespace
+  namespace: sys-mon
+spec:
+  tolerations:
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+  containers:
+    - name: test
+      image: alpine

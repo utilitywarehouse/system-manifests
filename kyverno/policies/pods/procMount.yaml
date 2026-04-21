@@ -1,5 +1,5 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-proc-mount
   annotations:
@@ -13,29 +13,24 @@ metadata:
       to deviate from the `Default` procMount requires setting a feature gate at the API
       server.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: check-proc-mount
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      validate:
-        message: >-
-          Changing the proc mount from the default is not allowed. The fields
-          spec.containers[*].securityContext.procMount, spec.initContainers[*].securityContext.procMount,
-          and spec.ephemeralContainers[*].securityContext.procMount must be unset or
-          set to `Default`.
-        pattern:
-          spec:
-            =(ephemeralContainers):
-              - =(securityContext):
-                  =(procMount): "Default"
-            =(initContainers):
-              - =(securityContext):
-                  =(procMount): "Default"
-            containers:
-              - =(securityContext):
-                  =(procMount): "Default"
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allContainers
+      expression: >-
+        object.spec.?containers.orValue([]) + 
+        object.spec.?initContainers.orValue([]) + 
+        object.spec.?ephemeralContainers.orValue([])
+  validations:
+    - expression: >-
+        variables.allContainers.all(c, 
+          c.?securityContext.?procMount.orValue('Default') == 'Default'
+        )
+      messageExpression: >-
+        'Changing the proc mount from the default is not allowed. The following containers have an invalid procMount: ' + 
+        variables.allContainers.filter(c, c.?securityContext.?procMount.orValue('Default') != 'Default').map(c, c.name).join(', ')

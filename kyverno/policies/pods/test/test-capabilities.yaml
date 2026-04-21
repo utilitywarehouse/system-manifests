@@ -34,33 +34,24 @@ spec:
             - SYS_PTRACE
             - NET_BIND_SERVICE
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: shared-sys-ptrace-pod-capabilities
   namespace: kube-system
 spec:
-  exceptions:
-    - policyName: pod-capabilities
-      ruleNames: ["*"]
-  match:
-    any:
-      - resources:
-          namespaces:
-            - default
-  conditions:
-    all:
-      - key: >-
-          {{
-            [
-              request.object.spec.containers[].securityContext.capabilities.add[],
-              request.object.spec.template.spec.containers[].securityContext.capabilities.add[]
-            ] | [] || `[]`
-          }}
-        operator: AllIn
-        value:
-          - "SYS_PTRACE"
-          - "NET_BIND_SERVICE"
+  policyRefs:
+    - name: pod-capabilities
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'default'"
+
+    - name: extend-pod-capabilities
+      expression: >-
+        object.spec.?containers.orValue([]).all(c, 
+          c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap in ['SYS_PTRACE', 'NET_BIND_SERVICE', ''])
+        )
 ---
 apiVersion: v1
 kind: Pod
@@ -76,3 +67,27 @@ spec:
           add:
             - SYS_PTRACE
             - NET_BIND_SERVICE
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-capabilities-exception-deployment-allowed
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-capabilities-exception-deployment-allowed
+  template:
+    metadata:
+      labels:
+        app: test-capabilities-exception-deployment-allowed
+    spec:
+      containers:
+        - name: test
+          image: alpine
+          securityContext:
+            capabilities:
+              add:
+                - SYS_PTRACE
+                - NET_BIND_SERVICE

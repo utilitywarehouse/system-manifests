@@ -1,6 +1,6 @@
 # https://kyverno.io/policies/pod-security/baseline/disallow-host-ports/disallow-host-ports/
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-host-ports
   annotations:
@@ -13,28 +13,25 @@ metadata:
       allowed, or at minimum restricted to a known list. This policy ensures the `hostPort`
       field is unset or set to `0`.
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: host-ports-none
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      validate:
-        message: >-
-          Use of host ports is disallowed. The fields spec.containers[*].ports[*].hostPort
-          , spec.initContainers[*].ports[*].hostPort, and spec.ephemeralContainers[*].ports[*].hostPort
-          must either be unset or set to `0`.
-        pattern:
-          spec:
-            =(ephemeralContainers):
-              - =(ports):
-                  - =(hostPort): 0
-            =(initContainers):
-              - =(ports):
-                  - =(hostPort): 0
-            containers:
-              - =(ports):
-                  - =(hostPort): 0
+  validationActions: [Deny]
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["pods"]
+  variables:
+    - name: allContainers
+      expression: >-
+        object.spec.?containers.orValue([]) + 
+        object.spec.?initContainers.orValue([]) + 
+        object.spec.?ephemeralContainers.orValue([])
+  validations:
+    - message: >-
+        Use of host ports is disallowed. The fields spec.containers[*].ports[*].hostPort
+        , spec.initContainers[*].ports[*].hostPort, and spec.ephemeralContainers[*].ports[*].hostPort
+        must either be unset or set to `0`.
+      expression: >-
+        variables.allContainers.all(c, 
+          c.?ports.orValue([]).all(p, !has(p.hostPort) || p.hostPort == 0)
+        )

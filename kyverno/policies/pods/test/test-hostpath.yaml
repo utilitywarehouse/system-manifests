@@ -33,36 +33,27 @@ spec:
         path: /data
         type: Directory
 ---
-apiVersion: kyverno.io/v2
+apiVersion: policies.kyverno.io/v1
 kind: PolicyException
 metadata:
   name: calico-node-hostpath-vols
   namespace: kube-system
 spec:
-  exceptions:
-    - policyName: hostpath-vols
-      ruleNames: ["*"]
-  match:
-    any:
-      - resources:
-          namespaces:
-            - kube-system
-          names:
-            - test-hostpath-exception*
-  conditions:
-    all:
-      - key: >-
-          {{
-            [
-              request.object.spec.volumes[?hostPath].hostPath.path,
-              request.object.spec.template.spec.volumes[?hostPath].hostPath.path
-            ] | [] || `[]`
-          }}
-        operator: AllIn
-        value:
-          - /usr/share/ca-certificates
-          - /lib/modules
-          - /var/run/calico
+  policyRefs:
+    - name: hostpath-vols
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'kube-system'"
+
+    - name: for-given-app
+      expression: "object.metadata.name.startsWith('test-hostpath-exception')"
+
+    - name: allow-given-hostpath
+      expression: >-
+        object.spec.?volumes.orValue([]).all(v,
+          !has(v.hostPath) || !has(v.hostPath.path) || v.hostPath.path in ['/usr/share/ca-certificates', '/lib/modules', '/var/run/calico']
+        )
 ---
 apiVersion: v1
 kind: Pod
@@ -86,3 +77,35 @@ spec:
         path: /var/run/calico
         type: DirectoryOrCreate
       name: var-run-calico
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-hostpath-exception-deployment-allow
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-hostpath-exception-deployment-allow
+  template:
+    metadata:
+      labels:
+        app: test-hostpath-exception-deployment-allow
+    spec:
+      containers:
+        - name: test
+          image: alpine
+      volumes:
+        - hostPath:
+            path: /usr/share/ca-certificates
+            type: ""
+          name: ssl-certs
+        - hostPath:
+            path: /lib/modules
+            type: ""
+          name: lib-modules
+        - hostPath:
+            path: /var/run/calico
+            type: DirectoryOrCreate
+          name: var-run-calico
