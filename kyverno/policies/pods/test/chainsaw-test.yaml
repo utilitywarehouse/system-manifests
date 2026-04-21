@@ -92,6 +92,17 @@ spec:
                   ($error != null): true
                   "(contains(to_string($error), 'HostIPC pods are disallowed'))": true
 
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-hostipc-set-to-true-exception-deployment-allow
+                namespace: default
+              status:
+                updatedReplicas: 1
+
     - name: test-host-network
       try:
         - apply:
