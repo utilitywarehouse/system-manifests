@@ -23,12 +23,11 @@ spec:
     - name: exclude-system-namespaces
       expression: >-
         !(
-          object.metadata.?namespace.orValue('') == 'kube-system' ||
-          object.metadata.?namespace.orValue('').startsWith('sys-')
+          request.namespace == 'kube-system' ||
+          request.namespace.startsWith('sys-')
         )
   validations:
     - message: Pods may not use tolerations which schedule on control plane nodes.
-      # This combines both legacy rules into a single efficient check
       expression: >-
         object.spec.?tolerations.orValue([]).all(t, 
             t.?key.orValue('') != 'node-role.kubernetes.io/master' && 
