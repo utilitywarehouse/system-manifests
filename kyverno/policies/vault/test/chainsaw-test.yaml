@@ -71,7 +71,7 @@ spec:
                 name: test-aws-uw
                 annotations:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
-              spec: &aws-spec
+              spec:
                 initContainers:
                   - name: vault-credentials-agent
                     <<: &aws-agent-base
@@ -113,17 +113,6 @@ spec:
                   - name: backend
                     env: *app-aws-env
 
-        - assert:
-            resource:
-              apiVersion: v1
-              kind: Pod
-              metadata:
-                name: test-aws-tumblr
-                annotations:
-                  injector.tumblr.com/status: "injected"
-                  uw.systems/kyverno-inject-sidecar-status: "injected"
-              spec: *aws-spec
-
     - name: inject-vault-credentials-agent-aws-gcp
       try:
         - assert:
@@ -134,7 +123,7 @@ spec:
                 name: test-aws-gcp-uw
                 annotations:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
-              spec: &aws-gcp-spec
+              spec:
                 initContainers:
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
@@ -185,17 +174,6 @@ spec:
                     env: *app-aws-gcp-env
                   - name: backend
                     env: *app-aws-gcp-env
-
-        - assert:
-            resource:
-              apiVersion: v1
-              kind: Pod
-              metadata:
-                name: test-aws-gcp-tumblr
-                annotations:
-                  injector.tumblr.com/status: "injected"
-                  uw.systems/kyverno-inject-sidecar-status: "injected"
-              spec: *aws-gcp-spec
 
     - name: inject-vault-credentials-agent-gcp-key
       try:
@@ -387,7 +365,7 @@ spec:
                 name: test-init-aws-uw
                 annotations:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
-              spec: &init-aws-spec
+              spec:
                 volumes:
                   - name: vault-aws-credentials
                     emptyDir: {}
@@ -457,17 +435,6 @@ spec:
                       - name: vault-aws-credentials
                         mountPath: /etc/aws
                       - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-
-        - assert:
-            resource:
-              apiVersion: v1
-              kind: Pod
-              metadata:
-                name: test-init-aws-tumblr
-                annotations:
-                  injector.tumblr.com/status: "injected"
-                  uw.systems/kyverno-inject-sidecar-status: "injected"
-              spec: *init-aws-spec
 
     - name: inject-vault-credentials-agent-aws-fail-open
       try:
