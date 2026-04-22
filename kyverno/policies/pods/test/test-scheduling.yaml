@@ -79,3 +79,28 @@ spec:
   containers:
     - name: test
       image: alpine
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app.kubernetes.io/name: test-scheduling-excluded-namespace-ds
+  name: test-scheduling-excluded-namespace-ds
+  namespace: sys-mon
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: test-scheduling-excluded-namespace-ds
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: test-scheduling-excluded-namespace-ds
+    spec:
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/control-plane
+      containers:
+        - name: test
+          image: alpine

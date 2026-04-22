@@ -206,6 +206,17 @@ spec:
                 check:
                   ($error != null): true
 
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: DaemonSet
+              metadata:
+                name: test-scheduling-excluded-namespace-ds
+                namespace: sys-mon
+              status:
+                updatedNumberScheduled: 1
+
     - name: test-privilege-combined
       try:
         - apply:
