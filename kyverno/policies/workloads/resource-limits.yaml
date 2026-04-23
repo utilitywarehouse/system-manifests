@@ -14,7 +14,7 @@ spec:
     - Deny
   matchConstraints:
     resourceRules:
-      # Make sure resource limits policy only applies to:
+      # Make sure resource limits policy only applies to NEW:
       # Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs and CronJobs
       # and no longer apply to Pods ensuring that existing resources continue
       # running without disruption while enforcing limits only on new or
@@ -25,7 +25,6 @@ spec:
           - "v1"
         operations:
           - "CREATE"
-          - "UPDATE"
         resources:
           - "deployments"
           - "statefulsets"
@@ -37,7 +36,6 @@ spec:
           - "v1"
         operations:
           - "CREATE"
-          - "UPDATE"
         resources:
           - "jobs"
           - "cronjobs"
