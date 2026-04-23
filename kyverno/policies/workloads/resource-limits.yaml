@@ -41,6 +41,17 @@ spec:
         resources:
           - "jobs"
           - "cronjobs"
+  matchConditions:
+    # For UPDATE operations, only validate when the pod template spec has actually
+    # changed. This prevents system-initiated updates (e.g. status reconciliation,
+    # Job pod completions) from blocking existing workloads that were created before
+    # this policy was enforced.
+    - name: pod-template-changed
+      expression: >-
+        request.operation == "CREATE" ||
+        (has(object.spec.template) && has(oldObject.spec.template) && object.spec.template != oldObject.spec.template) ||
+        (has(object.spec.jobTemplate) && has(oldObject.spec.jobTemplate) && object.spec.jobTemplate != oldObject.spec.jobTemplate) ||
+        (!has(object.spec.template) && !has(object.spec.jobTemplate))
   variables:
     # Safely abstract the path differences between standard workloads and CronJobs
     - name: containers
