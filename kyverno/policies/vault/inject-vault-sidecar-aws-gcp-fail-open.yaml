@@ -1,0 +1,147 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-aws-gcp-fail-open
+  labels:
+    uw.systems/kyverno-policy-group: vault-sidecar-injector
+  annotations:
+    policies.kyverno.io/title: Inject Sidecar - AWS & GCP (Fail Open)
+spec:
+  autogen:
+    mutatingAdmissionPolicy:
+      enabled: false
+  evaluation:
+    mutateExisting:
+      enabled: true
+
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+
+  matchConditions:
+    - name: match-aws-gcp-fail-open-annotation
+      expression: >-
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-sidecar-aws-gcp-fail-open'
+
+  variables:
+    - name: vkac_env
+      expression: "'test-env'"
+    - name: pod_namespace
+      expression: "object.metadata.?namespace.orValue('default')"
+    - name: pod_sa
+      expression: "object.spec.?serviceAccountName.orValue('default')"
+
+    - name: sidecar_payload_aws
+      expression: >-
+        yaml.parse(
+          '''
+          name: vault-credentials-agent-aws
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+          restartPolicy: Always
+          args:
+            - sidecar
+            - -vault-role=''' + variables.vkac_env + '''_aws_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
+          env:
+            - name: VAULT_CAURL
+              value: "http://vault-ca-cert.sys-vault:8100"
+            - name: VAULT_ADDR
+              value: "https://vault.sys-vault:8200"
+          ports:
+            - name: metrics
+              containerPort: 8099
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 0m
+              memory: 25Mi
+            limits:
+              cpu: 1000m
+              memory: 100Mi
+          '''
+        )
+
+    - name: sidecar_payload_gcp
+      expression: >-
+        yaml.parse(
+          '''
+          name: vault-credentials-agent-gcp
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
+          restartPolicy: Always
+          args:
+            - sidecar
+            - -vault-static-account=''' + variables.vkac_env + '''_gcp_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
+            - -secret-type=access_token
+            - -listen-address=127.0.0.1:8198
+            - -operational-address=:8199
+          env:
+            - name: GCE_METADATA_HOST
+              value: "127.0.0.1:8198"
+            - name: GCE_METADATA_ROOT
+              value: "127.0.0.1:8198"
+            - name: VAULT_CAURL
+              value: "http://vault-ca-cert.sys-vault:8100"
+            - name: VAULT_ADDR
+              value: "https://vault.sys-vault:8200"
+          ports:
+            - name: metrics
+              containerPort: 8199
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 0m
+              memory: 25Mi
+            limits:
+              cpu: 1000m
+              memory: 100Mi
+          '''
+        )
+
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            metadata: Object.metadata{
+              annotations: {
+                "uw.systems/kyverno-inject-sidecar-status": "injected"
+              }
+            },
+            spec: Object.spec{
+              initContainers: has(object.spec.initContainers) ? 
+                object.spec.initContainers.map(c, 
+                  Object.spec.initContainers{
+                    name: c.name,
+                    env: [
+                      Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8098/credentials" },
+                      Object.spec.initContainers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
+                      Object.spec.initContainers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
+                    ]
+                  }
+                ) : [],
+              containers: has(object.spec.containers) ? 
+                  object.spec.containers.map(c, 
+                    Object.spec.containers{
+                      name: c.name,
+                      env: [
+                        Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8098/credentials" },
+                        Object.spec.containers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
+                        Object.spec.containers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
+                      ]
+                    }
+                ) : []
+            }
+          }
+
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          size(object.spec.?initContainers.orValue([])) > 0
+            ? [
+              JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload_aws},
+              JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload_gcp}
+              ]
+            :
+              [JSONPatch{op: "add", path: "/spec/initContainers", value: [variables.sidecar_payload_aws, variables.sidecar_payload_gcp]}]

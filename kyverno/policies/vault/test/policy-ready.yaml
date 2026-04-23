@@ -1,0 +1,129 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-aws
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-aws-fail-open
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-aws-gcp
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-aws-gcp-fail-open
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-aws-gcp-key
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-gcp-key
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-gcp-token
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-gcp-token-fail-open
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-init-container-aws
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: vault-aws-role-arn
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
