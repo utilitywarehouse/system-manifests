@@ -2,6 +2,8 @@ apiVersion: policies.kyverno.io/v1
 kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-aws-gcp-fail-open
+  labels:
+    uw.systems/kyverno-policy-group: vault-sidecar-injector
   annotations:
     policies.kyverno.io/title: Inject Sidecar - AWS & GCP (Fail Open)
 spec:
