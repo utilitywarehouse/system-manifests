@@ -40,6 +40,10 @@ spec:
           - "jobs"
           - "cronjobs"
   variables:
+    - name: max_cpu
+      expression: "'6'"
+    - name: max_memory
+      expression: "'24Gi'"
     # Safely abstract the path differences between standard workloads and CronJobs
     - name: containers
       expression: >-
@@ -53,16 +57,16 @@ spec:
     # CPU Validations
     # !x.isGreaterThan(y) means x <= y
     - expression: >-
-        variables.containers.all(c, !quantity(c.?resources.?limits.?cpu.orValue('0')).isGreaterThan(quantity('6')))
+        variables.containers.all(c, !quantity(c.?resources.?limits.?cpu.orValue('0')).isGreaterThan(quantity(variables.max_cpu)))
       message: "CPU limit cannot exceed 6 cores in any container within the Pod template."
     - expression: >-
-        variables.initContainers.all(c, !quantity(c.?resources.?limits.?cpu.orValue('0')).isGreaterThan(quantity('6')))
+        variables.initContainers.all(c, !quantity(c.?resources.?limits.?cpu.orValue('0')).isGreaterThan(quantity(variables.max_cpu)))
       message: "CPU limit cannot exceed 6 cores in any init container within the Pod template."
 
     # Memory Validations
     - expression: >-
-        variables.containers.all(c, !quantity(c.?resources.?limits.?memory.orValue('0')).isGreaterThan(quantity('24Gi')))
+        variables.containers.all(c, !quantity(c.?resources.?limits.?memory.orValue('0')).isGreaterThan(quantity(variables.max_memory)))
       message: "Memory limit cannot exceed 24Gi in any container within the Pod template."
     - expression: >-
-        variables.initContainers.all(c, !quantity(c.?resources.?limits.?memory.orValue('0')).isGreaterThan(quantity('24Gi')))
+        variables.initContainers.all(c, !quantity(c.?resources.?limits.?memory.orValue('0')).isGreaterThan(quantity(variables.max_memory)))
       message: "Memory limit cannot exceed 24Gi in any init container within the Pod template."
