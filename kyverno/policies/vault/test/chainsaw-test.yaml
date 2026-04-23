@@ -8,39 +8,28 @@ spec:
       try:
         - apply:
             file: ../vault-annotation.yaml
-
-        # Simulate CI/CD templating
-        - script:
-            content: |
-              sed 's/{{ VKAC_ENVIRONMENT }}/test-env/g; s/{{ POD_NAMESPACE }}/test-namespace/g;' ../injectSidecar.yaml | kubectl apply -f -
+        - apply:
+            file: ../inject-vault-sidecar-aws-fail-open.yaml
+        - apply:
+            file: ../inject-vault-sidecar-aws-gcp-fail-open.yaml
+        - apply:
+            file: ../inject-vault-sidecar-aws-gcp-key.yaml
+        - apply:
+            file: ../inject-vault-sidecar-aws-gcp.yaml
+        - apply:
+            file: ../inject-vault-sidecar-aws.yaml
+        - apply:
+            file: ../inject-vault-sidecar-gcp-key.yaml
+        - apply:
+            file: ../inject-vault-sidecar-gcp-token-fail-open.yaml
+        - apply:
+            file: ../inject-vault-sidecar-gcp-token.yaml
+        - apply:
+            file: ../inject-vault-init-container-aws.yaml
 
         - assert:
             timeout: 30s
-            resource:
-              apiVersion: policies.kyverno.io/v1
-              kind: ValidatingPolicy
-              metadata:
-                name: vault-aws-role-arn
-              status:
-                conditionStatus:
-                  (conditions[?type == 'RBACPermissionsGranted']):
-                    - reason: Succeeded
-                      status: "True"
-                  (conditions[?type == 'WebhookConfigured']):
-                    - reason: Succeeded
-                      status: "True"
-        - assert:
-            timeout: 30s
-            resource:
-              apiVersion: kyverno.io/v1
-              kind: ClusterPolicy
-              metadata:
-                name: inject-sidecar
-              status:
-                conditions:
-                  - reason: Succeeded
-                    status: "True"
-                    type: Ready
+            file: policy-ready.yaml
 
     - name: test-vault-annotation
       try:
@@ -61,9 +50,10 @@ spec:
         - apply:
             file: test-inject-sidecar.yaml
 
-    - name: inject-vault-credentials-agent-aws
+    - name: inject-vault-sidecar-aws
       try:
         - assert:
+            timeout: 30s
             resource:
               apiVersion: v1
               kind: Pod
@@ -82,11 +72,10 @@ spec:
                           command:
                             - /bin/sh
                             - -c
-                            - |
-                              while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                            - while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                       args:
                         - sidecar
-                        - -vault-role=test-env_aws_test-namespace_default
+                        - (join('', ['-vault-role=test-env_aws_', $namespace, '_default']))
                       env:
                         - &vault-caurl
                           name: VAULT_CAURL
@@ -113,9 +102,10 @@ spec:
                   - name: backend
                     env: *app-aws-env
 
-    - name: inject-vault-credentials-agent-aws-gcp
+    - name: inject-vault-sidecar-aws-gcp
       try:
         - assert:
+            timeout: 30s
             resource:
               apiVersion: v1
               kind: Pod
@@ -125,6 +115,14 @@ spec:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
                 initContainers:
+                  - name: init
+                    env: &app-aws-gcp-env
+                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                        value: "http://127.0.0.1:8098/credentials"
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8198"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8198"
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
                   - name: vault-credentials-agent-gcp
@@ -135,11 +133,10 @@ spec:
                         command:
                           - /bin/sh
                           - -c
-                          - |
-                            while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                          - while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                     args:
                       - sidecar
-                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
                       - -secret-type=access_token
                       - -listen-address=127.0.0.1:8198
                       - -operational-address=:8199
@@ -161,23 +158,16 @@ spec:
                       limits:
                         cpu: "1"
                         memory: 100Mi
-                  - name: init
-                    env: &app-aws-gcp-env
-                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
-                        value: "http://127.0.0.1:8098/credentials"
-                      - name: GCE_METADATA_HOST
-                        value: "127.0.0.1:8198"
-                      - name: GCE_METADATA_ROOT
-                        value: "127.0.0.1:8198"
                 containers:
                   - name: app
                     env: *app-aws-gcp-env
                   - name: backend
                     env: *app-aws-gcp-env
 
-    - name: inject-vault-credentials-agent-gcp-key
+    - name: inject-vault-sidecar-gcp-key
       try:
         - assert:
+            timeout: 30s
             resource:
               apiVersion: v1
               kind: Pod
@@ -187,10 +177,10 @@ spec:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
                 volumes:
-                  - name: gcp
-                    emptyDir: {}
                   - projected:
                       defaultMode: 420
+                  - name: gcp
+                    emptyDir: {}
                 initContainers:
                   - name: vault-credentials-agent
                     image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
@@ -205,7 +195,7 @@ spec:
                       periodSeconds: 15
                     args:
                       - sidecar
-                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
                       - -secret-type=service_account_key
                     env:
                       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -233,13 +223,14 @@ spec:
                       - name: GOOGLE_APPLICATION_CREDENTIALS
                         value: "/gcp/sa.json"
                     volumeMounts:
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
                       - name: gcp
                         mountPath: /gcp
-                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
 
-    - name: inject-vault-credentials-agent-gcp-token
+    - name: inject-vault-sidecar-gcp-token
       try:
         - assert:
+            timeout: 30s
             resource:
               apiVersion: v1
               kind: Pod
@@ -257,11 +248,10 @@ spec:
                         command:
                           - /bin/sh
                           - -c
-                          - |
-                            while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                          - while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
                     args:
                       - sidecar
-                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
                       - -secret-type=access_token
                     env:
                       - name: GCE_METADATA_HOST
@@ -289,9 +279,10 @@ spec:
                       - name: GCE_METADATA_ROOT
                         value: "127.0.0.1:8098"
 
-    - name: inject-vault-credentials-agent-aws-gcp-key
+    - name: inject-vault-sidecar-aws-gcp-key
       try:
         - assert:
+            timeout: 30s
             resource:
               apiVersion: v1
               kind: Pod
@@ -299,10 +290,10 @@ spec:
                 name: test-aws-gcp-key
               spec:
                 volumes:
-                  - name: gcp
-                    emptyDir: {}
                   - projected:
                       defaultMode: 420
+                  - name: gcp
+                    emptyDir: {}
                 initContainers:
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
@@ -319,7 +310,7 @@ spec:
                       periodSeconds: 15
                     args:
                       - sidecar
-                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
                       - -secret-type=service_account_key
                       - -listen-address=127.0.0.1:8198
                       - -operational-address=:8199
@@ -351,13 +342,56 @@ spec:
                       - name: GOOGLE_APPLICATION_CREDENTIALS
                         value: "/gcp/sa.json"
                     volumeMounts:
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
                       - name: gcp
                         mountPath: /gcp
-                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
 
     - name: inject-vault-init-container-aws
       try:
         - assert:
+            timeout: 30s
+            bindings:
+              - name: expected_script
+                value: |
+                  echo '
+                  exit_after_auth = true
+                  auto_auth {
+                          method "kubernetes" {
+                              mount_path = "auth/kubernetes"
+                              config = {
+                                  role = "test-env_aws_test-namespace_default"
+                              }
+                              exit_on_err = true
+                          }
+
+                          sink "file" {
+                              config = {
+                                  path = "/home/vault/.vault-token"
+                              }
+                          }
+                  }
+                  template {
+                      destination = "/etc/aws/credentials"
+                      contents = <<EOT
+                  {{ with secret "aws/sts/test-env_aws_test-namespace_default" -}}
+                  [default]
+                  aws_access_key_id={{ .Data.access_key }}
+                  aws_secret_access_key={{ .Data.secret_key }}
+                  aws_session_token={{ .Data.security_token }}
+
+                  ; debug info
+                  ; request_id={{ .RequestID }}
+                  ; lease_id={{ .LeaseID }}
+                  ; renewable={{ .Renewable }}
+                  ; lease_duration={{ .LeaseDuration }}
+                  ; arn={{ .Data.arn }}
+                  ; warnings={{ .Warnings }}
+
+                  {{ end -}}
+                  EOT
+                  }
+                  ' > config.hcl
+                  /usr/bin/dumb-init -- wget -qO ca.crt $VAULT_CAURL && vault agent -ca-cert ca.crt -config=config.hcl
             resource:
               apiVersion: v1
               kind: Pod
@@ -367,56 +401,17 @@ spec:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
                 volumes:
-                  - name: vault-aws-credentials
-                    emptyDir: {}
                   - projected:
                       defaultMode: 420
+                  - name: vault-aws-credentials
+                    emptyDir: {}
                 initContainers:
                   - name: vault-credentials
                     image: docker.io/hashicorp/vault:1.15.2
                     command:
                       - sh
                       - -c
-                      - |
-                        echo '
-                        exit_after_auth = true
-                        auto_auth {
-                                method "kubernetes" {
-                                    mount_path = "auth/kubernetes"
-                                    config = {
-                                        role = "test-env_aws_test-namespace_default"
-                                    }
-                                    exit_on_err = true
-                                }
-
-                                sink "file" {
-                                    config = {
-                                        path = "/home/vault/.vault-token"
-                                    }
-                                }
-                        }
-                        template {
-                            destination = "/etc/aws/credentials"
-                            contents = <<EOT
-                        {{ with secret "aws/sts/test-env_aws_test-namespace_default" -}}
-                        [default]
-                        aws_access_key_id={{ .Data.access_key }}
-                        aws_secret_access_key={{ .Data.secret_key }}
-                        aws_session_token={{ .Data.security_token }}
-
-                        ; debug info
-                        ; request_id={{ .RequestID }}
-                        ; lease_id={{ .LeaseID }}
-                        ; renewable={{ .Renewable }}
-                        ; lease_duration={{ .LeaseDuration }}
-                        ; arn={{ .Data.arn }}
-                        ; warnings={{ .Warnings }}
-
-                        {{ end -}}
-                        EOT
-                        }
-                        ' > config.hcl
-                        /usr/bin/dumb-init -- wget -qO ca.crt $VAULT_CAURL && vault agent -ca-cert ca.crt -config=config.hcl
+                      - (replace_all($expected_script, 'test-namespace', $namespace))
                     env:
                       - name: AWS_SHARED_CREDENTIALS_FILE
                         value: "/etc/aws/credentials"
@@ -432,13 +427,14 @@ spec:
                       - name: AWS_SHARED_CREDENTIALS_FILE
                         value: "/etc/aws/credentials"
                     volumeMounts:
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
                       - name: vault-aws-credentials
                         mountPath: /etc/aws
-                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
 
-    - name: inject-vault-credentials-agent-aws-fail-open
+    - name: inject-vault-sidecar-aws-fail-open
       try:
         - assert:
+            timeout: 30s
             resource:
               apiVersion: v1
               kind: Pod
@@ -452,7 +448,7 @@ spec:
                       restartPolicy: Always
                       args:
                         - sidecar
-                        - -vault-role=test-env_aws_test-namespace_default
+                        - (join('', ['-vault-role=test-env_aws_', $namespace, '_default']))
                       env:
                         - *vault-caurl
                         - *vault-addr
@@ -472,9 +468,10 @@ spec:
                   - name: app
                     env: *app-aws-env
 
-    - name: inject-vault-credentials-agent-aws-gcp-fail-open
+    - name: inject-vault-sidecar-aws-gcp-fail-open
       try:
         - assert:
+            timeout: 30s
             resource:
               apiVersion: v1
               kind: Pod
@@ -489,7 +486,7 @@ spec:
                     restartPolicy: Always
                     args:
                       - sidecar
-                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
                       - -secret-type=access_token
                       - -listen-address=127.0.0.1:8198
                       - -operational-address=:8199
@@ -516,9 +513,10 @@ spec:
                   - name: app
                     env: *app-aws-gcp-env
 
-    - name: inject-vault-credentials-agent-gcp-token-fail-open
+    - name: inject-vault-sidecar-gcp-token-fail-open
       try:
         - assert:
+            timeout: 30s
             resource:
               apiVersion: v1
               kind: Pod
@@ -531,7 +529,7 @@ spec:
                     restartPolicy: Always
                     args:
                       - sidecar
-                      - -vault-static-account=test-env_gcp_test-namespace_default
+                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
                       - -secret-type=access_token
                     env:
                       - name: GCE_METADATA_HOST

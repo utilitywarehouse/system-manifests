@@ -1,0 +1,144 @@
+apiVersion: policies.kyverno.io/v1beta1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-init-container-aws
+  annotations:
+    policies.kyverno.io/title: Inject Vault Init Container - AWS
+spec:
+  autogen:
+    mutatingAdmissionPolicy:
+      enabled: false
+  evaluation:
+    mutateExisting:
+      enabled: true
+
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+
+  matchConditions:
+    - name: match-init-aws-annotation
+      expression: >-
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-init-container-aws'
+
+  variables:
+    - name: vkac_env
+      expression: "'test-env'"
+    - name: pod_namespace
+      expression: "object.metadata.?namespace.orValue('default')"
+    - name: pod_sa
+      expression: "object.spec.?serviceAccountName.orValue('default')"
+
+    - name: sidecar_payload
+      expression: >-
+        yaml.parse(
+          '''
+          name: vault-credentials
+          image: docker.io/hashicorp/vault:1.15.2
+          command:
+            - sh
+            - -c
+            - |
+              echo '
+              exit_after_auth = true
+              auto_auth {
+                      method "kubernetes" {
+                          mount_path = "auth/kubernetes"
+                          config = {
+                              role = "''' + variables.vkac_env + '''_aws_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''"
+                          }
+                          exit_on_err = true
+                      }
+
+                      sink "file" {
+                          config = {
+                              path = "/home/vault/.vault-token"
+                          }
+                      }
+              }
+              template {
+                  destination = "/etc/aws/credentials"
+                  contents = <<EOT
+              {{ with secret "aws/sts/''' + variables.vkac_env + '''_aws_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''" -}}
+              [default]
+              aws_access_key_id={{ .Data.access_key }}
+              aws_secret_access_key={{ .Data.secret_key }}
+              aws_session_token={{ .Data.security_token }}
+
+              ; debug info
+              ; request_id={{ .RequestID }}
+              ; lease_id={{ .LeaseID }}
+              ; renewable={{ .Renewable }}
+              ; lease_duration={{ .LeaseDuration }}
+              ; arn={{ .Data.arn }}
+              ; warnings={{ .Warnings }}
+
+              {{ end -}}
+              EOT
+              }
+              ' > config.hcl
+              /usr/bin/dumb-init -- wget -qO ca.crt $VAULT_CAURL && vault agent -ca-cert ca.crt -config=config.hcl
+          env:
+            - name: AWS_SHARED_CREDENTIALS_FILE
+              value: "/etc/aws/credentials"
+            - name: VAULT_CAURL
+              value: "http://vault-ca-cert.sys-vault:8100"
+            - name: VAULT_ADDR
+              value: "https://vault.sys-vault:8200"
+          volumeMounts:
+            - name: vault-aws-credentials
+              mountPath: /etc/aws
+          '''
+        )
+
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            metadata: Object.metadata{
+              annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" }
+            },
+            spec: Object.spec{
+              initContainers: has(object.spec.initContainers) ? 
+                object.spec.initContainers.map(c, 
+                  Object.spec.initContainers{
+                    name: c.name,
+                    env: [ 
+                      Object.spec.initContainers.env{ name: "AWS_SHARED_CREDENTIALS_FILE", value: "/etc/aws/credentials" }
+                    ],
+                    volumeMounts: [ 
+                      Object.spec.initContainers.volumeMounts{ name: "vault-aws-credentials",  mountPath: "/etc/aws" }
+                    ]
+                  }
+                ) : [],
+              containers: has(object.spec.containers) ? 
+                object.spec.containers.map(c, 
+                  Object.spec.containers{
+                    name: c.name,
+                    env: [ 
+                      Object.spec.containers.env{ name: "AWS_SHARED_CREDENTIALS_FILE", value: "/etc/aws/credentials" }
+                    ],
+                    volumeMounts: [ 
+                      Object.spec.containers.volumeMounts{ name: "vault-aws-credentials", mountPath: "/etc/aws" }
+                    ]
+                  }
+                ) : []
+            }
+          }
+
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          (
+            size(object.spec.?initContainers.orValue([])) > 0 
+              ? [ JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload} ]
+              : [ JSONPatch{op: "add", path: "/spec/initContainers", value: [variables.sidecar_payload]} ]
+          ) + (
+            size(object.spec.?volumes.orValue([])) > 0
+              ? [ JSONPatch{op: "add", path: "/spec/volumes/-", value: yaml.parse('{"name": "vault-aws-credentials", "emptyDir": {}}')} ]
+              : [ JSONPatch{op: "add", path: "/spec/volumes", value: [yaml.parse('{"name": "vault-aws-credentials", "emptyDir": {}}')]} ]
+          )

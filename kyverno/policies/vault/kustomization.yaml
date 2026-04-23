@@ -1,5 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - injectSidecar.yaml
+  - inject-vault-init-container-aws.yaml
+  - inject-vault-sidecar-aws-fail-open.yaml
+  - inject-vault-sidecar-aws-gcp-fail-open.yaml
+  - inject-vault-sidecar-aws-gcp-key.yaml
+  - inject-vault-sidecar-aws-gcp.yaml
+  - inject-vault-sidecar-aws.yaml
+  - inject-vault-sidecar-gcp-key.yaml
+  - inject-vault-sidecar-gcp-token-fail-open.yaml
+  - inject-vault-sidecar-gcp-token.yaml
   - vault-annotation.yaml

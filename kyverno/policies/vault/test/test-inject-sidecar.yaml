@@ -1,4 +1,4 @@
-# Pods for Rule: inject-vault-credentials-agent-aws
+# Pods for Rule: inject-vault-sidecar-aws
 apiVersion: v1
 kind: Pod
 metadata:
@@ -8,7 +8,7 @@ metadata:
 spec:
   containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
 ---
-# Pods for Rule: inject-vault-credentials-agent-aws-gcp
+# Pods for Rule: inject-vault-sidecar-aws-gcp
 apiVersion: v1
 kind: Pod
 metadata:
@@ -19,7 +19,7 @@ spec:
   initContainers: [{ name: init, image: alpine }]
   containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
 ---
-# Pod for Rule: inject-vault-credentials-agent-gcp-key
+# Pod for Rule: inject-vault-sidecar-gcp-key
 apiVersion: v1
 kind: Pod
 metadata:
@@ -29,7 +29,7 @@ metadata:
 spec:
   containers: [{ name: app, image: alpine }]
 ---
-# Pod for Rule: inject-vault-credentials-agent-gcp-token
+# Pod for Rule: inject-vault-sidecar-gcp-token
 apiVersion: v1
 kind: Pod
 metadata:
@@ -39,7 +39,7 @@ metadata:
 spec:
   containers: [{ name: app, image: alpine }]
 ---
-# Pod for Rule: inject-vault-credentials-agent-aws-gcp-key
+# Pod for Rule: inject-vault-sidecar-aws-gcp-key
 apiVersion: v1
 kind: Pod
 metadata:
