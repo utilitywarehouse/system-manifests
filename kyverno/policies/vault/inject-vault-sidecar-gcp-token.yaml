@@ -10,6 +10,8 @@ spec:
   autogen:
     mutatingAdmissionPolicy:
       enabled: false
+    podControllers:
+      controllers: [] # disable autogen for other resources
   evaluation:
     mutateExisting:
       enabled: true
