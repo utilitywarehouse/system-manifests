@@ -12,9 +12,6 @@ spec:
       enabled: false
     podControllers:
       controllers: [] # disable autogen for other resources
-  evaluation:
-    mutateExisting:
-      enabled: true
 
   matchConstraints:
     resourceRules:
