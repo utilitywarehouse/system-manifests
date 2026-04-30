@@ -1,23 +1,36 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
+IMAGE_NAME := quay.io/utilitywarehouse/kind-chainsaw-env:main
+REPO_DIR := $(shell git rev-parse --show-toplevel)
+
+# Variables for Local Dev
+SKIP_DELETE ?= false
+REUSE_CLUSTER ?= false
+TEST_DIR ?= .
+
+# Point to a local folder (e.g., kyverno/e2e-deploy), a URL, or leave blank to skip
+INSTALL_MANIFESTS ?= kyverno/e2e-deploy
+INSTALL_NAMESPACE ?= kube-system
+# Leave blank to use the image's baked-in default
+CHAINSAW_CONFIG ?= kyverno/policies/.chainsaw.yaml
+
 .PHONY: help
 help:
-	@echo "Kyverno Policies - Chainsaw Test Runner"
-	@echo "======================================="
+	@echo "Chainsaw Test Runner"
+	@echo "============================"
 	@echo "Usage: make <target> [VARIABLES]"
 	@echo ""
 	@echo "Core Targets:"
-	@echo "  test-all      Run all chainsaw tests across all policies."
-	@echo "  test-target   Run tests for a specific policy directory. (Requires DIR=<name>)"
-	@echo "  clean         Destroy the persistent kind cluster and remove debug kubeconfigs."
+	@echo "  test-all      Run all chainsaw tests in the repository."
+	@echo "  test-target   Run tests for a specific directory. (Requires TEST_DIR=<name>)"
+	@echo "  clean         Destroy the persistent kind cluster."
 	@echo "  kubectl       Run kubectl commands against the persistent test cluster"
 	@echo ""
 	@echo "Variables for Local Dev:"
-	@echo "  DIR           Target directory for 'test-target' (e.g., DIR=argocd)."
-	@echo "  REUSE_CLUSTER Set to 'true' to speed up testing by skipping cluster teardown."
-	@echo "                MUST be used if you need to run kubectl commands to debug failures."
-	@echo "                NOTE: Requires running 'make clean' manually when finished."
+	@echo "  TEST_DIR      Target directory (e.g., TEST_DIR=kyverno/policies/pods)."
+	@echo "  REUSE_CLUSTER Set to 'true' to skip cluster teardown."
+	@echo "  SKIP_DELETE   Set to 'true' to leave resources in the cluster for debugging."
 	@echo ""
 	@echo "Debugging (When REUSE_CLUSTER=true):"
 	@echo "  To run kubectl commands against the persistent test cluster from your host:"
@@ -25,52 +38,51 @@ help:
 	@echo ""
 	@echo "Examples:"
 	@echo "  make test-all"
-	@echo "  make test-target DIR=pod-security"
-	@echo "  make test-target DIR=argocd REUSE_CLUSTER=true"
+	@echo "  make test-target TEST_DIR=kyverno/policies/pods"
+	@echo "  make test-target TEST_DIR=kyverno/policies/pods REUSE_CLUSTER=true"
 	@echo "  make kubectl CMD=\"get pods -n kyverno\""
-
-IMAGE_NAME := chainsaw-test-image
-REPO_DIR := $(shell git rev-parse --show-toplevel)
-SKIP_DELETE ?= false
-REUSE_CLUSTER ?= false
-
-
-.PHONY: build
-build:
-	@echo "Building test runner image..."
-	docker build -t $(IMAGE_NAME) .
 
 .PHONY: setup-network
 setup-network:
 	@docker network inspect kind >/dev/null 2>&1 || docker network create kind
 
+.PHONY: pull-image
+pull-image:
+	@docker pull $(IMAGE_NAME)
+
 .PHONY: test-all
-test-all: build setup-network
-	@echo "Running ALL chainsaw tests (Reuse: $(REUSE_CLUSTER), Skip Delete: $(SKIP_DELETE))..."
+test-all: setup-network
+	@echo "Running ALL chainsaw tests..."
 	docker run --rm \
 		--name chainsaw-runner \
 		--network kind \
 		-e REUSE_CLUSTER=$(REUSE_CLUSTER) \
 		-e SKIP_DELETE=$(SKIP_DELETE) \
+		-e INSTALL_MANIFESTS="$(INSTALL_MANIFESTS)" \
+		-e INSTALL_NAMESPACE="$(INSTALL_NAMESPACE)" \
+		-e CHAINSAW_CONFIG="$(CHAINSAW_CONFIG)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(REPO_DIR):/repo \
-		$(IMAGE_NAME) "kyverno/policies"
+		$(IMAGE_NAME) "."
 
 .PHONY: test-target
-test-target: build setup-network
-	@if [ -z "$(DIR)" ]; then \
-		echo "Error: DIR is not set. Usage: make test-target DIR=argocd"; \
+test-target: setup-network
+	@if [ "$(TEST_DIR)" = "." ]; then \
+		echo "Error: TEST_DIR is not set. Usage: make test-target TEST_DIR=argocd"; \
 		exit 1; \
 	fi
-	@echo "Running tests for: kyverno/policies/$(DIR) (Reuse: $(REUSE_CLUSTER), Skip Delete: $(SKIP_DELETE))"
+	@echo "Running tests for: $(TEST_DIR)"
 	docker run --rm \
 		--name chainsaw-runner \
 		--network kind \
 		-e REUSE_CLUSTER=$(REUSE_CLUSTER) \
 		-e SKIP_DELETE=$(SKIP_DELETE) \
+		-e INSTALL_MANIFESTS="$(INSTALL_MANIFESTS)" \
+		-e INSTALL_NAMESPACE="$(INSTALL_NAMESPACE)" \
+		-e CHAINSAW_CONFIG="$(CHAINSAW_CONFIG)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(REPO_DIR):/repo \
-		$(IMAGE_NAME) "kyverno/policies/$(DIR)"
+		$(IMAGE_NAME) "$(TEST_DIR)"
 
 .PHONY: clean
 clean: setup-network
