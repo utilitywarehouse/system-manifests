@@ -34,9 +34,8 @@ spec:
       expression: "object.spec.?serviceAccountName.orValue('default')"
 
     - name: sidecar_payload
-      expression: >-
-        yaml.parse(
-          '''
+      expression: |
+        yaml.parse('''
           name: vault-credentials-agent
           image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
           restartPolicy: Always
@@ -59,8 +58,7 @@ spec:
             limits:
               cpu: 1000m
               memory: 100Mi
-          '''
-        )
+        ''')
 
   mutations:
     - patchType: ApplyConfiguration
