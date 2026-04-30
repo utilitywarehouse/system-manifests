@@ -34,9 +34,8 @@ spec:
       expression: "object.spec.?serviceAccountName.orValue('default')"
 
     - name: sidecar_payload_aws
-      expression: >-
-        yaml.parse(
-          '''
+      expression: |
+        yaml.parse('''
           name: vault-credentials-agent-aws
           image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
           restartPolicy: Always
@@ -61,13 +60,11 @@ spec:
           resources:
             requests: { cpu: 0m, memory: 25Mi }
             limits: { cpu: 1000m, memory: 100Mi }
-          '''
-        )
+        ''')
 
     - name: sidecar_payload_gcp
-      expression: >-
-        yaml.parse(
-          '''
+      expression: |
+        yaml.parse('''
           name: vault-credentials-agent-gcp
           image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
           restartPolicy: Always
@@ -102,8 +99,7 @@ spec:
           volumeMounts:
             - name: gcp
               mountPath: /gcp
-          '''
-        )
+        ''')
 
   mutations:
     - patchType: ApplyConfiguration

@@ -34,9 +34,8 @@ spec:
       expression: "object.spec.?serviceAccountName.orValue('default')"
 
     - name: sidecar_payload
-      expression: >-
-        yaml.parse(
-          '''
+      expression: |
+        yaml.parse('''
           name: vault-credentials
           image: docker.io/hashicorp/vault:1.15.2
           command:
@@ -92,8 +91,7 @@ spec:
           volumeMounts:
             - name: vault-aws-credentials
               mountPath: /etc/aws
-          '''
-        )
+        ''')
 
   mutations:
     - patchType: ApplyConfiguration

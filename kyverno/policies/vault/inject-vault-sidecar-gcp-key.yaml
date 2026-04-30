@@ -34,9 +34,8 @@ spec:
       expression: "object.spec.?serviceAccountName.orValue('default')"
 
     - name: sidecar_payload
-      expression: >-
-        yaml.parse(
-          '''
+      expression: |
+        yaml.parse('''
           name: vault-credentials-agent
           image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.6
           restartPolicy: Always
@@ -73,17 +72,14 @@ spec:
           volumeMounts:
             - name: gcp
               mountPath: /gcp
-          '''
-        )
+        ''')
 
     - name: volume_payload
-      expression: >-
-        yaml.parse(
-          '''
-          name: gcp
-          emptyDir: {}
-          '''
-        )
+      expression: |
+        yaml.parse('''
+        name: gcp
+        emptyDir: {}
+        ''')
 
   mutations:
     - patchType: ApplyConfiguration
