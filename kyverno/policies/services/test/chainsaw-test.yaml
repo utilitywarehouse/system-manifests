@@ -29,6 +29,7 @@ spec:
     - name: test-external-ips
       try:
         - apply:
+            timeout: 2m
             file: test-externalIPs.yaml
             expect:
               - match:
@@ -42,6 +43,7 @@ spec:
     - name: test-external-name
       try:
         - apply:
+            timeout: 2m
             file: test-externalName.yaml
             expect:
               - match:
@@ -62,6 +64,7 @@ spec:
     - name: test-load-balancer-ip
       try:
         - apply:
+            timeout: 2m
             file: test-loadbalancerIP.yaml
             expect:
               - match:
@@ -75,6 +78,7 @@ spec:
     - name: test-node-port
       try:
         - apply:
+            timeout: 2m
             file: test-nodePort.yaml
             expect:
               - match:
@@ -88,6 +92,7 @@ spec:
     - name: test-mirror-name-length
       try:
         - apply:
+            timeout: 2m
             file: test-semaphore-service-mirror-length.yaml
             expect:
               - match:
