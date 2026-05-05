@@ -2,8 +2,8 @@
 .PHONY: get-upstream
 
 # https://github.com/kubernetes/kubernetes
-# 1.14.1
-COMMIT_REF=1713d43d13623a0c2e31cbc30bd5fca0f58fc229
+# 1.14.3
+COMMIT_REF=548ace71c0fc153c5903475b9ee9b94bff37fef0
 
 get-upstream:
 	curl -Ls \
