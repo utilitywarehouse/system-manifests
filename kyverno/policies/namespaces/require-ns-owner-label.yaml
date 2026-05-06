@@ -33,6 +33,7 @@ spec:
           'data', 'data-infra', 'dev-enablement', 'digital-support',
           'energy',
           'finance',
+          'help-experience',
           'iam', 'insurance',
           'partner',
           'payment',
