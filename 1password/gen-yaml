@@ -8,12 +8,12 @@ helm repo update
 helm template connect \
   --version=${CHART_VERSION} \
   --set operator.create=true \
-  --set operator.token.value=OP_CONNECT_TOKEN \
+  --set connect.create=false \
+  --set operator.authMethod=service-account \
   --set acceptanceTests.healthCheck.enabled=false \
   --set operator.clusterRole.create=false \
   --set operator.clusterRoleBinding.create=false \
   --set operator.roleBinding.create=false \
-  --set connect.credentialsName=onepassword-credentials \
   1password/connect |\
   sed -E '/^\s*namespace: "?default"?$/d' > upstream/upstream.yaml
 
