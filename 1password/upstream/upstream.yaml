@@ -105,7 +105,7 @@ spec:
             {}
         - name: credentials
           secret:
-            secretName: op-credentials
+            secretName: onepassword-credentials
             items:
               - key: 1password-credentials.json
                 path: 1password-credentials.json
