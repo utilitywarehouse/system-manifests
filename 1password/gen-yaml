@@ -1,0 +1,22 @@
+#!/bin/sh
+
+CHART_VERSION="2.4.1"
+helm repo add 1password https://1password.github.io/connect-helm-charts
+helm repo update
+
+# Generate manifests and as it comes with `namespace: default` remove that
+helm template connect \
+  --version=${CHART_VERSION} \
+  --set operator.create=true \
+  --set operator.token.value=OP_CONNECT_TOKEN \
+  --set acceptanceTests.healthCheck.enabled=false \
+  --set operator.clusterRole.create=false \
+  --set operator.clusterRoleBinding.create=false \
+  --set operator.roleBinding.create=false \
+  1password/connect |\
+  sed -E '/^\s*namespace: "?default"?$/d' > upstream/upstream.yaml
+
+
+# crd is not getting installed via helm template
+curl -s -o cluster/onepassworditem-crd.yaml \
+https://raw.githubusercontent.com/1Password/connect-helm-charts/refs/tags/connect-${CHART_VERSION}/charts/connect/crds/onepassworditem-crd.yaml
