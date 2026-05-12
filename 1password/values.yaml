@@ -1,0 +1,23 @@
+# 1Password Acceptance Tests Functionality
+acceptanceTests:
+  enabled: false
+  healthCheck:
+    enabled: false
+
+# Denotes whether the 1Password Connect server will be deployed
+connect:
+  create: false
+
+# This section of values is for 1Password Operator Configuration
+operator:
+  create: true
+  # -- Authentication method for the Operator.
+  # Valid values: `connect` (uses Connect token) or `service-account` (uses 1Password Service Account token)
+  authMethod: service-account
+  clusterRole:
+    create: false
+  clusterRoleBinding:
+    create: false
+  roleBinding:
+    create: false
+  resources: { "limits": { "memory": "128Mi" } }

@@ -7,13 +7,7 @@ helm repo update
 # Generate manifests and as it comes with `namespace: default` remove that
 helm template connect \
   --version=${CHART_VERSION} \
-  --set operator.create=true \
-  --set connect.create=false \
-  --set operator.authMethod=service-account \
-  --set acceptanceTests.healthCheck.enabled=false \
-  --set operator.clusterRole.create=false \
-  --set operator.clusterRoleBinding.create=false \
-  --set operator.roleBinding.create=false \
+  -f values.yaml \
   1password/connect |\
   sed -E '/^\s*namespace: "?default"?$/d' > upstream/upstream.yaml
 

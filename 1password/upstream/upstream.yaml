@@ -97,7 +97,8 @@ spec:
                   name: onepassword-service-account-token
                   key: token
           resources:
-            {}
+            limits:
+              memory: 128Mi
           readinessProbe:
             httpGet:
               path: /readyz
