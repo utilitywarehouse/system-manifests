@@ -3,6 +3,16 @@ kind: ClusterRole
 metadata:
   name: onepassword-connect-operator
 rules:
+  # needed to add finalizers when secret annotations are added to deployment
+  - apiGroups:
+      - apps
+    resources:
+      - deployments/finalizers
+      - daemonsets/finalizers
+      - statefulsets/finalizers
+    verbs:
+      - update
+
   - apiGroups:
       - ""
     resources:
