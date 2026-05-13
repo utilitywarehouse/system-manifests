@@ -88,7 +88,7 @@ spec:
             - name: OPERATOR_NAME
               value: "onepassword-connect-operator"
             - name: POLLING_INTERVAL
-              value: "600"
+              value: "60"
             - name: AUTO_RESTART
               value: "false"
             - name: OP_CONNECT_HOST

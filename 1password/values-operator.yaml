@@ -11,6 +11,7 @@ connect:
 # This section of values is for 1Password Operator Configuration
 operator:
   create: true
+  pollingInterval: 60
   # -- Authentication method for the Operator.
   # Valid values: `connect` (uses Connect token) or `service-account` (uses 1Password Service Account token)
   authMethod: connect
