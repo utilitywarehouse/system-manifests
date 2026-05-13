@@ -1,11 +1,18 @@
-.PHONY: gen-yaml
-gen-yaml:
+.PHONY: gen-operator-yaml gen-connect-yaml list-versions
+
+gen-operator-yaml:
 	docker run -ti --rm \
 	  -v $${PWD}:/opt/manifests \
 	  --workdir=/opt/manifests \
 	  --entrypoint=/bin/sh \
-	  alpine/helm ./gen-yaml
+	  alpine/helm ./gen-operator-yaml
 
+gen-connect-yaml:
+	docker run -ti --rm \
+	  -v $${PWD}:/opt/manifests \
+	  --workdir=/opt/manifests \
+	  --entrypoint=/bin/sh \
+	  alpine/helm ./gen-connect-yaml
 
 list-versions:
 	docker run -it --rm \

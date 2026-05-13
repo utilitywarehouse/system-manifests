@@ -3,8 +3,11 @@ kind: Kustomization
 
 resources:
   - upstream.yaml
+  - roleBinding.yaml
 
 patches:
+  - path: operator-patch.yaml
+
   # --set operator.clusterRoleBinding.create=false doesnt work
   - patch: |-
       $patch: delete

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+CHART_VERSION="2.4.1"
+helm repo add 1password https://1password.github.io/connect-helm-charts
+helm repo update
+
+# Generate manifests and as it comes with `namespace: default` remove that
+helm template connect \
+  --version=${CHART_VERSION} \
+  -f values-connect.yaml \
+  1password/connect |\
+  sed -E '/^\s*namespace: "?default"?$/d' > connect/upstream.yaml
