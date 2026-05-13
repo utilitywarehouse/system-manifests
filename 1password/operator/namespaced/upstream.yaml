@@ -91,10 +91,12 @@ spec:
               value: "600"
             - name: AUTO_RESTART
               value: "false"
-            - name: OP_SERVICE_ACCOUNT_TOKEN
+            - name: OP_CONNECT_HOST
+              value: "http://onepassword-connect:8080"
+            - name: OP_CONNECT_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: onepassword-service-account-token
+                  name: onepassword-token
                   key: token
           resources:
             limits:
