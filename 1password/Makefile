@@ -1,4 +1,6 @@
-.PHONY: gen-operator-yaml gen-connect-yaml list-versions
+.PHONY: gen-yaml gen-operator-yaml gen-connect-yaml list-versions
+
+gen-yaml: gen-connect-yaml gen-operator-yaml
 
 gen-operator-yaml:
 	docker run -ti --rm \
