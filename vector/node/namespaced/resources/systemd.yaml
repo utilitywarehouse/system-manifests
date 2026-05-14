@@ -23,7 +23,7 @@ transforms:
 sinks:
   loki_systemd:
     inputs:
-      - systemd_remap
+      - drop_containerd
     type: loki
     endpoint: http://loki-write.sys-log.svc.cluster.aws:3100
     path: /loki/api/v1/push
