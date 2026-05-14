@@ -14,6 +14,12 @@ transforms:
       .hostname = .host
       .syslog_identifier = .SYSLOG_IDENTIFIER
 
+  drop_containerd:
+    type: filter
+    inputs:
+      - systemd_remap
+    condition: '.syslog_identifier != "containerd"'
+
 sinks:
   loki_systemd:
     inputs:
