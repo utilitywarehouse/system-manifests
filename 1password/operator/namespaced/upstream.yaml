@@ -1,0 +1,117 @@
+---
+# Source: connect/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: onepassword-connect-operator
+  labels:
+    helm.sh/chart: connect-2.4.1
+    app.kubernetes.io/name: connect
+    app.kubernetes.io/instance: connect
+    app.kubernetes.io/version: "1.8.2"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: connect/templates/clusterrolebinding.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: onepassword-connect-operator
+  labels:
+    helm.sh/chart: connect-2.4.1
+    app.kubernetes.io/name: connect
+    app.kubernetes.io/instance: connect
+    app.kubernetes.io/version: "1.8.2"
+    app.kubernetes.io/managed-by: Helm
+subjects:
+- kind: ServiceAccount
+  name: onepassword-connect-operator
+roleRef:
+  kind: ClusterRole
+  name: onepassword-connect-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+# Source: connect/templates/operator-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onepassword-connect-operator
+  labels:
+    app.kubernetes.io/component: operator
+    helm.sh/chart: connect-2.4.1
+    app.kubernetes.io/name: connect
+    app.kubernetes.io/instance: connect
+    app.kubernetes.io/version: "1.8.2"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: onepassword-connect
+  template:
+    metadata:
+      labels:
+        name: onepassword-connect
+        app.kubernetes.io/component: operator
+    spec:
+      securityContext:
+        fsGroup: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      tolerations:
+        []
+      serviceAccountName: onepassword-connect-operator
+      volumes:
+      containers:
+        - name: onepassword-connect
+          image: 1password/onepassword-operator:1.12.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: true
+          command: [ "/manager" ]
+          args:
+            - --zap-log-level=info
+            - --health-probe-bind-address=:8081
+          env:
+            - name: WATCH_NAMESPACE
+              value: 
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "onepassword-connect-operator"
+            - name: POLLING_INTERVAL
+              value: "60"
+            - name: AUTO_RESTART
+              value: "false"
+            - name: OP_CONNECT_HOST
+              value: "http://onepassword-connect:8080"
+            - name: OP_CONNECT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: onepassword-token
+                  key: token
+          resources:
+            limits:
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            failureThreshold: 3
+            periodSeconds: 20
+            initialDelaySeconds: 15
+          volumeMounts:

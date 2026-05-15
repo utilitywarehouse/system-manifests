@@ -1,0 +1,13 @@
+# 1Password Acceptance Tests Functionality
+acceptanceTests:
+  enabled: false
+  healthCheck:
+    enabled: false
+
+# Denotes whether the 1Password Connect server will be deployed
+connect:
+  create: true
+  credentialsName: onepassword-credentials
+
+operator:
+  create: false

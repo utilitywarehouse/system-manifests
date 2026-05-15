@@ -1,0 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: onepassword-connect-operator
+rules:
+  # needed to add finalizers when secret annotations are added to deployment
+  # If the "auto-restart" enabled, the controller needs permission to find the
+  # workloads that are using the Secret and patch them
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+    verbs: ["get", "list", "patch", "update", "watch"]
+
+  # for discovery
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+  - apiGroups:
+      - onepassword.com
+    resources:
+      - "*"
+    verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
