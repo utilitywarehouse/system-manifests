@@ -15,6 +15,9 @@ operator:
   # -- Authentication method for the Operator.
   # Valid values: `connect` (uses Connect token) or `service-account` (uses 1Password Service Account token)
   authMethod: connect
+  token:
+    name: connect-access-token
+    key: credential
   clusterRole:
     create: false
   clusterRoleBinding:

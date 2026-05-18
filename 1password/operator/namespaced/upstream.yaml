@@ -96,8 +96,8 @@ spec:
             - name: OP_CONNECT_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: onepassword-token
-                  key: token
+                  name: connect-access-token
+                  key: credential
           resources:
             limits:
               memory: 128Mi
