@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - upstream.yaml
-  - secret.yaml
 
 patches:
   - path: operator-patch.yaml
