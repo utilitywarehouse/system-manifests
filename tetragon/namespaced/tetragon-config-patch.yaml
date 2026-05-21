@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tetragon-config
+data:
+  cluster-name: ""
+  export-denylist: |-
+    {"health_check":true}
