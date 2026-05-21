@@ -1,0 +1,68 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: restrict-limitrange-values
+  annotations:
+    policies.kyverno.io/title: Restrict LimitRange Values
+    policies.kyverno.io/category: Resource Management
+    policies.kyverno.io/subject: LimitRange
+    policies.kyverno.io/description: >-
+      Restricts LimitRange max and default CPU to 6 cores and memory to 24Gi.
+
+spec:
+  validationActions:
+    - Deny
+
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["limitranges"]
+
+  variables:
+    - name: limits
+      expression: "object.spec.limits.orValue([])"
+
+    - name: max_cpu
+      expression: "quantity('6')"
+
+    - name: max_memory
+      expression: "quantity('24Gi')"
+
+  validations:
+    # max.cpu
+    - message: "LimitRange max.cpu cannot exceed 6 cores."
+      expression: >-
+        variables.limits.all(l,
+          !has(l.max) ||
+          !has(l.max.cpu) ||
+          !quantity(l.max.cpu).isGreaterThan(variables.max_cpu)
+        )
+
+    # max.memory
+    - message: "LimitRange max.memory cannot exceed 24Gi."
+      expression: >-
+        variables.limits.all(l,
+          !has(l.max) ||
+          !has(l.max.memory) ||
+          !quantity(l.max.memory).isGreaterThan(variables.max_memory)
+        )
+
+    # default.cpu
+    - message: "LimitRange default.cpu cannot exceed 6 cores."
+      expression: >-
+        variables.limits.all(l,
+          !has(l.default) ||
+          !has(l.default.cpu) ||
+          !quantity(l.default.cpu).isGreaterThan(variables.max_cpu)
+        )
+
+    # default.memory
+    - message: "LimitRange default.memory cannot exceed 24Gi."
+      expression: >-
+        variables.limits.all(l,
+          !has(l.default) ||
+          !has(l.default.memory) ||
+          !quantity(l.default.memory).isGreaterThan(variables.max_memory)
+        )
