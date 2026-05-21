@@ -9,4 +9,3 @@ resources:
   - pods/
   - services/
   - vault/
-  - workloads/
