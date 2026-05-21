@@ -8,7 +8,7 @@ rules:
   - apiGroups:
       - onepassword.com
     resources:
-      - "onepassworditems"
+      - "*"
     verbs: ["*"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -21,5 +21,5 @@ rules:
   - apiGroups:
       - onepassword.com
     resources:
-      - "onepassworditems"
+      - "*"
     verbs: ["get", "list", "watch"]
