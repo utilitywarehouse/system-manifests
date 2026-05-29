@@ -340,7 +340,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap: c6f9e128f4f0fb07356eab0bff231d2c0c012d23624b060c81554cb65c722510
+        checksum/configmap: 6869e68af0f7c02d3c7f26916bd433f31b4f8b3fcbcfc9396199e45abd6b99cc
       labels:
         app.kubernetes.io/name: "tetragon-rthooks"
         app.kubernetes.io/instance: tetragon

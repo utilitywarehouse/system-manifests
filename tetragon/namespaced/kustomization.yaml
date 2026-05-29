@@ -5,3 +5,27 @@ resources:
 
 patches:
   - path: tetragon-config-patch.yaml
+  - patch: |
+      # fail-allow-namespaces-regex support is not released yet
+      apiVersion: apps/v1
+      kind: DaemonSet
+      metadata:
+        name: tetragon-rthooks
+        namespace: sys-tetragon
+      spec:
+        template:
+          spec:
+            containers:
+              - name: tetragon-rthooks
+                image: "quay.io/cilium/tetragon-rthooks:v0.9"
+                command:
+                  - tetragon-oci-hook-setup
+                  - install
+                  - --interface=nri-hook
+                  - --local-install-dir=/hostInstall
+                  - --host-install-dir=/opt/tetragon
+                  - --oci-hooks.local-dir=/hostHooks
+                  - --daemonize
+                  - hook-args
+                  - --grpc-address=:54321
+                  - --fail-allow-namespaces-regex=.*

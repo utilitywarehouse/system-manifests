@@ -4,6 +4,7 @@ rthooks:
   # -- Enable the Tetragon rthooks daemonset
   enabled: true
   interface: nri-hook
+  failAllowNamespacesRegex: [".*"]
 
 tetragon:
   grpc:
