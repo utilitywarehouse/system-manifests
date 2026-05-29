@@ -92,7 +92,7 @@ data:
   enable-k8s-api: "true"
   metrics-server: :2112
   metrics-label-filter: namespace,workload,pod,binary
-  server-address: unix:///var/run/tetragon/tetragon.sock
+  server-address: :54321
   health-server-address: :6789
   health-server-interval: "10"
   gops-address: localhost:8118
@@ -229,7 +229,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap: 3b1383327a20d0c6bc81228e8050e41ff728aef94c56d240a3759515082a828c
+        checksum/configmap: a1c5ca0edf52b61bea47aef442804124694247246d1f0dcd8c292dc64f781a72
       labels:
         app.kubernetes.io/name: tetragon
         app.kubernetes.io/instance: tetragon
@@ -364,7 +364,7 @@ spec:
             - --oci-hooks.local-dir=/hostHooks
             - --daemonize
             - hook-args
-            - --grpc-address=unix:///var/run/tetragon/tetragon.sock
+            - --grpc-address=:54321
             - --fail-allow-namespaces
             - sys-tetragon
           volumeMounts:

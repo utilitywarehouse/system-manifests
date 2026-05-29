@@ -4,3 +4,7 @@ rthooks:
   # -- Enable the Tetragon rthooks daemonset
   enabled: true
   interface: nri-hook
+
+tetragon:
+  grpc:
+    address: ":54321"
