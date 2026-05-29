@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    name: sys-log
+    uw.systems/owner: system
+  name: sys-log
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-plain-pod-non-sys-ns
+spec:
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-plain-pod
+  namespace: sys-log
+spec:
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-user-ns-hostnetwork-exception
+  namespace: kube-system
+spec:
+  policyRefs:
+    - name: disallow-host-network-pods
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'sys-log'"
+    - name: for-given-pod
+      expression: "object.metadata.name == 'test-user-ns-hostnetwork-pod'"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-hostnetwork-pod
+  namespace: sys-log
+spec:
+  hostNetwork: true
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-user-ns-hostpid-exception
+  namespace: kube-system
+spec:
+  policyRefs:
+    - name: disallow-host-pid-pods
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'sys-log'"
+    - name: for-given-pod
+      expression: "object.metadata.name == 'test-user-ns-hostpid-pod'"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-hostpid-pod
+  namespace: sys-log
+spec:
+  hostPID: true
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-user-ns-hostipc-exception
+  namespace: kube-system
+spec:
+  policyRefs:
+    - name: disallow-host-ipc-pods
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'sys-log'"
+    - name: for-given-pod
+      expression: "object.metadata.name == 'test-user-ns-hostipc-pod'"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-hostipc-pod
+  namespace: sys-log
+spec:
+  hostIPC: true
+  containers:
+    - name: test
+      image: alpine

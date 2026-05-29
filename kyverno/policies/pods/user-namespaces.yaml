@@ -1,0 +1,41 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: enforce-user-namespaces
+spec:
+  autogen:
+    mutatingAdmissionPolicy:
+      enabled: false
+    podControllers:
+      controllers: []
+
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+
+    namespaceSelector:
+      matchLabels:
+        uw.systems/owner: system
+
+  matchConditions:
+    # https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/#limitations
+    - name: exclude-host-namespaces
+      expression: >-
+        !(
+          object.spec.?hostNetwork.orValue(false) ||
+          object.spec.?hostPID.orValue(false) ||
+          object.spec.?hostIPC.orValue(false)
+        )
+
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            spec: Object.spec{
+              hostUsers: false
+            }
+          }

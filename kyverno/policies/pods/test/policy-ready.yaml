@@ -207,3 +207,16 @@ status:
       - message: Webhook configured.
         reason: Succeeded
         status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: enforce-user-namespaces
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
