@@ -7,5 +7,5 @@ rthooks:
   failAllowNamespacesRegex: [".*"]
 
 tetragon:
-  grpc:
-    address: ":54321"
+  processAncestors:
+    enabled: "base,kprobe,tracepoint,lsm"

@@ -74,7 +74,7 @@ data:
   debug: "false"
   enable-process-cred: "false"
   enable-process-ns: "false"
-  enable-ancestors: ""
+  enable-ancestors: "base,kprobe,tracepoint,lsm"
   process-cache-size: "65536"
   export-filename: /var/run/cilium/tetragon/tetragon.log
   export-file-perm: "600"
@@ -92,7 +92,7 @@ data:
   enable-k8s-api: "true"
   metrics-server: :2112
   metrics-label-filter: namespace,workload,pod,binary
-  server-address: :54321
+  server-address: unix:///var/run/tetragon/tetragon.sock
   health-server-address: :6789
   health-server-interval: "10"
   gops-address: localhost:8118
@@ -229,7 +229,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap: a1c5ca0edf52b61bea47aef442804124694247246d1f0dcd8c292dc64f781a72
+        checksum/configmap: 1264213d903745c890b5d1d9a0f69968f848333e8c73a48f3af57014d920b3b7
       labels:
         app.kubernetes.io/name: tetragon
         app.kubernetes.io/instance: tetragon
@@ -364,7 +364,7 @@ spec:
             - --oci-hooks.local-dir=/hostHooks
             - --daemonize
             - hook-args
-            - --grpc-address=:54321
+            - --grpc-address=unix:///var/run/tetragon/tetragon.sock
             - --fail-allow-namespaces
             - sys-tetragon
           volumeMounts:
