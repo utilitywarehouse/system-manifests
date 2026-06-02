@@ -15,3 +15,4 @@ resources:
   - Seccomp.yaml
   - SELinux.yaml
   - sysctls.yaml
+  - user-namespaces.yaml

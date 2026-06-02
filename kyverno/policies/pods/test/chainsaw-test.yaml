@@ -34,6 +34,8 @@ spec:
             file: ../SELinux.yaml
         - apply:
             file: ../sysctls.yaml
+        - apply:
+            file: ../user-namespaces.yaml
 
         - assert:
             timeout: 30s
@@ -288,3 +290,54 @@ spec:
                     name: test-sysctls-forbidden
                 check:
                   ($error != null): true
+
+    - name: test-user-namespaces
+      try:
+        - apply:
+            file: test-user-namespaces.yaml
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-plain-pod-non-sys-ns
+              spec:
+                (hostUsers != false): true
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-plain-pod
+                namespace: sys-log
+              spec:
+                hostUsers: false
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-hostnetwork-pod
+                namespace: sys-log
+              spec: {}
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-hostpid-pod
+                namespace: sys-log
+              spec: {}
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-hostipc-pod
+                namespace: sys-log
+              spec: {}
