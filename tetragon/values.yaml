@@ -1,6 +1,9 @@
 crds:
   installMethod: "helm"
 
+# "stdout". "" to disable.
+export:
+  mode: ""
 # hooks are required to map the new container ID to its namespace/labels,
 # and push that info down into its eBPF maps *synchronously*.
 # since our policies are audit only API Server's asynchronous calls are fine

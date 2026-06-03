@@ -242,19 +242,6 @@ spec:
       serviceAccountName: tetragon
       initContainers:
       containers:
-        - name: export-stdout
-          image: "quay.io/cilium/hubble-export-stdout:v1.1.1"
-          imagePullPolicy: IfNotPresent
-          terminationMessagePolicy: FallbackToLogsOnError
-          securityContext: {}
-          resources: {}
-          command:
-            - hubble-export-stdout
-          args:
-            - /var/run/cilium/tetragon/tetragon.log
-          volumeMounts:
-            - name: export-logs
-              mountPath: /var/run/cilium/tetragon
         - name: tetragon
           securityContext:
             privileged: true
