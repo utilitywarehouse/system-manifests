@@ -77,7 +77,7 @@ data:
   enable-ancestors: "base,kprobe,tracepoint,lsm"
   process-cache-size: "65536"
   export-filename: /var/run/cilium/tetragon/tetragon.log
-  export-file-perm: "600"
+  export-file-perm: "640"
   export-file-max-size-mb: "10"
   export-file-max-backups: "5"
   export-file-compress: "false"
@@ -229,7 +229,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap: 1264213d903745c890b5d1d9a0f69968f848333e8c73a48f3af57014d920b3b7
+        checksum/configmap: ab63d960918df77f072932fa59d3064cfdc47651084f9b0d73e40b2eda19b73a
       labels:
         app.kubernetes.io/name: tetragon
         app.kubernetes.io/instance: tetragon
