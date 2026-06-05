@@ -7,6 +7,10 @@ data:
   enable-process-cred: "true"
   enable-process-ns: "true"
 
+  # remove process capability list to reduce event size
+  field-filters: |-
+    { "fields":"process.cap,parent.cap,ancestors.cap", "action":"EXCLUDE" }
+
   redaction-filters: |-
     {"redact": ["--password(?:\\s+|=)(\\S*)"]}
     {"redact": ["(?:-H|--header)(?:\\s+|=)\"Authorization:\\s+(.*)\""]}
