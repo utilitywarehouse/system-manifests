@@ -7,6 +7,9 @@ sources:
     type: file
     include:
       - /var/log/kube-api-server/audit
+  kubernetes_tetragon_events:
+    type: "file"
+    include: ["/var/run/cilium/tetragon/tetragon.log"]
 
 transforms:
   kubernetes_events_remap:
@@ -21,12 +24,19 @@ transforms:
     type: remap
     source: |
       .log_source = "kube_audits_apiserver"
+  kubernetes_tetragon_events_remap:
+    inputs:
+      - kubernetes_tetragon_events
+    type: remap
+    source: |
+      .log_source = "kube_tetragon_events"
 
 sinks:
   loki_audits:
     inputs:
       - kubernetes_events_remap
       - kubernetes_apiserver_remap
+      - kubernetes_tetragon_events_remap
     type: loki
     endpoint: http://loki-audits.sys-log.svc.cluster.aws:3100
     encoding:

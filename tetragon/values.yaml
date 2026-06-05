@@ -1,0 +1,22 @@
+crds:
+  installMethod: "helm"
+
+# "stdout". "" to disable.
+export:
+  mode: ""
+# hooks are required to map the new container ID to its namespace/labels,
+# and push that info down into its eBPF maps *synchronously*.
+# since our policies are audit only API Server's asynchronous calls are fine
+# rthooks:
+#   # -- Enable the Tetragon rthooks daemonset
+#   enabled: true
+#   interface: nri-hook
+#   failAllowNamespacesRegex: [".*"]
+
+tetragon:
+  processAncestors:
+    enabled: "base,kprobe,tracepoint,lsm"
+    # -- JSON export file permissions as a string. Typically it's either "600" (to restrict access to
+    # owner) or "640"/"644" (to allow read access by logs collector or another agent).
+    # vector runs as root
+  exportFilePerm: "600"

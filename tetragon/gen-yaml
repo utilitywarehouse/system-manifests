@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Generate manifests
+VERSION="1.7.0"
+helm repo add cilium https://helm.cilium.io
+helm repo update
+helm template  tetragon cilium/tetragon \
+  -n sys-tetragon \
+  --version "${VERSION}" \
+  -f values.yaml > upstream.yaml
+
+yq 'select(.kind=="CustomResourceDefinition")' upstream.yaml > cluster/crds.yaml
+yq 'select(.kind=="ClusterRole" or .kind=="ClusterRoleBinding")' upstream.yaml > cluster/cluster-rbac.yaml
+
+yq 'select(.kind!="CustomResourceDefinition" and .kind!="ClusterRole" and .kind!="ClusterRoleBinding")' upstream.yaml > namespaced/upstream.yaml
+
+rm upstream.yaml
