@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tetragon-config
+  namespace: sys-tetragon
+data:
+  enable-process-cred: "true"
+  enable-process-ns: "true"
+
+  redaction-filters: |-
+    {"redact": ["--password(?:\\s+|=)(\\S*)"]}
+    {"redact": ["(?:-H|--header)(?:\\s+|=)\"Authorization:\\s+(.*)\""]}
+    {"redact": ["(?:-u|--user|-U|--proxy-user)\\s+(\\S+):(\\S+)"]}
+    {"redact": ["--token(?:\\s+|=)(\\S*)"]}
+    {"redact": ["https:\\/\\/(\\S+):(\\S+)@"]}
+
+  export-denylist: |-
+    {"health_check":true}
+    {"event_set": ["PROCESS_KPROBE"], "policy_names": ["privileges-raise"], "parent_arguments_regex": [".*/health/redis_readiness.sh.*", ".*/readonly-config/fix-split-brain.sh.*"]}
+    {"event_set": ["PROCESS_KPROBE"], "policy_names": ["monitor-ssh-connections"], "cel_expression": ["process_kprobe.function_name == 'sk_free'"]}
+
+  # Filter process events by event types.
+  # Rest of the filters are from https://tetragon.io/docs/policy-library/observability/
+  #
+  # **PROCESS_EXEC**
+  # Search Private Keys or Passwords / Find AWS Credentials
+  # Detect Netcat Remote Code Execution (nc/ncat with exec flags)
+  # Clear Log Activities (Detects commands targeting /var/log)
+  # Remove Bulk Data from Disk
+  # Monitor execution of a binary in the /tmp directory.
+  # Monitor sudo invocations
+  # Catch the actual *execution* of a fileless binary from memory
+  # Privileges Escalation via SUID Binary Execution. Monitor execution of SUID “Set User ID” binaries.
+  # Execution from /dev/shm, /tmp, /var/tmp on host or container (direct binary or shell indirect via args)
+  # monitor-drop-and-execute (monitor executions occurring in traditionally writable paths inside containers, /run container-only)
+  # Privileges Escalation via File Capabilities Execution. Monitor execution of binaries with file capabilities.
+  # System user interactive: system accounts (UID 1-100, nobody/65534) spawning processes via SSH/login on host.
+  #
+  # Terminal shell in container
+  # Explicitly catch kernel module loading binaries executed inside containers
+  # Detect file system debugger launched in a container
+  # monitor-drop-and-execute (monitor executions occurring in traditionally writable paths)
+  # Package manager execution in containers (apt, apk, pip, npm, etc.)
+  # Run shell untrusted detect potential RCE
+  #
+  # Audit BPF program loads and BPFFS interactions
+  # Audit loading of kernel modules
+  # Privileges Escalation via Setuid System Calls. Monitor execution of the setuid() system calls family
+  # & Monitor creation of User namespaces by unprivileged.
+  # & Monitor execution of the capset() system call.
+  #
+  # Catch the creation of anonymous memory files
+  # Packet socket created in container
+  # Catch process injection and anti-debugger checks
+  # Read sensitive file untrusted
+  #
+  export-allowlist: |-
+    {"event_set":["PROCESS_UPROBE", "PROCESS_TRACEPOINT", "PROCESS_LSM"]}
+
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(grep|egrep|fgrep|find)$"], "arguments_regex":[".*(id_rsa|id_ed25519|BEGIN PRIVATE|aws_access_key_id|aws_secret_access_key|\\.aws/credentials).*"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(nc|ncat)$"], "arguments_regex":[".*(-e|-c|--sh-exec|--exec|--lua-exec).*"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(rm|truncate|cat|echo)$"], "arguments_regex":[".*/var/log/.*"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(shred|mkfs|mke2fs)$"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/tmp/.*"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*sudo.*"]}
+    {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary) && process_exec.process.binary.startsWith('memfd:')"]}
+    {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && (has(process_exec.process.binary_properties.setuid) || has(process_exec.process.binary_properties.setgid))"]}
+    {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && has(process_exec.process.binary_properties.file)"]}
+    {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && has(process_exec.process.binary_properties.privileges_changed)"]}
+    {"event_set":["PROCESS_EXEC"], "parent_binary_regex":[".*/(sshd|login|systemd-logind)$"], "cel_expression":["has(process_exec.process.process_credentials) && has(process_exec.process.process_credentials.uid) && ((process_exec.process.process_credentials.uid >= 1u && process_exec.process.process_credentials.uid <= 100u) || process_exec.process.process_credentials.uid == 65534u)"]}
+
+    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(bash|sh|zsh|ash|dash|ksh|csh|tcsh)$"], "cel_expression": ["process_exec.process.in_init_tree == false"]}
+    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(insmod|modprobe|rmmod)$"]}
+    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/debugfs$"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":["^/dev/shm/.*", "^/tmp/.*", "^/var/tmp/.*"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(bash|sh|zsh|ash|dash|ksh|csh|tcsh)$"], "arguments_regex":[".*/dev/shm/.*"]}
+    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":["^/run/.*"]}
+    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(apt-get|apt|apk|yum|dnf|pip|pip3|npm|gem|cargo)$"], "arguments_regex":[".*\\b(install|add|update|upgrade|download|get)\\b.*"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(bash|sh|zsh|ash|dash|ksh|csh|tcsh)$"], "parent_binary_regex":[".*/(java|node|php|ruby|python|tomcat|nginx|apache2|httpd|mysqld|postgres|redis-server|mongodb|fluentd|splunkd|consul|couchdb|memcached|rabbitmq-server|sendmail|postfix|dovecot|exim4|flanneld|smbd|runsv|pm2)$"]}
+
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["monitor-kernel-modules"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["privileges-raise"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["bpf-library-policy"]}
+
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["fileless-memfd-create"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["packet-socket-creation"], "container_id":[".+"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["ptrace-activity"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-access"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-links"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["ssh-non-standard-port"], "binary_regex":[".*/ssh$", ".*/scp$", ".*/sftp$", ".*/ssh-keyscan$"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["monitor-ssh-connections"]}

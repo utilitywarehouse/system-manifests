@@ -1,0 +1,60 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: "monitor-ssh-connections"
+spec:
+  options:
+    - name: "disable-kprobe-multi"
+      value: "1"
+  kprobes:
+    # 1. Track the accepted connection socket; called from sshd process context so
+    #    the sock struct is fully initialised. The returned socket is already ESTABLISHED.
+    - call: "inet_csk_accept"
+      syscall: false
+      return: true
+      args:
+        - index: 0
+          type: "sock"
+      returnArg:
+        index: 0
+        type: sock
+      returnArgAction: TrackSock
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "SPort"
+              values:
+                - "22"
+
+    # 2. Watch for the socket to be closed
+    - call: "tcp_close"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "SPort"
+              values:
+                - "22"
+
+    # 3. Untrack the socket when memory is freed — covers violent terminations
+    #    (RST, power loss, sshd crash) where tcp_close never runs.
+    #    sk_free events are suppressed via the export-denylist CEL filter.
+    - call: "sk_free"
+      syscall: false
+      args:
+        - index: 0
+          type: "sock"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "SPort"
+              values:
+                - "22"
+          matchActions:
+            - action: UntrackSock
+              argSock: 0
+            - action: NoPost
+              rateLimit: 5m

@@ -1,0 +1,319 @@
+# source
+# https://github.com/cilium/tetragon/blob/main/examples/policylibrary/privileges/privileges-raise.yaml
+#
+# This 'privileges-raise' Tracing Policy monitors processes trying
+# to raise their privileges:
+#
+# 1. Unprivileged creating user namespace to gain new capabilities.
+#
+# 2. Setting or changing capabilities using the capset system call.
+#
+# 3. Change their uids/gids to user root.
+#
+# __sys_setuid
+# __sys_setgid
+# __sys_setreuid
+# __sys_setregid
+# __sys_setresuid
+# __sys_setresgid
+# __sys_setfsuid
+# __sys_setfsgid
+#
+# Binary exclusions (kernel-level, via matchBinaries NotIn):
+#   /usr/bin/runc     — legitimately raises privileges when setting up container namespaces
+#
+# NOTE: The export denylist in tetragon-config-patch.yaml retains a separate entry
+# for parent_arguments_regex (redis readiness/fix-split-brain scripts) — that filter
+# cannot be expressed as a kprobe selector and must remain at the export layer.
+
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: "privileges-raise"
+  annotations:
+    description: "Detects privileges raising operations"
+spec:
+  kprobes:
+    - call: "security_capset"
+      syscall: false
+      message: "Process changed its capabilities using capset system call"
+      args:
+        - index: 0
+          type: "nop"
+        - index: 1
+          type: "cred"
+        - index: 2
+          type: "cap_effective"
+        - index: 3
+          type: "cap_inheritable"
+        - index: 4
+          type: "cap_permitted"
+      selectors:
+        - matchArgs:
+            - index: 2
+              operator: "NotEqual"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+                - /usr/lib/systemd/systemd-coredump
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+        - matchArgs:
+            - index: 3
+              operator: "NotEqual"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+                - /usr/lib/systemd/systemd-coredump
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+        - matchArgs:
+            - index: 4
+              operator: "NotEqual"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+                - /usr/lib/systemd/systemd-coredump
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+    - call: "create_user_ns"
+      syscall: false
+      message: "Unprivileged process created a user namespace where it will be privileged"
+      args:
+        - index: 0
+          type: "nop"
+      selectors:
+        - matchCapabilities:
+            - type: Effective
+              operator: NotIn
+              values:
+                - "CAP_SYS_ADMIN"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+                - /usr/lib/systemd/systemd-coredump
+    - call: "__sys_setuid"
+      message: "Privileged operation setuid to root"
+      syscall: false
+      args:
+        - index: 0
+          type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+    - call: "__sys_setgid"
+      message: "Privileged operation setgid to root"
+      syscall: false
+      args:
+        - index: 0
+          type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+    - call: "__sys_setreuid"
+      message: "Privileged operation setuid to root"
+      syscall: false
+      args:
+        - index: 0
+          type: "int"
+        - index: 1
+          type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+        - matchArgs:
+            - index: 1
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+    - call: "__sys_setregid"
+      message: "Privileged operation setgid to root"
+      syscall: false
+      args:
+        - index: 0
+          type: "int"
+        - index: 1
+          type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+        - matchArgs:
+            - index: 1
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+    - call: "__sys_setresuid"
+      message: "Privileged operation setuid to root"
+      syscall: false
+      args:
+        - index: 0
+          type: "int"
+        - index: 1
+          type: "int"
+        - index: 2
+          type: "int"
+      selectors:
+        - matchArgs:
+            - index: 1
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+        - matchArgs:
+            - index: 2
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+    - call: "__sys_setresgid"
+      message: "Privileged operation setgid to root"
+      syscall: false
+      args:
+        - index: 0
+          type: "int"
+        - index: 1
+          type: "int"
+        - index: 2
+          type: "int"
+      selectors:
+        - matchArgs:
+            - index: 1
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+        - matchArgs:
+            - index: 2
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+    - call: "__sys_setfsuid"
+      message: "Privileged operation setuid to root"
+      syscall: false
+      args:
+        - index: 0
+          type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+    - call: "__sys_setfsgid"
+      message: "Privileged operation setgid to root"
+      syscall: false
+      args:
+        - index: 0
+          type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"

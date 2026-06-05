@@ -1,0 +1,139 @@
+# Falco rule: Create Symlink/Hardlink Over Sensitive Files
+#
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: sensitive-file-links
+  annotations:
+    description: >
+      Detects symlink and hardlink creation targeting sensitive files and directories.
+      Symlinks over sensitive paths enable path-confusion attacks and privilege
+      escalation prep; hardlinks allow bypassing permission checks by creating
+      an alternate name for a protected file.
+      Translated from Falco rules: "Create Symlink Over Sensitive Files",
+      "Create Hardlink Over Sensitive Files".
+      MITRE: T1555 - Credentials from Password Stores.
+
+      No binary exclusions: there is no legitimate program that symlinks or
+      hardlinks over these files as part of normal operation.
+
+      File open and truncation detection is in the companion policy sensitive-file-access.
+spec:
+  kprobes:
+    # -------------------------------------------------------------------------
+    # Rule 1: Create Symlink Over Sensitive Files
+    #
+    # Covers both syscall forms:
+    #   sys_symlinkat(target, newdirfd, linkpath) — modern
+    #   sys_symlink(target, linkpath)             — legacy
+    #
+    # Matches on the symlink TARGET (what it points to), not the linkpath.
+    # Includes bare directory names (/, /etc, /root) as targets since a symlink
+    # to the root or /etc directory is as dangerous as one to a specific file.
+    # -------------------------------------------------------------------------
+    - call: "sys_symlinkat"
+      syscall: true
+      message: "Symlink created targeting sensitive file or directory"
+      args:
+        - index: 0
+          type: "string" # target — what the symlink will point to
+        - index: 1
+          type: "int" # newdirfd
+        - index: 2
+          type: "string" # linkpath — the new symlink path being created
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "/"
+                - "/etc"
+                - "/etc/"
+                - "/etc/kubernetes/"
+                - "/etc/pam.conf"
+                - "/etc/security/pwquality.conf"
+                - "/etc/shadow"
+                - "/etc/sudoers"
+                - "/root"
+                - "/root/"
+                - "/root/.ssh/"
+          matchActions:
+            - action: Post
+
+    - call: "sys_symlink"
+      syscall: true
+      message: "Symlink created targeting sensitive file or directory"
+      args:
+        - index: 0
+          type: "string" # target
+        - index: 1
+          type: "string" # linkpath
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "/"
+                - "/etc"
+                - "/etc/"
+                - "/etc/kubernetes/"
+                - "/etc/pam.conf"
+                - "/etc/security/pwquality.conf"
+                - "/etc/shadow"
+                - "/etc/sudoers"
+                - "/root"
+                - "/root/"
+                - "/root/.ssh/"
+
+    # -------------------------------------------------------------------------
+    # Rule 2: Create Hardlink Over Sensitive Files
+    #
+    # Covers both syscall forms:
+    #   sys_linkat(olddirfd, oldpath, newdirfd, newpath, flags) — modern
+    #   sys_link(oldpath, newpath)                              — legacy
+    #
+    # Matches on the SOURCE (oldpath) — the sensitive file being hardlinked.
+    # Scoped to specific files rather than directories: hardlinking a directory
+    # requires CAP_DAC_READ_SEARCH and is blocked by the kernel in most cases.
+    # -------------------------------------------------------------------------
+    - call: "sys_linkat"
+      syscall: true
+      message: "Hardlink created over sensitive file"
+      args:
+        - index: 0
+          type: "int" # olddirfd
+        - index: 1
+          type: "string" # oldpath — the sensitive file being hardlinked
+        - index: 2
+          type: "int" # newdirfd
+        - index: 3
+          type: "string" # newpath — the new hardlink path
+        - index: 4
+          type: "int" # flags (AT_EMPTY_PATH, AT_SYMLINK_FOLLOW)
+      selectors:
+        - matchArgs:
+            - index: 1
+              operator: "Equal"
+              values:
+                - "/etc/pam.conf"
+                - "/etc/security/pwquality.conf"
+                - "/etc/shadow"
+                - "/etc/sudoers"
+
+    - call: "sys_link"
+      syscall: true
+      message: "Hardlink created over sensitive file"
+      args:
+        - index: 0
+          type: "string" # oldpath — the sensitive file being hardlinked
+        - index: 1
+          type: "string" # newpath — the new hardlink path
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "/etc/pam.conf"
+                - "/etc/security/pwquality.conf"
+                - "/etc/shadow"
+                - "/etc/sudoers"

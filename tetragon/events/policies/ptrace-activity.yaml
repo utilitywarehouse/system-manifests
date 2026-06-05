@@ -1,0 +1,52 @@
+# Falco rule:  PTRACE attached / PTRACE anti-debug
+#
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: ptrace-activity
+  annotations:
+    description: >
+      Detects ptrace() system calls used for process injection, memory inspection,
+      and anti-debugger checks.
+      MITRE: T1055 - Process Injection, T1622 - Debugger Evasion.
+
+      Notable request types captured:
+        PTRACE_TRACEME  (0)     — process requests to be traced by parent; used
+                                  by malware to detect/evade debuggers (call fails
+                                  with EPERM if already traced)
+        PTRACE_ATTACH   (16)    — attach to another process; prerequisite for injection
+        PTRACE_POKETEXT (4)     — write arbitrary data to process text segment
+        PTRACE_POKEDATA (5)     — write arbitrary data to process data segment
+        PTRACE_SETREGS  (13)    — overwrite registers; used to redirect execution
+        PTRACE_SEIZE    (16896) — modern non-stopping attach (0x4200)
+
+      In production Kubernetes any ptrace is suspicious — debuggers (gdb, strace)
+      have no place in running workloads. The policy fires for both host and
+      container processes; scope to containers only via the allowlist if needed.
+
+      Return value: 0 on success, negative errno on failure (e.g. EPERM if the
+      caller lacks CAP_SYS_PTRACE or the target process is protected). A failed
+      PTRACE_ATTACH attempt is still worth alerting.
+spec:
+  kprobes:
+    - call: "sys_ptrace"
+      syscall: true
+      return: true
+      message: "ptrace() called — potential process injection or debugger evasion"
+      args:
+        - index: 0
+          type: "int" # request type (PTRACE_TRACEME=0, PTRACE_ATTACH=16, etc.)
+        - index: 1
+          type: "int" # target pid (0 for PTRACE_TRACEME)
+      returnArg:
+        index: 0
+        type: "int" # 0 on success, negative errno on failure
+      selectors:
+        - matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/containerd
+                - /usr/bin/containerd-shim-runc-v2
+                - /usr/bin/runc
+          matchActions:
+            - action: Post

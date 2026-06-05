@@ -1,0 +1,52 @@
+# Falco rule: Packet socket created in container
+#
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: packet-socket-creation
+  annotations:
+    description: >
+      Detects AF_PACKET socket creation, which gives a process raw access to the
+      network interface below the IP layer. Used for packet sniffing and network
+      reconnaissance tools (tcpdump, Wireshark, scapy, custom sniffers).
+      MITRE: T1040 - Network Sniffing.
+
+      Scoped to containers at the export layer (container_id filter in
+      tetragon-config-patch.yaml) — AF_PACKET on the host is expected for
+      monitoring tools like node_exporter, cilium, etc.
+
+      Socket type context:
+        SOCK_RAW (3)   — raw Ethernet frames, highest privilege, most suspicious
+        SOCK_DGRAM (10) — cooked packets (kernel strips L2 header), used by some
+                          legitimate tools but still requires CAP_NET_RAW in containers
+
+      Return value: positive fd on success, negative errno (e.g. EPERM) on failure.
+      A denied attempt (EPERM) is still worth alerting — it confirms a process tried.
+spec:
+  kprobes:
+    - call: "sys_socket"
+      syscall: true
+      return: true
+      message: "AF_PACKET socket created — raw network access"
+      args:
+        - index: 0
+          type: "int" # domain: AF_PACKET=17
+        - index: 1
+          type: "int" # type: SOCK_RAW=3, SOCK_DGRAM=10, SOCK_NONBLOCK=0x800
+        - index: 2
+          type: "int" # protocol (htons): ETH_P_ALL=0x0300, ETH_P_IP=0x0008
+      returnArg:
+        index: 0
+        type: "int" # fd on success, negative errno on failure
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "17" # AF_PACKET
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - "/speaker" # Ignores the MetalLB speaker binary
+          matchActions:
+            - action: Post
