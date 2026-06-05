@@ -64,10 +64,6 @@ spec:
                 - "/etc/sudoers"
                 - "/etc/sudoers.d/"
                 - "/root/.ssh/"
-            - index: 0
-              operator: "Postfix"
-              values:
-                - "release_agent" # Catch the release_agent cgroup escape technique
           matchBinaries:
             - operator: "NotIn"
               values:
@@ -77,6 +73,19 @@ spec:
                 - /usr/local/bin/kube-apiserver
                 - /usr/local/bin/kube-controller-manager
                 - /usr/local/bin/kube-scheduler
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
+        # Separate selector: cgroup release_agent escape detection.
+        # Must be its own selector — Postfix+Prefix on the same index are AND'd,
+        # so combining them would require both conditions to be true simultaneously.
+        # Real paths: /sys/fs/cgroup/<subsystem>/release_agent — never under /etc.
+        - matchArgs:
+            - index: 0
+              operator: "Postfix"
+              values:
+                - "/release_agent"
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -165,6 +174,21 @@ spec:
             - action: Post
               rateLimit: "1s"
               rateLimitScope: "process"
+        # cgroup release_agent write detection (T1611 container escape).
+        # Matches the Falco rule "Detect release_agent File Container Escapes"
+        # which fires on open_write to any path ending in release_agent.
+        # Real paths: /sys/fs/cgroup/<subsystem>/<cgroup>/release_agent
+        - matchArgs:
+            - index: 0
+              operator: "Postfix"
+              values:
+                - "/release_agent"
+            - index: 1
+              operator: "Equal"
+              values:
+                - "2" # MAY_WRITE only
+          matchActions:
+            - action: Post
     # -------------------------------------------------------------------------
     # Rule 3: Sensitive system path mapped for write via mmap
     #
