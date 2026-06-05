@@ -4,4 +4,5 @@ resources:
   - upstream.yaml
 
 patches:
+  - path: metrics-patch.yaml
   - path: tetragon-config-patch.yaml

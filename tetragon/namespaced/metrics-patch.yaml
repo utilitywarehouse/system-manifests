@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "2112"
+    prometheus.io/scrape: "true"
+  name: tetragon
+  namespace: sys-tetragon
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "2113"
+    prometheus.io/scrape: "true"
+  name: tetragon-operator-metrics
+  namespace: sys-tetragon
