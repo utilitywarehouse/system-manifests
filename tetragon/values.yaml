@@ -18,5 +18,5 @@ tetragon:
     enabled: "base,kprobe,tracepoint,lsm"
     # -- JSON export file permissions as a string. Typically it's either "600" (to restrict access to
     # owner) or "640"/"644" (to allow read access by logs collector or another agent).
-    # allow root group read
-  exportFilePerm: "640"
+    # vector runs as root
+  exportFilePerm: "600"
