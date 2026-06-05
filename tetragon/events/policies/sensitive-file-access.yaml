@@ -210,9 +210,9 @@ spec:
         - index: 0
           type: "file"
         - index: 1
-          type: "uint32" # prot flags: PROT_EXEC=0x04, PROT_WRITE=0x02, PROT_READ=0x01
+          type: "ulong" # prot flags: PROT_EXEC=0x04, PROT_WRITE=0x02, PROT_READ=0x01
         - index: 2
-          type: "uint32" # mmap flags: MAP_SHARED=0x01, MAP_PRIVATE=0x02
+          type: "ulong" # mmap flags: MAP_SHARED=0x01, MAP_PRIVATE=0x02
       returnArg:
         index: 0
         type: "int"
