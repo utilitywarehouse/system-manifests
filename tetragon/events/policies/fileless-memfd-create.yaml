@@ -1,0 +1,45 @@
+# Falco rule: Fileless execution via memfd_create
+#
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: fileless-memfd-create
+  annotations:
+    description: >
+      Detects fileless execution via memfd_create() — a syscall that creates an
+      anonymous memory-backed file never touching disk. Attackers write shellcode
+      or ELF binaries into the memfd, then exec via /proc/self/fd/<fd> to run
+      entirely in memory.
+      MITRE: T1620 - Reflective Code Loading, T1059 - Command and Scripting Interpreter.
+
+      The companion exec allowlist entry catches the actual execution
+      (process_exec.process.binary starting with "memfd:"). This kprobe catches
+      the creation step, which fires even if the exec is blocked or delayed.
+
+      Return value: positive fd number on success, negative errno on failure.
+      The fd is useful for correlating this event with a subsequent /proc/self/fd/<fd>
+      exec in the same process.
+spec:
+  kprobes:
+    - call: "sys_memfd_create"
+      syscall: true
+      return: true
+      message: "memfd_create called — potential fileless execution"
+      args:
+        - index: 0
+          type: "string" # name label for the memfd (appears as binary name on exec)
+        - index: 1
+          type: "int" # flags: MFD_CLOEXEC=1, MFD_ALLOW_SEALING=2, MFD_HUGETLB=4
+      returnArg:
+        index: 0
+        type: "int" # fd number on success, negative errno on failure
+      selectors:
+        - matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /sbin/apk # uses memfd internally for atomic file ops
+                - /usr/lib/systemd/systemd
+                - /usr/bin/calico-node
+              followChildren: true
+          matchActions:
+            - action: Post

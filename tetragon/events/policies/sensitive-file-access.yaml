@@ -1,0 +1,238 @@
+# modified version of
+# https://github.com/cilium/tetragon/blob/main/examples/quickstart/file_monitoring.yaml
+# Falco rule: Read sensitive file (trusted after startup / untrusted)
+#
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: sensitive-file-access
+  annotations:
+    description: >
+      Detects opens, truncations, writes, and write-via-mmap of sensitive files
+      and system directories.
+
+      Rule 1 (security_file_open): opens of specific sensitive files
+      Translated from Falco rules: "Read sensitive file untrusted",
+      "Read sensitive file trusted after startup".
+      MITRE: T1555 - Credentials from Password Stores.
+
+      Rule 2 (security_file_permission MAY_WRITE): actual write I/O to targeted
+      sensitive paths (auth files, sudoers, PAM, SSH config, k8s config, cron,
+      shell startup files, ld.so, binary directories, /root/.ssh).
+      Scoped to specific subpaths rather than all of /etc to avoid noise from
+      legitimate services writing temp files under /etc. MAY_READ excluded.
+
+      Rule 3 (security_mmap_file MAP_SHARED+PROT_WRITE): write-via-mmap to the
+      same targeted paths. MAP_PRIVATE excluded (copy-on-write, no file mutation).
+
+      Rule 4 (security_path_truncate): truncate() bypasses security_file_open
+      entirely. Broad /etc scope is acceptable here — truncating anything under
+      /etc is inherently suspicious unlike writes which have legitimate use cases.
+
+      LSM hooks (not syscall hooks) are used throughout to avoid TOCTOU:
+      hooks fire after VFS path resolution using kernel-space struct file *,
+      so user-space cannot race the path between check and use.
+spec:
+  kprobes:
+    # -------------------------------------------------------------------------
+    # Rule 1: Open sensitive file
+    #
+    # security_file_open fires after VFS path resolution — no TOCTOU.
+    # Covers all open variants (open, openat, openat2) in one hook.
+    # Return value: 0 = allowed, negative errno = denied by LSM.
+    # -------------------------------------------------------------------------
+    - call: "security_file_open"
+      syscall: false
+      return: true
+      message: "Sensitive file opened"
+      args:
+        - index: 0
+          type: "file"
+      returnArg:
+        index: 0
+        type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Prefix"
+              values:
+                - "/etc/kubernetes/"
+                - "/etc/pam.conf"
+                - "/etc/pam.d/"
+                - "/etc/security/pwquality.conf"
+                - "/etc/shadow"
+                - "/etc/sudoers"
+                - "/etc/sudoers.d/"
+                - "/root/.ssh/"
+            - index: 0
+              operator: "Postfix"
+              values:
+                - "release_agent" # Catch the release_agent cgroup escape technique
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /opt/bin/kubelet
+                - /usr/bin/systemd-tmpfiles
+                - /usr/lib/systemd/systemd
+                - /usr/local/bin/kube-apiserver
+                - /usr/local/bin/kube-controller-manager
+                - /usr/local/bin/kube-scheduler
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
+
+    # -------------------------------------------------------------------------
+    # Rule 2: Write to sensitive system paths
+    #
+    # security_file_permission fires on each read()/write() call — it is the
+    # only LSM hook that catches actual write I/O after open. Rule 1 catches
+    # opens; this catches the actual data being written.
+    #
+    # Filtered to MAY_WRITE (2) only — MAY_READ (4) is excluded to avoid
+    # the per-read() noise that makes this hook impractical for read monitoring.
+    #
+    # Scoped to targeted sensitive paths rather than all of /etc to avoid noise
+    # from legitimate services writing under /etc (Prometheus text file collectors,
+    # dynamic resolv.conf updates, etc.). The binary path prefixes (/bin, /usr/bin,
+    # etc.) remain broad since any write there is suspicious regardless of filename.
+    #
+    # NOTE: On Flatcar, /usr is immutable so writes there will be denied by
+    # the OS, but the event is still valuable — it confirms a process attempted
+    # to tamper with the immutable filesystem.
+    # -------------------------------------------------------------------------
+    - call: "security_file_permission"
+      syscall: false
+      return: true
+      message: "Write to sensitive system path"
+      args:
+        - index: 0
+          type: "file"
+        - index: 1
+          type: "int" # permission mask: MAY_READ=4, MAY_WRITE=2, MAY_EXEC=1
+      returnArg:
+        index: 0
+        type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Prefix"
+              values:
+                # Credential and auth files
+                - "/etc/passwd"
+                - "/etc/shadow"
+                - "/etc/group"
+                - "/etc/gshadow"
+                # Privilege escalation
+                - "/etc/sudoers"
+                - "/etc/sudoers.d/"
+                # PAM and auth config
+                - "/etc/pam.conf"
+                - "/etc/pam.d/"
+                - "/etc/security/"
+                # SSH config tampering
+                - "/etc/ssh/"
+                # Kubernetes config
+                - "/etc/kubernetes/"
+                # Persistence vectors
+                - "/etc/cron"
+                - "/etc/profile"
+                - "/etc/profile.d/"
+                - "/etc/bashrc"
+                - "/etc/environment"
+                # Dynamic linker config — library hijacking
+                - "/etc/ld.so"
+                # Binary paths — supply chain / tamper
+                - "/bin"
+                - "/usr/bin"
+                - "/usr/local/bin"
+                - "/usr/sbin"
+                - "/usr/local/sbin"
+                - "/lib"
+                - "/lib64"
+                - "/usr/lib"
+                # SSH keys for root
+                - "/root/.ssh"
+            - index: 1
+              operator: "Equal"
+              values:
+                - "2" # MAY_WRITE only
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /sbin/apk # Exec allowlist already catches apk installs
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
+    # -------------------------------------------------------------------------
+    # Rule 3: Sensitive system path mapped for write via mmap
+    #
+    # mmap() with MAP_SHARED+PROT_WRITE allows writing to a file without ever
+    # calling write() — the write() syscall path (and thus security_file_permission)
+    # is bypassed entirely. This is the only hook that catches write-via-mmap.
+    #
+    # Filtered to MAP_SHARED (0x01) + PROT_WRITE (0x02) to avoid noise:
+    #   - MAP_PRIVATE copy-on-write mappings never modify the underlying file
+    #   - PROT_READ-only mappings are reads, not writes
+    #
+    # Same targeted path scope as Rule 2.
+    # -------------------------------------------------------------------------
+    - call: "security_mmap_file"
+      syscall: false
+      return: true
+      message: "Sensitive system path mapped for write (MAP_SHARED)"
+      args:
+        - index: 0
+          type: "file"
+        - index: 1
+          type: "uint32" # prot flags: PROT_EXEC=0x04, PROT_WRITE=0x02, PROT_READ=0x01
+        - index: 2
+          type: "uint32" # mmap flags: MAP_SHARED=0x01, MAP_PRIVATE=0x02
+      returnArg:
+        index: 0
+        type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Prefix"
+              values:
+                - "/"
+            - index: 1
+              operator: "Mask"
+              values:
+                - "2" # PROT_WRITE
+            - index: 2
+              operator: "Mask"
+              values:
+                - "1" # MAP_SHARED
+          # matchBinaries:
+          #   - operator: "NotIn"
+          #     values:
+          #       - /usr/lib/systemd/systemd-journald # writes to /var/log
+
+    # -------------------------------------------------------------------------
+    # Rule 4: Truncate sensitive file via path
+    #
+    # truncate() bypasses security_file_open entirely — it takes a path and
+    # truncates the file without a traditional open(). Truncating /etc/shadow
+    # or /etc/sudoers destroys the file contents and breaks authentication.
+    # Uses kernel-resolved struct path * — no TOCTOU.
+    #
+    # ftruncate() (fd-based) is not hooked here: the prerequisite open() is
+    # already caught by Rule 1.
+    # -------------------------------------------------------------------------
+    - call: "security_path_truncate"
+      syscall: false
+      message: "Sensitive file truncated via path"
+      args:
+        - index: 0
+          type: "path"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Prefix"
+              values:
+                - "/etc" # Truncate to sensitive directories
+                - "/root/.ssh"
+                - "/var/log" # Truncate to logs
