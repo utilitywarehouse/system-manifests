@@ -3,3 +3,14 @@ kind: Kustomization
 resources:
   - cluster-rbac.yaml
   - crds.yaml
+
+  - policies/ebpf.yaml
+  - policies/fileless-memfd-create.yaml
+  - policies/kernel-modules.yaml
+  - policies/packet-socket-creation.yaml
+  - policies/privileges-raise.yaml
+  - policies/ptrace-activity.yaml
+  - policies/sensitive-file-access.yaml
+  - policies/sensitive-file-links.yaml
+  - policies/ssh-connections.yaml
+  - policies/ssh-non-standard-port.yaml
