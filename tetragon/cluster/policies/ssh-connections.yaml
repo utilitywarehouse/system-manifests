@@ -56,5 +56,5 @@ spec:
           matchActions:
             - action: UntrackSock
               argSock: 0
-            - action: NoPost
+            - action: Post
               rateLimit: 5m
