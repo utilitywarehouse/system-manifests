@@ -1,11 +1,11 @@
 .DEFAULT_GOAL := update-upstream
 SHELL := /bin/bash
-RELEASE := 1.14.0
+RELEASE := 1.22.1
 
 .PHONY: update-upstream
 update-upstream:
 	mkdir -p upstream
-	curl -sL https://github.com/weaveworks/kured/releases/download/$(RELEASE)/kured-$(RELEASE)-dockerhub.yaml -o upstream/kured.yaml
+	curl -sL https://github.com/weaveworks/kured/releases/download/$(RELEASE)/kured-$(RELEASE)-combined.yaml -o upstream/kured.yaml
 	# Cluster scope
 	yq 'select(.kind=="ClusterRole")' upstream/kured.yaml > cluster/clusterrole.yaml
 	yq 'select(.kind=="ClusterRoleBinding") | .subjects[].namespace = "sys-flatcar"' upstream/kured.yaml > cluster/clusterrolebinding.yaml
