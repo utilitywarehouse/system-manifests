@@ -40,7 +40,6 @@ data:
   # Privileges Escalation via File Capabilities Execution. Monitor execution of binaries with file capabilities.
   # System user interactive: system accounts (UID 1-100, nobody/65534) spawning processes via SSH/login on host.
   #
-  # Terminal shell in container
   # Explicitly catch kernel module loading binaries executed inside containers
   # Detect file system debugger launched in a container
   # monitor-drop-and-execute (monitor executions occurring in traditionally writable paths)
@@ -73,7 +72,6 @@ data:
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && has(process_exec.process.binary_properties.privileges_changed)"]}
     {"event_set":["PROCESS_EXEC"], "parent_binary_regex":[".*/(sshd|login|systemd-logind)$"], "cel_expression":["has(process_exec.process.process_credentials) && has(process_exec.process.process_credentials.uid) && ((process_exec.process.process_credentials.uid >= 1u && process_exec.process.process_credentials.uid <= 100u) || process_exec.process.process_credentials.uid == 65534u)"]}
 
-    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(bash|sh|zsh|ash|dash|ksh|csh|tcsh)$"], "cel_expression": ["process_exec.process.in_init_tree == false"]}
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(insmod|modprobe|rmmod)$"]}
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/debugfs$"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":["^/dev/shm/.*", "^/tmp/.*", "^/var/tmp/.*"]}
@@ -91,5 +89,5 @@ data:
     {"event_set":["PROCESS_KPROBE"], "policy_names":["ptrace-activity"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-access"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-links"]}
-    {"event_set":["PROCESS_KPROBE"], "policy_names":["ssh-non-standard-port"], "binary_regex":[".*/ssh$", ".*/scp$", ".*/sftp$", ".*/ssh-keyscan$"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["ssh-non-standard-port"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["monitor-ssh-connections"]}
