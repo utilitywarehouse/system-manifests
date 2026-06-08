@@ -29,13 +29,13 @@ rules:
     verbs: ["get", "list", "delete", "patch"]
   - apiGroups: [""]
     resources: ["pods"]
-    verbs: ["get", "list", "watch"]
+    verbs: ["get", "list", "watch", "delete"]
   - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments"]
-    verbs: ["get", "list", "watch", "update", "patch"]
+    verbs: ["get", "list", "watch", "update", "patch", "delete"]
   - apiGroups: ["storage.k8s.io"]
     resources: ["volumeattachments/status"]
     verbs: ["update", "patch"]
@@ -70,7 +70,11 @@ rules:
 "tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
 "tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
 "tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status",
-"tridentgroupsnapshots", "tridentgroupsnapshots/status"]
+"tridentnoderemediations", "tridentnoderemediations/status",
+"tridentnoderemediationtemplates", "tridentnoderemediationtemplates/status",
+"tridentgroupsnapshots", "tridentgroupsnapshots/status",
+"tridentautogrowpolicies", "tridentautogrowpolicies/status",
+"tridentautogrowrequestinternals", "tridentautogrowrequestinternals/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]

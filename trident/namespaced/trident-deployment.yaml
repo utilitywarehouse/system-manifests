@@ -22,9 +22,11 @@ spec:
         openshift.io/required-scc: trident-controller
     spec:
       serviceAccount: trident-controller
+      priorityClassName: system-cluster-critical
+      
       containers:
       - name: trident-main
-        image: netapp/trident:25.06.0
+        image: docker.io/netapp/trident:26.02.1
         imagePullPolicy: IfNotPresent
         securityContext:
           runAsNonRoot: false
@@ -55,6 +57,7 @@ spec:
         - "--enable_concurrency=false"
         - "--metrics"
         
+        
         #- -debug
         
         livenessProbe:
@@ -68,6 +71,21 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 120
           timeoutSeconds: 90
+        readinessProbe:
+          exec:
+            command:
+            - tridentctl
+            - -s
+            - "127.0.0.1:8000"
+            - version
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 10
+        resources:
+          requests:
+            cpu: 10m
+            memory: 80Mi
         env:
         - name: KUBE_NODE_NAME
           valueFrom:
@@ -92,7 +110,7 @@ spec:
         
       
       - name: trident-autosupport
-        image: docker.io/netapp/trident-autosupport:25.06
+        image: docker.io/netapp/trident-autosupport:26.02
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -112,14 +130,15 @@ spec:
         #- -debug
         
         resources:
-          limits:
-            memory: 1Gi
+          requests:
+            cpu: 1m
+            memory: 30Mi
         volumeMounts:
         - name: asup-dir
           mountPath: /asup
 
       - name: csi-provisioner
-        image: registry.k8s.io/sig-storage/csi-provisioner:v5.2.0
+        image: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -127,12 +146,16 @@ spec:
             - all
         args:
         - "--v=2"
-        - "--timeout=600s"
         - "--csi-address=$(ADDRESS)"
-        - "--retry-interval-start=8s"
-        - "--retry-interval-max=30s"
-        - "--worker-threads=5"
+        - "--worker-threads=25"
+        - "--timeout=600s"
+        - "--retry-interval-start=10s"
+        - "--retry-interval-max=300s"
         
+        resources:
+          requests:
+            cpu: 2m
+            memory: 20Mi
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -140,7 +163,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-attacher
-        image: registry.k8s.io/sig-storage/csi-attacher:v4.8.1
+        image: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -148,11 +171,16 @@ spec:
             - all
         args:
         - "--v=2"
-        - "--timeout=60s"
-        - "--retry-interval-start=10s"
-        - "--worker-threads=10"
         - "--csi-address=$(ADDRESS)"
+        - "--worker-threads=25"
+        - "--timeout=600s"
+        - "--retry-interval-start=10s"
+        - "--retry-interval-max=300s"
         
+        resources:
+          requests:
+            cpu: 2m
+            memory: 20Mi
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -160,7 +188,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-resizer
-        image: registry.k8s.io/sig-storage/csi-resizer:v1.13.2
+        image: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -168,10 +196,16 @@ spec:
             - all
         args:
         - "--v=2"
-        - "--timeout=300s"
-        - "--workers=10"
         - "--csi-address=$(ADDRESS)"
+        - "--workers=25"
+        - "--timeout=600s"
+        - "--retry-interval-start=10s"
+        - "--retry-interval-max=300s"
         
+        resources:
+          requests:
+            cpu: 3m
+            memory: 20Mi
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock
@@ -179,7 +213,7 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.2.1
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.5.0
         imagePullPolicy: IfNotPresent
         securityContext:
           capabilities:
@@ -187,11 +221,17 @@ spec:
             - all
         args:
         - "--v=2"
-        - "--timeout=300s"
-        - "--worker-threads=10"
         - "--csi-address=$(ADDRESS)"
+        - "--worker-threads=25"
+        - "--timeout=600s"
+        - "--retry-interval-start=10s"
+        - "--retry-interval-max=300s"
         
         
+        resources:
+          requests:
+            cpu: 2m
+            memory: 20Mi
         env:
         - name: ADDRESS
           value: /var/lib/csi/sockets/pluginproxy/csi.sock

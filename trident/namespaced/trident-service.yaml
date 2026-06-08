@@ -17,3 +17,7 @@ spec:
     protocol: TCP
     port: 9220
     targetPort: 8001
+  - name: https-metrics
+    protocol: TCP
+    port: 8444
+    targetPort: 8444
