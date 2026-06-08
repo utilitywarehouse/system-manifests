@@ -8,6 +8,10 @@ spec:
   template:
     spec:
       containers:
+        - name: trident-main
+          resources:
+            limits:
+              memory: 240Mi # 3 times the upstream request size
         - name: csi-provisioner
           args:
             - --v=2
@@ -28,34 +32,34 @@ spec:
       nodeSelector:
         role: master
       volumes:
-      - name: certs
-        secret:
-          $patch: delete
-        projected:
-          sources:
-          - secret:
-              name: trident-ca
-              items:
-              - key: tls.crt
-                path: caCert
-              - key: tls.key
-                path: caKey
-          - secret:
-              name: server-tls
-              items:
-              - key: tls.crt
-                path: serverCert
-              - key: tls.key
-                path: serverKey
-          - secret:
-              name: client-tls
-              items:
-              - key: tls.crt
-                path: clientCert
-              - key: tls.key
-                path: clientKey
-          - configMap:
-              name: aes-hack
-              items:
-              - key: emptyKey
-                path: aesKey
+        - name: certs
+          secret:
+            $patch: delete
+          projected:
+            sources:
+              - secret:
+                  name: trident-ca
+                  items:
+                    - key: tls.crt
+                      path: caCert
+                    - key: tls.key
+                      path: caKey
+              - secret:
+                  name: server-tls
+                  items:
+                    - key: tls.crt
+                      path: serverCert
+                    - key: tls.key
+                      path: serverKey
+              - secret:
+                  name: client-tls
+                  items:
+                    - key: tls.crt
+                      path: clientCert
+                    - key: tls.key
+                      path: clientKey
+              - configMap:
+                  name: aes-hack
+                  items:
+                    - key: emptyKey
+                      path: aesKey
