@@ -23,7 +23,7 @@ spec:
       selectors:
         - matchArgs:
             - index: 0
-              operator: "NotIn"
+              operator: "NotEqual"
               values:
                 # allow Multipath TCP over IPv4
                 - "net-pf-2-proto-262"
