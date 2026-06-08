@@ -21,12 +21,14 @@ spec:
         index: 0
         type: "int"
       selectors:
-        - matchBinaries:
-            - operator: "NotIn"
+        - matchArgs:
+            - index: 0
+              operator: "NotIn"
               values:
-                - /usr/bin/calico-node
-                - /speaker # Ignores the MetalLB speaker binary
-              followChildren: true
+                # allow Multipath TCP over IPv4
+                - "net-pf-2-proto-262"
+                - "net-pf-2-proto-262-type-1"
+
     - call: "security_kernel_read_file"
       message: "Kernel module is being loaded"
       # Explicit module loading using file descriptor finit_module() to print module full path
