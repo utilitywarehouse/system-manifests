@@ -127,7 +127,7 @@ spec:
             - index: 0
               operator: "Prefix"
               values:
-                # Credential and auth files
+                &security_file_permission_write_values # Credential and auth files
                 - "/etc/passwd"
                 - "/etc/shadow"
                 - "/etc/group"
@@ -220,8 +220,7 @@ spec:
         - matchArgs:
             - index: 0
               operator: "Prefix"
-              values:
-                - "/"
+              values: *security_file_permission_write_values
             - index: 1
               operator: "Mask"
               values:
