@@ -91,5 +91,5 @@ data:
     {"event_set":["PROCESS_KPROBE"], "policy_names":["ptrace-activity"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-access"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-links"]}
-    {"event_set":["PROCESS_KPROBE"], "policy_names":["ssh-non-standard-port"], "binary_regex":[".*/ssh$", ".*/scp$", ".*/sftp$", ".*/ssh-keyscan$"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["ssh-non-standard-port"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["monitor-ssh-connections"]}
