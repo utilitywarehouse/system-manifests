@@ -192,7 +192,7 @@ metadata:
     actions.github.com/scale-set-name: system-exp-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 5d4ed7cbe03799d44ac3e48ffebd0356e7cd034a71ed07e671da6a03655764b
+    actions.github.com/values-hash: 86fb1278e9f6e6523dfcb9acd9f6c7059785fbb82d9e4144420bd5d667dcaf5
     actions.github.com/cleanup-manager-role-binding: system-exp-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-exp-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-exp-merit-gha-rs-kube-mode
@@ -205,6 +205,8 @@ spec:
   minRunners: 1
   listenerTemplate:
     spec:
+      containers:
+        - name: listener
       nodeSelector:
         node.uw.systems/with-stepsecurity-harden-runner: "true"
       tolerations:

@@ -9,6 +9,8 @@ listenerTemplate:
         operator: "Equal"
         value: "true"
         effect: "NoSchedule"
+    containers:
+      - name: listener
 
 template:
   spec:
