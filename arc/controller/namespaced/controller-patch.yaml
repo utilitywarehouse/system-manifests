@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arc-gha-rs-controller
+  namespace: sys-actions
+spec:
+  template:
+    spec:
+      nodeSelector:
+        node.uw.systems/with-stepsecurity-harden-runner: "true"
+      tolerations:
+        - key: "node.uw.systems/with-stepsecurity-harden-runner"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"

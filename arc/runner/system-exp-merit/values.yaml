@@ -1,1 +1,21 @@
 runnerScaleSetName: system-exp-merit
+
+listenerTemplate:
+  spec:
+    nodeSelector:
+      node.uw.systems/with-stepsecurity-harden-runner: "true"
+    tolerations:
+      - key: "node.uw.systems/with-stepsecurity-harden-runner"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+
+template:
+  spec:
+    nodeSelector:
+      node.uw.systems/with-stepsecurity-harden-runner: "true"
+    tolerations:
+      - key: "node.uw.systems/with-stepsecurity-harden-runner"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
