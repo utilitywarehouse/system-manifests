@@ -10,4 +10,4 @@ pull-upstream:
 	curl https://raw.githubusercontent.com/kubernetes/kube-state-metrics/$(v)/examples/standard/service.yaml > namespaced/service.yaml
 
 clean-ns-attr:
-	sd '^\s+namespace:.+\n' '' $$(rg '^\s+namespace:' namespaced/ -l)
+	rg '^\s+namespace:' namespaced/ -l | xargs -r sd '^\s+namespace:.+\n' ''
