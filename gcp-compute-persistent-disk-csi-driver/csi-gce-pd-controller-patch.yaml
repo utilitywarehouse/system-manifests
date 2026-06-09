@@ -41,6 +41,15 @@ spec:
             - --leader-election
             - --default-fstype=ext4
             - --controller-publish-readonly=true
+        - name: taint-controller
+          # Delete the expected gcp credentials secret and mount
+          env:
+            - $patch: delete
+              name: GOOGLE_APPLICATION_CREDENTIALS
+          volumeMounts:
+            - $patch: delete
+              name: cloud-sa-volume
+              mountPath: "/etc/cloud-sa"
       volumes:
         - $patch: delete
           name: cloud-sa-volume
