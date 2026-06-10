@@ -9,6 +9,9 @@ env:
 
 nodeSelector:
   node.uw.systems/with-stepsecurity-harden-runner: "true"
+tolerations:
+  - key: node.uw.systems/with-stepsecurity-harden-runner
+    effect: NoSchedule
 
 tetragon:
   enabled: false

@@ -38,17 +38,3 @@ patches:
           prometheus.io/scrape: "true"
           prometheus.io/port: "8008"
           prometheus.io/path: /metrics
-
-  # add prometheus annotations
-  - patch: |-
-      apiVersion: apps/v1
-      kind: DaemonSet
-      metadata:
-        name: hardenrunner
-        namespace: sys-actions
-      spec:
-        template:
-          spec:
-            tolerations:
-              - key: node.uw.systems/with-stepsecurity-harden-runner
-                effect: NoSchedule

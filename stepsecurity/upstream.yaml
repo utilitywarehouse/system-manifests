@@ -139,7 +139,8 @@ data:
       policy:
         securityPathTruncate: true
     tolerations:
-    - operator: Exists
+    - effect: NoSchedule
+      key: node.uw.systems/with-stepsecurity-harden-runner
 ---
 # Source: arc-harden-runner/templates/harden_runner_ds.yml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -253,7 +254,8 @@ spec:
       nodeSelector:
         node.uw.systems/with-stepsecurity-harden-runner: "true"
       tolerations:
-      - operator: Exists
+      - effect: NoSchedule
+        key: node.uw.systems/with-stepsecurity-harden-runner
       volumes:
         - name: host-sys-fs-cgroup
           hostPath:
