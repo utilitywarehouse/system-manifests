@@ -42,10 +42,18 @@ spec:
             - --default-fstype=ext4
             - --controller-publish-readonly=true
         - name: taint-controller
+          args:
+            - --v=5
+            - --run-taint-controller=true
+            - --run-node-service=false
           # Delete the expected gcp credentials secret and mount
           env:
             - $patch: delete
               name: GOOGLE_APPLICATION_CREDENTIALS
+          ports:
+            - $patch: delete
+              containerPort: 8081
+              name: metrics-taint
           volumeMounts:
             - $patch: delete
               name: cloud-sa-volume
