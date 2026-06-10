@@ -12,3 +12,14 @@ configMapGenerator:
       - pods.yaml=resources/pods.yaml
       - systemd.yaml=resources/systemd.yaml
       - resources/global.yaml
+
+patches:
+  - target:
+      kind: DaemonSet
+      name: vector-node
+    patch: |
+      - op: add
+        path: /spec/template/spec/tolerations/-
+        value:
+          key: node.uw.systems/with-stepsecurity-harden-runner
+          effect: NoSchedule

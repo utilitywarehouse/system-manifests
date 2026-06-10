@@ -3,3 +3,14 @@ kind: Kustomization
 resources:
   - daemonset.yaml
   - service-account.yaml
+
+patches:
+  - target:
+      kind: DaemonSet
+      name: node-exporter
+    patch: |
+      - op: add
+        path: /spec/template/spec/tolerations/-
+        value:
+          key: node.uw.systems/with-stepsecurity-harden-runner
+          effect: NoSchedule

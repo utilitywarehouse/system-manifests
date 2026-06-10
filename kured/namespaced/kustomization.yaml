@@ -8,3 +8,12 @@ resources:
 patches:
   - path: canonical-name-label-patch.yaml
   - path: expose-metrics-patch.yaml
+  - target:
+      kind: DaemonSet
+      name: kured
+    patch: |
+      - op: add
+        path: /spec/template/spec/tolerations/-
+        value:
+          key: node.uw.systems/with-stepsecurity-harden-runner
+          effect: NoSchedule

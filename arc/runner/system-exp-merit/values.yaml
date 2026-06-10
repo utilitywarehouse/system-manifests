@@ -6,8 +6,6 @@ listenerTemplate:
       node.uw.systems/with-stepsecurity-harden-runner: "true"
     tolerations:
       - key: "node.uw.systems/with-stepsecurity-harden-runner"
-        operator: "Equal"
-        value: "true"
         effect: "NoSchedule"
     containers:
       - name: listener
@@ -18,6 +16,4 @@ template:
       node.uw.systems/with-stepsecurity-harden-runner: "true"
     tolerations:
       - key: "node.uw.systems/with-stepsecurity-harden-runner"
-        operator: "Equal"
-        value: "true"
         effect: "NoSchedule"
