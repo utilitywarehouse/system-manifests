@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Generate manifests
+STEP_SECURITY_VERSION="2.17.16"
+helm repo add stepsecurity https://helm.stepsecurity.io/arc-harden-runner
+helm repo update
+helm template  arc-harden-runner stepsecurity/arc-harden-runner \
+  -n sys-actions \
+  --version "${STEP_SECURITY_VERSION}" \
+  -f values.yaml > upstream.yaml

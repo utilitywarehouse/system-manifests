@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - upstream.yaml
+
+patches:
+  # replace ClusterRole to Role
+  - patch: |-
+      - op: replace
+        path: /kind
+        value: Role
+    target:
+      group: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: hardenrunner-role
+      version: v1
+  - patch: |-
+      - op: replace
+        path: /kind
+        value: RoleBinding
+      - op: replace
+        path: /roleRef/kind
+        value: Role
+    target:
+      group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+      name: hardenrunner-rolebinding
+      version: v1
+
+  # add prometheus annotations
+  - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: hardenrunner-metrics
+        namespace: sys-actions
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "8008"
+          prometheus.io/path: /metrics
+
+  # add prometheus annotations
+  - patch: |-
+      apiVersion: apps/v1
+      kind: DaemonSet
+      metadata:
+        name: hardenrunner
+        namespace: sys-actions
+      spec:
+        template:
+          spec:
+            tolerations:
+              - key: node.uw.systems/with-stepsecurity-harden-runner
+                effect: NoSchedule
