@@ -39,7 +39,10 @@ spec:
       # Remove tolerations to not allow scheduling on control plane nodes. We
       # will run bgp-lb instances there to manage Kubernetes apiserver load
       # balancing in a more static/kube Service agnostic way.
-      tolerations: []
+      # schedule on stepSecurity node this patch overrides upstream list
+      tolerations:
+        - key: node.uw.systems/with-stepsecurity-harden-runner
+          effect: NoSchedule
       volumes:
         - $patch: delete
           name: memberlist
