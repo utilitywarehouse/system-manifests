@@ -62,19 +62,16 @@ spec:
           matchActions:
             - action: "NoPost"
 
-        - matchBinaries:
-            - operator: "Prefix"
-              values:
-                - /usr/bin/runc
-                - /usr/lib/systemd/systemd-coredump
-          matchActions:
-            - action: "NoPost"
-
         - matchArgs:
             - index: 2
               operator: "NotEqual"
               values:
                 - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+                - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
               rateLimit: "1m"
@@ -83,6 +80,11 @@ spec:
               operator: "NotEqual"
               values:
                 - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+                - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
               rateLimit: "1m"
@@ -91,6 +93,11 @@ spec:
               operator: "NotEqual"
               values:
                 - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+                - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
               rateLimit: "1m"
