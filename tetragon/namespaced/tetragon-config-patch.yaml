@@ -21,6 +21,7 @@ data:
   export-denylist: |-
     {"health_check":true}
     {"event_set": ["PROCESS_KPROBE"], "policy_names": ["privileges-raise"], "parent_arguments_regex": [".*/health/redis_readiness.sh.*", ".*/readonly-config/fix-split-brain.sh.*"]}
+    {"event_set": ["PROCESS_KPROBE"], "policy_names": ["privileges-raise"], "binary_regex": ["^/proc/self/fd/.*"],"parent_binary_regex": ["^/usr/lib/systemd/systemd$"]}
     {"event_set": ["PROCESS_KPROBE"], "policy_names": ["monitor-ssh-connections"], "cel_expression": ["process_kprobe.function_name == 'sk_free'"]}
 
   # Filter process events by event types.
