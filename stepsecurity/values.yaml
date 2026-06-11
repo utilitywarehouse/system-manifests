@@ -1,0 +1,18 @@
+env:
+  customer: "utilitywarehouse"
+  apiKey: "step_api_key_change_me"
+  clusterName: "[CLUSTER_NAME]"
+  arcRunnerNameSpaces:
+    - sys-actions
+  prometheus:
+    enabled: true
+
+nodeSelector:
+  node.uw.systems/with-stepsecurity-harden-runner: "true"
+tolerations:
+  - key: node.uw.systems/with-stepsecurity-harden-runner
+    effect: NoSchedule
+
+tetragon:
+  enabled: false
+  applyPolicies: true
