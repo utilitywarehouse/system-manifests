@@ -43,3 +43,5 @@ spec:
               followChildren: true
           matchActions:
             - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
