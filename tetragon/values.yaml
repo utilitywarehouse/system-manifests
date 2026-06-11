@@ -20,3 +20,5 @@ tetragon:
     # owner) or "640"/"644" (to allow read access by logs collector or another agent).
     # vector runs as root
   exportFilePerm: "600"
+  extraArgs:
+    parents-map-enabled: "true"
