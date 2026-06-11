@@ -10,6 +10,15 @@ resources:
 patches:
   - path: falco-annotations-patch.yaml
   - path: falco-rules-local.yaml
+  - target:
+      kind: DaemonSet
+      name: falco
+    patch: |
+      - op: add
+        path: /spec/template/spec/tolerations/-
+        value:
+          key: node.uw.systems/with-stepsecurity-harden-runner
+          effect: NoSchedule
 
 configMapGenerator:
   - files:
