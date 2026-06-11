@@ -34,6 +34,15 @@ spec:
         index: 0
         type: "int" # fd number on success, negative errno on failure
       selectors:
+        # If the binary path starts with the Playwright cache folder, silently ignore it.
+        # ignores ephemeral headless browsers during Playwright CI test execution
+        - matchBinaries:
+            - operator: "Prefix"
+              values:
+                - /home/runner/.cache/ms-playwright
+          matchActions:
+            - action: "NoPost"
+
         - matchBinaries:
             - operator: "NotIn"
               values:
@@ -43,3 +52,5 @@ spec:
               followChildren: true
           matchActions:
             - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"

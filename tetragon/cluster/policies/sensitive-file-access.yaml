@@ -170,6 +170,7 @@ spec:
             - operator: "NotIn"
               values:
                 - /sbin/apk # Exec allowlist already catches apk installs
+                - /usr/bin/dpkg # Exec allowlist already catches dpkg installs
           matchActions:
             - action: Post
               rateLimit: "1s"
