@@ -38,3 +38,19 @@ patches:
           prometheus.io/scrape: "true"
           prometheus.io/port: "8008"
           prometheus.io/path: /metrics
+
+  # remove apiKey placeholder
+  - patch: |-
+      apiVersion: apps/v1
+      kind: DaemonSet
+      metadata:
+        namespace: sys-actions
+        name: hardenrunner
+      spec:
+        template:
+          spec:
+            containers:
+              - name: hardenrunner
+                env:
+                  - name: apiKey
+                    value: ""
