@@ -180,6 +180,7 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
               rateLimit: "1m"
@@ -309,6 +310,7 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
               rateLimit: "1m"
@@ -326,6 +328,7 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
               rateLimit: "1m"
@@ -359,6 +362,7 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
               rateLimit: "1m"
@@ -376,6 +380,7 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
               rateLimit: "1m"
