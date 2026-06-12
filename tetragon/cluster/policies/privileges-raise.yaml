@@ -31,11 +31,12 @@ kind: TracingPolicy
 metadata:
   name: "privileges-raise"
   annotations:
-    description: "Detects privileges raising operations"
+    description: "Detects successful privilege raising operations"
 spec:
   kprobes:
     - call: "security_capset"
       syscall: false
+      return: true
       message: "Process changed its capabilities using capset system call"
       args:
         - index: 0
@@ -48,10 +49,18 @@ spec:
           type: "cap_inheritable"
         - index: 4
           type: "cap_permitted"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchArgs:
             - index: 2
               operator: "NotEqual"
+              values:
+                - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
               values:
                 - "0"
           matchBinaries:
@@ -67,6 +76,11 @@ spec:
               operator: "NotEqual"
               values:
                 - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchBinaries:
             - operator: "NotIn"
               values:
@@ -78,6 +92,11 @@ spec:
         - matchArgs:
             - index: 4
               operator: "NotEqual"
+              values:
+                - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
               values:
                 - "0"
           matchBinaries:
@@ -106,14 +125,24 @@ spec:
               values:
                 - /usr/bin/runc
                 - /usr/lib/systemd/systemd-coredump
+
     - call: "__sys_setuid"
       message: "Privileged operation setuid to root"
       syscall: false
+      return: true
       args:
         - index: 0
           type: "int"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
             - index: 0
               operator: "Equal"
               values:
@@ -125,14 +154,24 @@ spec:
           matchActions:
             - action: Post
               rateLimit: "1m"
+
     - call: "__sys_setgid"
       message: "Privileged operation setgid to root"
       syscall: false
+      return: true
       args:
         - index: 0
           type: "int"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
             - index: 0
               operator: "Equal"
               values:
@@ -144,16 +183,26 @@ spec:
           matchActions:
             - action: Post
               rateLimit: "1m"
+
     - call: "__sys_setreuid"
       message: "Privileged operation setuid to root"
       syscall: false
+      return: true
       args:
         - index: 0
           type: "int"
         - index: 1
           type: "int"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
             - index: 0
               operator: "Equal"
               values:
@@ -170,6 +219,11 @@ spec:
               operator: "Equal"
               values:
                 - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchBinaries:
             - operator: "NotIn"
               values:
@@ -177,16 +231,26 @@ spec:
           matchActions:
             - action: Post
               rateLimit: "1m"
+
     - call: "__sys_setregid"
       message: "Privileged operation setgid to root"
       syscall: false
+      return: true
       args:
         - index: 0
           type: "int"
         - index: 1
           type: "int"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
             - index: 0
               operator: "Equal"
               values:
@@ -203,6 +267,11 @@ spec:
               operator: "Equal"
               values:
                 - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchBinaries:
             - operator: "NotIn"
               values:
@@ -210,9 +279,11 @@ spec:
           matchActions:
             - action: Post
               rateLimit: "1m"
+
     - call: "__sys_setresuid"
       message: "Privileged operation setuid to root"
       syscall: false
+      return: true
       args:
         - index: 0
           type: "int"
@@ -220,74 +291,16 @@ spec:
           type: "int"
         - index: 2
           type: "int"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchArgs:
             - index: 1
               operator: "Equal"
               values:
                 - "0"
-          matchBinaries:
-            - operator: "NotIn"
-              values:
-                - /usr/bin/runc
-          matchActions:
-            - action: Post
-              rateLimit: "1m"
-        - matchArgs:
-            - index: 2
-              operator: "Equal"
-              values:
-                - "0"
-          matchBinaries:
-            - operator: "NotIn"
-              values:
-                - /usr/bin/runc
-          matchActions:
-            - action: Post
-              rateLimit: "1m"
-    - call: "__sys_setresgid"
-      message: "Privileged operation setgid to root"
-      syscall: false
-      args:
-        - index: 0
-          type: "int"
-        - index: 1
-          type: "int"
-        - index: 2
-          type: "int"
-      selectors:
-        - matchArgs:
-            - index: 1
-              operator: "Equal"
-              values:
-                - "0"
-          matchBinaries:
-            - operator: "NotIn"
-              values:
-                - /usr/bin/runc
-          matchActions:
-            - action: Post
-              rateLimit: "1m"
-        - matchArgs:
-            - index: 2
-              operator: "Equal"
-              values:
-                - "0"
-          matchBinaries:
-            - operator: "NotIn"
-              values:
-                - /usr/bin/runc
-          matchActions:
-            - action: Post
-              rateLimit: "1m"
-    - call: "__sys_setfsuid"
-      message: "Privileged operation setuid to root"
-      syscall: false
-      args:
-        - index: 0
-          type: "int"
-      selectors:
-        - matchArgs:
+          matchReturnArgs:
             - index: 0
               operator: "Equal"
               values:
@@ -299,14 +312,120 @@ spec:
           matchActions:
             - action: Post
               rateLimit: "1m"
-    - call: "__sys_setfsgid"
+        - matchArgs:
+            - index: 2
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+
+    - call: "__sys_setresgid"
       message: "Privileged operation setgid to root"
       syscall: false
+      return: true
       args:
         - index: 0
           type: "int"
+        - index: 1
+          type: "int"
+        - index: 2
+          type: "int"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchArgs:
+            - index: 1
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+        - matchArgs:
+            - index: 2
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+
+    - call: "__sys_setfsuid"
+      message: "Privileged operation setuid to root"
+      syscall: false
+      return: true
+      args:
+        - index: 0
+          type: "int"
+      returnArg:
+        index: 0
+        type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /usr/bin/runc
+          matchActions:
+            - action: Post
+              rateLimit: "1m"
+
+    - call: "__sys_setfsgid"
+      message: "Privileged operation setgid to root"
+      syscall: false
+      return: true
+      args:
+        - index: 0
+          type: "int"
+      returnArg:
+        index: 0
+        type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchReturnArgs:
             - index: 0
               operator: "Equal"
               values:

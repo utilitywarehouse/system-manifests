@@ -68,6 +68,7 @@ spec:
             - operator: "NotIn"
               values:
                 - /opt/bin/kubelet
+                - /usr/bin/sudo # we already log all sudo* execs
                 - /usr/bin/systemd-tmpfiles
                 - /usr/lib/systemd/systemd
                 - /usr/local/bin/kube-apiserver
