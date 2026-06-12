@@ -68,7 +68,6 @@ data:
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(shred|mkfs|mke2fs)$"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/tmp/.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":["^/.*/(sudo|su|pkexec)$"]}
-    {"event_set":["PROCESS_EXEC"], "ancestor_binary_regex":["^/.*/(sudo|su|pkexec)$"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary) && process_exec.process.binary.startsWith('memfd:')"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && (has(process_exec.process.binary_properties.setuid) || has(process_exec.process.binary_properties.setgid))"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && has(process_exec.process.binary_properties.file)"]}
