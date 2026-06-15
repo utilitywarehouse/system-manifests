@@ -81,19 +81,11 @@ spec:
                 - "8080"
                 - "8443"
           matchBinaries:
-            - operator: "In"
+            - operator: "Postfix"
               values:
-                # Flatcar host and most container distros (Alpine, Debian, Ubuntu)
-                - /usr/bin/ssh
-                - /usr/bin/scp
-                - /usr/bin/sftp
-                - /usr/bin/ssh-keyscan
-                # Fallback paths for manual installs or older base images
-                - /bin/ssh
-                - /bin/scp
-                - /bin/sftp
-                - /usr/local/bin/ssh
-                - /usr/local/bin/scp
-                - /usr/local/bin/sftp
+                - /scp
+                - /sftp
+                - /ssh
+                - /ssh-keyscan
           matchActions:
             - action: Post

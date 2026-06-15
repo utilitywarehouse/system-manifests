@@ -18,7 +18,6 @@ spec:
       returnArg:
         index: 0
         type: sock
-      returnArgAction: TrackSock
       selectors:
         - matchArgs:
             - index: 0
@@ -38,24 +37,3 @@ spec:
               operator: "SPort"
               values:
                 - "22"
-
-    # 3. Untrack the socket when memory is freed — covers violent terminations
-    #    (RST, power loss, sshd crash) where tcp_close never runs.
-    #    sk_free events are suppressed via the export-denylist CEL filter.
-    - call: "sk_free"
-      syscall: false
-      args:
-        - index: 0
-          type: "sock"
-      selectors:
-        - matchArgs:
-            - index: 0
-              operator: "SPort"
-              values:
-                - "22"
-          matchActions:
-            - action: UntrackSock
-              argSock: 0
-            - action: Post
-              rateLimit: 1h
-              rateLimitScope: "global"
