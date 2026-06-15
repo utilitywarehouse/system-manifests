@@ -20,6 +20,3 @@ tetragon:
     # owner) or "640"/"644" (to allow read access by logs collector or another agent).
     # vector runs as root
   exportFilePerm: "600"
-  extraArgs:
-    # Default is 32768 (~30MB RAM, pre-allocated). Busy node runs a lot more process
-    execve-map-entries: "65536"
