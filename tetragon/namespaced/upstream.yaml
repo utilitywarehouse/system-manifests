@@ -229,7 +229,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap: b6766eb2f1e881e544706ab6bdc92c6f55ddadbddaf4dd2ea53dfe8a11100721
+        checksum/configmap: 1264213d903745c890b5d1d9a0f69968f848333e8c73a48f3af57014d920b3b7
       labels:
         app.kubernetes.io/name: tetragon
         app.kubernetes.io/instance: tetragon
@@ -250,7 +250,6 @@ spec:
           terminationMessagePolicy: FallbackToLogsOnError
           args:
             - --config-dir=/etc/tetragon/tetragon.conf.d/
-            - --execve-map-entries=65536
           volumeMounts:
             - mountPath: /etc/tetragon/tetragon.conf.d/
               name: tetragon-config
