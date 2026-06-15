@@ -21,5 +21,9 @@ tetragon:
     # vector runs as root
   exportFilePerm: "600"
   extraArgs:
-    # Default is 32768 (~30MB RAM, pre-allocated). Busy node runs a lot more process
-    execve-map-entries: "65536"
+    # Default is 32768 (~30MB RAM, pre-allocated).
+    # When the map is full and process entry is not inserted and its lookup returns NULL and the exclusion silently doesn't work
+    # Thousands of events are serialised, ring-buffered, and sent to userspace
+    # even though they're ultimately dropped due to export-denylist filter.
+    # 262144 =~ 240MB
+    execve-map-entries: "262144"
