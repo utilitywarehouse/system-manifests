@@ -57,4 +57,5 @@ spec:
             - action: UntrackSock
               argSock: 0
             - action: Post
-              rateLimit: 5m
+              rateLimit: 1h
+              rateLimitScope: "global"
