@@ -6,7 +6,11 @@
 #
 # 1. Unprivileged creating user namespace to gain new capabilities.
 #
-# 2. Setting or changing capabilities using the capset system call.
+# 2. Setting dangerous capabilities via capset — acts as a Kyverno admission bypass
+#    tripwire. Fires only when the new effective/inheritable/permitted set contains a
+#    capability outside the OCI default container set (CAP_SYS_ADMIN, CAP_BPF, etc.)
+#    and the call succeeded. A legitimate app dropping capabilities at startup will
+#    never trigger this because it is reducing its set, not gaining non-default caps.
 #
 # 3. Change their uids/gids to user root.
 #
@@ -37,7 +41,7 @@ spec:
     - call: "security_capset"
       syscall: false
       return: true
-      message: "Process changed its capabilities using capset system call"
+      message: "Process gained dangerous capabilities via capset — Kyverno admission bypass"
       args:
         - index: 0
           type: "nop"
@@ -52,12 +56,40 @@ spec:
       returnArg:
         index: 0
         type: "int"
+      # Tripwire: alert only when the new capability set contains a cap that is
+      # (a) not in the OCI default container set, and (b) blocked by Kyverno at
+      # admission. If Tetragon sees this succeed, Kyverno was bypassed at runtime
+      # (kernel exploit, compromised API server, direct etcd write, etc.).
+      #
+      # Caps NOT in the OCI default set targeted here:
+      #   CAP_DAC_READ_SEARCH (2)  — bypass file permission checks
+      #   CAP_NET_ADMIN      (12)  — configure network / iptables
+      #   CAP_SYS_MODULE     (16)  — load kernel modules
+      #   CAP_SYS_RAWIO      (17)  — raw I/O (/dev/mem, ioport)
+      #   CAP_SYS_PTRACE     (19)  — ptrace any process
+      #   CAP_SYS_ADMIN      (21)  — most powerful cap
+      #   CAP_MAC_ADMIN      (33)  — modify AppArmor policy
+      #   CAP_SYSLOG         (34)  — read kernel ring buffer
+      #   CAP_PERFMON        (38)  — access perf events / kernel data
+      #   CAP_BPF            (39)  — load BPF programs without restriction
+      #
+      # No rate limit: these events should always fire. A single successful
+      # capset to CAP_SYS_ADMIN in a container is a critical incident.
       selectors:
         - matchArgs:
-            - index: 2
-              operator: "NotEqual"
-              values:
-                - "0"
+            - index: 2 # cap_effective — caps the process can actively use right now
+              operator: "Mask"
+              values: &caps_not_in_oci_default_container
+                - "4" # CAP_DAC_READ_SEARCH (1<<2)
+                - "4096" # CAP_NET_ADMIN       (1<<12)
+                - "65536" # CAP_SYS_MODULE      (1<<16)
+                - "131072" # CAP_SYS_RAWIO       (1<<17)
+                - "524288" # CAP_SYS_PTRACE      (1<<19)
+                - "2097152" # CAP_SYS_ADMIN       (1<<21)
+                - "8589934592" # CAP_MAC_ADMIN       (1<<33)
+                - "17179869184" # CAP_SYSLOG          (1<<34)
+                - "274877906944" # CAP_PERFMON         (1<<38)
+                - "549755813888" # CAP_BPF             (1<<39)
           matchReturnArgs:
             - index: 0
               operator: "Equal"
@@ -70,13 +102,10 @@ spec:
                 - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
-              rateLimit: "1s"
-              rateLimitScope: "process"
         - matchArgs:
-            - index: 3
-              operator: "NotEqual"
-              values:
-                - "0"
+            - index: 3 # cap_inheritable — caps inheritable across exec
+              operator: "Mask"
+              values: *caps_not_in_oci_default_container
           matchReturnArgs:
             - index: 0
               operator: "Equal"
@@ -89,13 +118,10 @@ spec:
                 - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
-              rateLimit: "1s"
-              rateLimitScope: "process"
         - matchArgs:
-            - index: 4
-              operator: "NotEqual"
-              values:
-                - "0"
+            - index: 4 # cap_permitted — caps the process is allowed to raise to effective
+              operator: "Mask"
+              values: *caps_not_in_oci_default_container
           matchReturnArgs:
             - index: 0
               operator: "Equal"
@@ -108,8 +134,6 @@ spec:
                 - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
-              rateLimit: "1s"
-              rateLimitScope: "process"
 
     - call: "create_user_ns"
       syscall: false
