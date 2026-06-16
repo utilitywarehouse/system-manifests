@@ -82,6 +82,7 @@ spec:
               values:
                 - /usr/bin/falco
                 - /usr/bin/tetragon
+                - /usr/local/bin/arc-harden-runner
           matchActions:
             - action: Post
 
@@ -109,6 +110,7 @@ spec:
                 - /usr/bin/runc
                 - /usr/bin/tetragon
                 - /usr/bin/calico-node
+                - /usr/local/bin/arc-harden-runner
           matchActions:
             - action: Post
               rateLimit: "1s"
