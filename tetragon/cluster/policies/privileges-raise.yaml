@@ -44,17 +44,19 @@ spec:
       # admission. If Tetragon sees this succeed, Kyverno was bypassed at runtime
       # (kernel exploit, compromised API server, direct etcd write, etc.).
       #
-      # Caps NOT in the OCI default set targeted here:
-      #   CAP_DAC_READ_SEARCH (2)  — bypass file permission checks
-      #   CAP_NET_ADMIN      (12)  — configure network / iptables
-      #   CAP_SYS_MODULE     (16)  — load kernel modules
-      #   CAP_SYS_RAWIO      (17)  — raw I/O (/dev/mem, ioport)
-      #   CAP_SYS_PTRACE     (19)  — ptrace any process
-      #   CAP_SYS_ADMIN      (21)  — most powerful cap
-      #   CAP_MAC_ADMIN      (33)  — modify AppArmor policy
-      #   CAP_SYSLOG         (34)  — read kernel ring buffer
-      #   CAP_PERFMON        (38)  — access perf events / kernel data
-      #   CAP_BPF            (39)  — load BPF programs without restriction
+      # Caps NOT in the OCI default set targeted here (combined into one bitmask,
+      # Tetragon limits matchArgs to 4 values — a single OR'd mask is equivalent):
+      #   CAP_DAC_READ_SEARCH (1<<2)  = 4              — bypass file permission checks
+      #   CAP_NET_ADMIN       (1<<12) = 4096            — configure network / iptables
+      #   CAP_SYS_MODULE      (1<<16) = 65536           — load kernel modules
+      #   CAP_SYS_RAWIO       (1<<17) = 131072          — raw I/O (/dev/mem, ioport)
+      #   CAP_SYS_PTRACE      (1<<19) = 524288          — ptrace any process
+      #   CAP_SYS_ADMIN       (1<<21) = 2097152         — most powerful cap
+      #   CAP_MAC_ADMIN       (1<<33) = 8589934592      — modify AppArmor policy
+      #   CAP_SYSLOG          (1<<34) = 17179869184     — read kernel ring buffer
+      #   CAP_PERFMON         (1<<38) = 274877906944    — access perf events / kernel data
+      #   CAP_BPF             (1<<39) = 549755813888    — load BPF programs without restriction
+      #   Combined OR         = 850406346756
       #
       # No rate limit: these events should always fire. A single successful
       # capset to CAP_SYS_ADMIN in a container is a critical incident.
@@ -62,17 +64,8 @@ spec:
         - matchArgs:
             - index: 2 # cap_effective — caps the process can actively use right now
               operator: "Mask"
-              values: &caps_not_in_oci_default_container
-                - "4" # CAP_DAC_READ_SEARCH (1<<2)
-                - "4096" # CAP_NET_ADMIN       (1<<12)
-                - "65536" # CAP_SYS_MODULE      (1<<16)
-                - "131072" # CAP_SYS_RAWIO       (1<<17)
-                - "524288" # CAP_SYS_PTRACE      (1<<19)
-                - "2097152" # CAP_SYS_ADMIN       (1<<21)
-                - "8589934592" # CAP_MAC_ADMIN       (1<<33)
-                - "17179869184" # CAP_SYSLOG          (1<<34)
-                - "274877906944" # CAP_PERFMON         (1<<38)
-                - "549755813888" # CAP_BPF             (1<<39)
+              values:
+                - "850406346756" # OR of all 10 caps above
           matchReturnArgs:
             - index: 0
               operator: "Equal"
@@ -88,7 +81,8 @@ spec:
         - matchArgs:
             - index: 3 # cap_inheritable — caps inheritable across exec
               operator: "Mask"
-              values: *caps_not_in_oci_default_container
+              values:
+                - "850406346756" # OR of all 10 caps above
           matchReturnArgs:
             - index: 0
               operator: "Equal"
@@ -104,7 +98,8 @@ spec:
         - matchArgs:
             - index: 4 # cap_permitted — caps the process is allowed to raise to effective
               operator: "Mask"
-              values: *caps_not_in_oci_default_container
+              values:
+                - "850406346756" # OR of all 10 caps above
           matchReturnArgs:
             - index: 0
               operator: "Equal"
