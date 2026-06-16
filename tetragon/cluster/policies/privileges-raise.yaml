@@ -76,6 +76,7 @@ spec:
               values:
                 - /usr/bin/runc
                 - /usr/lib/systemd/systemd-coredump
+                - /usr/lib/systemd/systemd-executor # sets up service caps before exec'ing the actual service binary
           matchActions:
             - action: Post
         - matchArgs:
@@ -93,6 +94,7 @@ spec:
               values:
                 - /usr/bin/runc
                 - /usr/lib/systemd/systemd-coredump
+                - /usr/lib/systemd/systemd-executor # sets up service caps before exec'ing the actual service binary
           matchActions:
             - action: Post
         - matchArgs:
@@ -110,6 +112,7 @@ spec:
               values:
                 - /usr/bin/runc
                 - /usr/lib/systemd/systemd-coredump
+                - /usr/lib/systemd/systemd-executor # sets up service caps before exec'ing the actual service binary
           matchActions:
             - action: Post
 
@@ -142,6 +145,7 @@ spec:
               values:
                 - /usr/bin/runc
                 - /usr/lib/systemd/systemd-coredump
+                - /usr/lib/systemd/systemd-executor # sets up service caps before exec'ing the actual service binary
           matchActions:
             - action: Post
               rateLimit: "1s"
