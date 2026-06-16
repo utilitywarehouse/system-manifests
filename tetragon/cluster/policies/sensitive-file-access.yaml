@@ -52,6 +52,15 @@ spec:
         index: 0
         type: "int"
       selectors:
+        # Suppress all /opt/bin/cfssl* binaries (cert renewal service):
+        # cfssl-new-cert, cfssl-new-kubelet-cert, cfssljson all legitimately
+        # open /etc/kubernetes/ as part of systemd-managed cert rotation.
+        - matchBinaries:
+            - operator: "Prefix"
+              values:
+                - /opt/bin/cfssl
+          matchActions:
+            - action: "NoPost"
         - matchArgs:
             - index: 0
               operator: "Prefix"
@@ -74,6 +83,7 @@ spec:
                 - /usr/local/bin/kube-apiserver
                 - /usr/local/bin/kube-controller-manager
                 - /usr/local/bin/kube-scheduler
+                - /usr/bin/truncate # cert renewal clears kubeletenv via open+ftruncate
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -124,6 +134,12 @@ spec:
         index: 0
         type: "int"
       selectors:
+        - matchBinaries:
+            - operator: "Prefix"
+              values:
+                - /opt/bin/cfssl
+          matchActions:
+            - action: "NoPost"
         - matchArgs:
             - index: 0
               operator: "Prefix"
@@ -251,10 +267,14 @@ spec:
     # -------------------------------------------------------------------------
     - call: "security_path_truncate"
       syscall: false
+      return: true
       message: "Sensitive file truncated via path"
       args:
         - index: 0
           type: "path"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchArgs:
             - index: 0

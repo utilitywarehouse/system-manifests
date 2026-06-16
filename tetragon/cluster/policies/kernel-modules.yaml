@@ -28,6 +28,11 @@ spec:
                 # allow Multipath TCP over IPv4
                 - "net-pf-2-proto-262"
                 - "net-pf-2-proto-262-type-1"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0" # LSM allowed the auto-load; denied attempts are not a threat signal
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -46,12 +51,21 @@ spec:
       returnArg:
         index: 0
         type: "int"
+      # On Flatcar, /usr is immutable so all legitimate .ko files live under
+      # /usr/lib/modules/. A module loaded from anywhere else (tmpfs, /tmp,
+      # a container overlay) is a strong indicator of a kernel rootkit attempt.
+      # The file path in the event makes this easy to triage.
       selectors:
         - matchArgs:
             - index: 1
               operator: "Equal"
               values:
                 - "2" # READING_MODULE
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0" # LSM allowed the load; denied attempts (AppArmor/SELinux) are less actionable
           matchActions:
             - action: Post
               rateLimit: "1s"

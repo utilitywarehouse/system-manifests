@@ -49,7 +49,11 @@ spec:
                 - /sbin/apk # uses memfd internally for atomic file ops
                 - /usr/lib/systemd/systemd
                 - /usr/bin/calico-node
-              followChildren: true
+          matchReturnArgs:
+            - index: 0
+              operator: "GT"
+              values:
+                - "-1" # fd >= 0 means success; negative errno is not a threat
           matchActions:
             - action: Post
               rateLimit: "1s"
