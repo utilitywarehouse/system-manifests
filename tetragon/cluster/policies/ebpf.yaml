@@ -28,6 +28,9 @@ spec:
       args:
         - index: 1
           type: "bpf_attr"
+      returnArg:
+        index: 0
+        type: "int"
       selectors:
         - matchReturnArgs:
             - index: 0
@@ -88,6 +91,9 @@ spec:
       args:
         - index: 0
           type: "bpf_map"
+      returnArg:
+        index: 0
+        type: "int"
       ignore:
         callNotFound: true
       selectors:
