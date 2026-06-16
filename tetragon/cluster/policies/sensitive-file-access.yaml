@@ -191,6 +191,8 @@ spec:
                 - "2" # MAY_WRITE only
           matchActions:
             - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
     # -------------------------------------------------------------------------
     # Rule 3: Sensitive system path mapped for write via mmap
     #
@@ -231,10 +233,10 @@ spec:
               operator: "Mask"
               values:
                 - "1" # MAP_SHARED
-          # matchBinaries:
-          #   - operator: "NotIn"
-          #     values:
-          #       - /usr/lib/systemd/systemd-journald # writes to /var/log
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     # -------------------------------------------------------------------------
     # Rule 4: Truncate sensitive file via path
@@ -261,3 +263,7 @@ spec:
                 - "/etc" # Truncate to sensitive directories
                 - "/root/.ssh"
                 - "/var/log" # Truncate to logs
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
