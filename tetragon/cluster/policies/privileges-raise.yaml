@@ -120,6 +120,18 @@ spec:
         - index: 0
           type: "nop"
       selectors:
+        # Firefox initialises its sandbox (user namespace) on every invocation,
+        # including --version. Suppress to avoid Cypress/Playwright CI noise.
+        # Tradeoff: a kernel exploit delivered via a compromised Firefox renderer
+        # would be missed here — ptrace-activity and security_capset still provide
+        # post-exploitation coverage.
+        - matchBinaries:
+            - operator: "Prefix"
+              values:
+                - /opt/firefox/
+                - /home/runner/.cache/ms-playwright/ # Playwright bundled browsers
+          matchActions:
+            - action: "NoPost"
         - matchCapabilities:
             - type: Effective
               operator: NotIn
