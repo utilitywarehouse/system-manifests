@@ -50,3 +50,5 @@ spec:
                 - /usr/bin/runc
           matchActions:
             - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"

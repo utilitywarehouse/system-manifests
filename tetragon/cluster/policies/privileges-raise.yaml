@@ -70,7 +70,8 @@ spec:
                 - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
         - matchArgs:
             - index: 3
               operator: "NotEqual"
@@ -88,7 +89,8 @@ spec:
                 - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
         - matchArgs:
             - index: 4
               operator: "NotEqual"
@@ -106,7 +108,8 @@ spec:
                 - /usr/lib/systemd/systemd-coredump
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "create_user_ns"
       syscall: false
@@ -125,6 +128,10 @@ spec:
               values:
                 - /usr/bin/runc
                 - /usr/lib/systemd/systemd-coredump
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "__sys_setuid"
       message: "Privileged operation setuid to root"
@@ -153,7 +160,8 @@ spec:
                 - /usr/bin/runc
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "__sys_setgid"
       message: "Privileged operation setgid to root"
@@ -183,7 +191,8 @@ spec:
                 - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "__sys_setreuid"
       message: "Privileged operation setuid to root"
@@ -214,7 +223,8 @@ spec:
                 - /usr/bin/runc
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
         - matchArgs:
             - index: 1
               operator: "Equal"
@@ -231,7 +241,8 @@ spec:
                 - /usr/bin/runc
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "__sys_setregid"
       message: "Privileged operation setgid to root"
@@ -262,7 +273,8 @@ spec:
                 - /usr/bin/runc
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
         - matchArgs:
             - index: 1
               operator: "Equal"
@@ -279,7 +291,8 @@ spec:
                 - /usr/bin/runc
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "__sys_setresuid"
       message: "Privileged operation setuid to root"
@@ -313,7 +326,8 @@ spec:
                 - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
         - matchArgs:
             - index: 2
               operator: "Equal"
@@ -331,7 +345,8 @@ spec:
                 - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "__sys_setresgid"
       message: "Privileged operation setgid to root"
@@ -365,7 +380,8 @@ spec:
                 - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
         - matchArgs:
             - index: 2
               operator: "Equal"
@@ -383,7 +399,8 @@ spec:
                 - /usr/bin/sudo # we already log all sudo* execs
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "__sys_setfsuid"
       message: "Privileged operation setuid to root"
@@ -412,7 +429,8 @@ spec:
                 - /usr/bin/runc
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"
 
     - call: "__sys_setfsgid"
       message: "Privileged operation setgid to root"
@@ -441,4 +459,5 @@ spec:
                 - /usr/bin/runc
           matchActions:
             - action: Post
-              rateLimit: "1m"
+              rateLimit: "1s"
+              rateLimitScope: "process"

@@ -22,6 +22,11 @@ spec:
                 - /usr/lib/systemd/systemd
                 - /usr/bin/calico-node
               followChildren: true
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
+
     - call: "security_perf_event_alloc"
       syscall: false
       args:
@@ -33,6 +38,11 @@ spec:
               values:
                 - /usr/bin/falco
                 - /usr/bin/tetragon
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
+
     - call: "security_bpf_map_create" # Called during bpf map create, Linux 6.9+
       syscall: false
       args:
@@ -49,6 +59,11 @@ spec:
                 - /usr/bin/tetragon
                 - /usr/bin/calico-node
               followChildren: true
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
+
     - call: "security_file_permission"
       syscall: false
       return: true
@@ -74,6 +89,10 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/calico-node
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
         - matchArgs:
             - index: 0
               operator: "Prefix"
@@ -87,6 +106,10 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/calico-node
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
     - call: "security_mmap_file"
       syscall: false
       return: true
@@ -114,6 +137,10 @@ spec:
               operator: "Mask"
               values:
                 - "1" # MAP_SHARED
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
         - matchArgs:
             - index: 0
               operator: "Prefix"
@@ -127,3 +154,7 @@ spec:
               operator: "Mask"
               values:
                 - "1" # MAP_SHARED
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
