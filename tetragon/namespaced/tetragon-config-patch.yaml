@@ -9,7 +9,8 @@ data:
 
   # remove process capability list to reduce event size
   field-filters: |-
-    { "fields":"process.cap", "action":"EXCLUDE" }
+    { "fields":"node_labels", "action":"EXCLUDE" }
+    { "fields":"process.cap,process.ns,process.process_credentials,process.pod.pod_labels", "action":"EXCLUDE" }
     { "fields":"parent.pod,parent.cap,parent.ns,parent.process_credentials", "action":"EXCLUDE" }
     { "fields":"ancestors.pod,ancestors.cap,ancestors.ns,ancestors.process_credentials", "action":"EXCLUDE" }
 
