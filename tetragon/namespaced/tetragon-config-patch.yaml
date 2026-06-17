@@ -26,7 +26,9 @@ data:
     {"event_set": ["PROCESS_KPROBE"], "binary_regex": ["^$"]}
     {"event_set": ["PROCESS_KPROBE"], "policy_names": ["privileges-raise"], "binary_regex": ["^/proc/self/fd/.*"],"parent_binary_regex": ["^/usr/lib/systemd/systemd$"]}
     {"event_set": ["PROCESS_KPROBE"], "policy_names": ["monitor-ssh-connections"], "cel_expression": ["process_kprobe.function_name == 'sk_free'"]}
-    {"event_set": ["PROCESS_EXEC"], "binary_regex": ["^/tmp/.*"], "namespace": ["sys-terraform-applier"]}
+
+    {"event_set": ["PROCESS_EXEC"], "namespace": ["sys-terraform-applier"], "binary_regex": ["^/tmp/.*"]}
+    {"event_set": ["PROCESS_EXEC"], "namespace": ["uwcouk-cms"], "arguments_regex": ["^-c \"git rev-parse HEAD\"$", "^-c \"next start\"$"]}
 
   # Filter process events by event types.
   # Rest of the filters are from https://tetragon.io/docs/policy-library/observability/
