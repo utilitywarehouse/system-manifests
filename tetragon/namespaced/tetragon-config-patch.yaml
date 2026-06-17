@@ -9,7 +9,9 @@ data:
 
   # remove process capability list to reduce event size
   field-filters: |-
-    { "fields":"process.cap,parent.cap,ancestors.cap", "action":"EXCLUDE" }
+    { "fields":"process.cap", "action":"EXCLUDE" }
+    { "fields":"parent.pod,parent.cap,parent.ns,parent.process_credentials", "action":"EXCLUDE" }
+    { "fields":"ancestors.pod,ancestors.cap,ancestors.ns,ancestors.process_credentials", "action":"EXCLUDE" }
 
   redaction-filters: |-
     {"redact": ["--password(?:\\s+|=)(\\S*)"]}
