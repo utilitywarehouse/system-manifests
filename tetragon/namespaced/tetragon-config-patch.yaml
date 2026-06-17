@@ -29,6 +29,8 @@ data:
 
     {"event_set": ["PROCESS_EXEC"], "namespace": ["sys-terraform-applier"], "binary_regex": ["^/tmp/.*"]}
     {"event_set": ["PROCESS_EXEC"], "namespace": ["uwcouk-cms"], "arguments_regex": ["^-c \"git rev-parse HEAD\"$", "^-c \"next start\"$"]}
+    {"event_set": ["PROCESS_EXEC"], "namespace": ["sys-actions"], "binary_regex":[".*/apt-get$"], "arguments_regex":["^update$"]}
+    {"event_set": ["PROCESS_EXEC"], "namespace": ["sys-actions"], "arguments_regex":["^apt-get update$"]}
 
   # Filter process events by event types.
   # Rest of the filters are from https://tetragon.io/docs/policy-library/observability/
