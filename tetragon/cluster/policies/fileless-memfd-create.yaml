@@ -49,6 +49,9 @@ spec:
                 - /sbin/apk # uses memfd internally for atomic file ops
                 - /usr/lib/systemd/systemd
                 - /usr/bin/calico-node
+                - /home/github/bin/Runner.Listener  # .NET CoreCLR doublemapper
+                - /home/runner/bin/Runner.Listener  # .NET CoreCLR doublemapper
+                - /home/runner/bin/Runner.Worker    # .NET CoreCLR doublemapper
           matchReturnArgs:
             - index: 0
               operator: "GT"
