@@ -4,6 +4,7 @@ resources:
   - cluster-rbac.yaml
   - crds.yaml
 
+  - policies/anomalous-tcp-egress.yaml
   - policies/ebpf.yaml
   - policies/fileless-memfd-create.yaml
   - policies/kernel-modules.yaml
@@ -13,4 +14,3 @@ resources:
   - policies/sensitive-file-access.yaml
   - policies/sensitive-file-links.yaml
   - policies/ssh-connections.yaml
-  - policies/ssh-non-standard-port.yaml

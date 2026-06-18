@@ -2,13 +2,43 @@ apiVersion: cilium.io/v1alpha1
 kind: TracingPolicy
 metadata:
   name: "monitor-ssh-connections"
+  annotations:
+    description: >
+      Tracks outbound evasion (SSH binaries connecting to non-22 ports) and
+      audits all inbound SSH server sessions (accepts and closes).
+      MITRE: T1048 - Exfiltration Over Alternative Protocol, T1572 - Protocol Tunneling,
+      T1021.004 - Remote Services: SSH.
 spec:
-  options:
-    - name: "disable-kprobe-multi"
-      value: "1"
   kprobes:
-    # 1. Track the accepted connection socket; called from sshd process context so
-    #    the sock struct is fully initialised. The returned socket is already ESTABLISHED.
+    # Track SSH binaries connect to ANY port other than standard SSH (22).
+    # This catches reverse tunneling, dynamic forwarding, and non-standard C2 egress.
+    - call: "tcp_connect"
+      syscall: false
+      return: true
+      message: "SSH binary connecting to non-standard port (Not 22)"
+      args:
+        - index: 0
+          type: "sock"
+      returnArg:
+        index: 0
+        type: "int"
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "NotDPort"
+              values:
+                - "22"
+          matchBinaries:
+            - operator: "Postfix"
+              values:
+                - /scp
+                - /sftp
+                - /ssh
+                - /ssh-keyscan
+          matchActions:
+            - action: Post
+
+    # Inbound Audit: Track accepted SSH connections (Session Start)
     - call: "inet_csk_accept"
       syscall: false
       return: true
@@ -25,7 +55,7 @@ spec:
               values:
                 - "22"
 
-    # 2. Watch for the socket to be closed
+    # Inbound Audit: Watch for the SSH socket to be closed (Session End)
     - call: "tcp_close"
       syscall: false
       args:
