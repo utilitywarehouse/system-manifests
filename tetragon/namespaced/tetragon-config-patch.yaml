@@ -32,6 +32,8 @@ data:
     {"event_set": ["PROCESS_EXEC"], "binary_regex":[".*/apt-get$"], "arguments_regex":["^update$"]}
     {"event_set": ["PROCESS_EXEC"], "arguments_regex":["^apt-get update$"]}
 
+    {"event_set": ["PROCESS_EXEC"], "binary_regex":[".*/ssh$"], "arguments_regex":[".*github.com\\s+.*"]}
+
   # Filter process events by event types.
   # Rest of the filters are from https://tetragon.io/docs/policy-library/observability/
   #
@@ -54,6 +56,7 @@ data:
   # monitor-drop-and-execute (monitor executions occurring in traditionally writable paths)
   # Package manager execution in containers (apt, apk, pip, npm, etc.)
   # Run shell untrusted detect potential RCE
+  # Monitor all ssh execs
   #
   # Audit BPF program loads and BPFFS interactions
   # Audit loading of kernel modules
@@ -88,6 +91,7 @@ data:
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":["^/run/.*"]}
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(apt-get|apt|apk|dpkg|yum|dnf|pip|pip3|npm|gem|cargo)$"], "arguments_regex":[".*\\b(install|add|update|upgrade|download|get)\\b.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(bash|sh|zsh|ash|dash|ksh|csh|tcsh)$"], "parent_binary_regex":[".*/(java|node|php|ruby|python|tomcat|nginx|apache2|httpd|mysqld|postgres|redis-server|mongodb|fluentd|splunkd|consul|couchdb|memcached|rabbitmq-server|sendmail|postfix|dovecot|exim4|flanneld|smbd|runsv|pm2)$"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":["^/.*/(scp|sftp|ssh)$"]}
 
     {"event_set":["PROCESS_KPROBE"], "policy_names":["monitor-kernel-modules"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["privileges-raise"]}

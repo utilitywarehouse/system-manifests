@@ -4,40 +4,9 @@ metadata:
   name: "monitor-ssh-connections"
   annotations:
     description: >
-      Tracks outbound evasion (SSH binaries connecting to non-22 ports) and
-      audits all inbound SSH server sessions (accepts and closes).
-      MITRE: T1048 - Exfiltration Over Alternative Protocol, T1572 - Protocol Tunneling,
-      T1021.004 - Remote Services: SSH.
+      Track accepted SSH connections
 spec:
   kprobes:
-    # Track SSH binaries connect to ANY port other than standard SSH (22).
-    # This catches reverse tunneling, dynamic forwarding, and non-standard C2 egress.
-    - call: "tcp_connect"
-      syscall: false
-      return: true
-      message: "SSH binary connecting to non-standard port (Not 22)"
-      args:
-        - index: 0
-          type: "sock"
-      returnArg:
-        index: 0
-        type: "int"
-      selectors:
-        - matchArgs:
-            - index: 0
-              operator: "NotDPort"
-              values:
-                - "22"
-          matchBinaries:
-            - operator: "Postfix"
-              values:
-                - /scp
-                - /sftp
-                - /ssh
-                - /ssh-keyscan
-          matchActions:
-            - action: Post
-
     # Inbound Audit: Track accepted SSH connections (Session Start)
     - call: "inet_csk_accept"
       syscall: false
