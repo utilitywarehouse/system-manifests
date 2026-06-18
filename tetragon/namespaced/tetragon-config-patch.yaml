@@ -91,7 +91,7 @@ data:
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":["^/run/.*"]}
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(apt-get|apt|apk|dpkg|yum|dnf|pip|pip3|npm|gem|cargo)$"], "arguments_regex":[".*\\b(install|add|update|upgrade|download|get)\\b.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(bash|sh|zsh|ash|dash|ksh|csh|tcsh)$"], "parent_binary_regex":[".*/(java|node|php|ruby|python|tomcat|nginx|apache2|httpd|mysqld|postgres|redis-server|mongodb|fluentd|splunkd|consul|couchdb|memcached|rabbitmq-server|sendmail|postfix|dovecot|exim4|flanneld|smbd|runsv|pm2)$"]}
-    {"event_set":["PROCESS_EXEC"], "binary_regex":["^/.*/(scp|sftp|ssh|ssh-keyscan)$"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":["^/.*/(scp|sftp|ssh)$"]}
 
     {"event_set":["PROCESS_KPROBE"], "policy_names":["monitor-kernel-modules"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["privileges-raise"]}
