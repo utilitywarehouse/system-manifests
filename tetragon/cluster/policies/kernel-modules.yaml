@@ -21,11 +21,29 @@ spec:
         index: 0
         type: "int"
       selectors:
+        # Suppress: kernel netdev autoload fires request_module("netdev-<ifname>") for every
+        # new interface. Calico creates cali<hash> veth pairs per pod, generating constant
+        # noise. Scoped to udevadm and ip to preserve visibility if other tools request
+        # a module genuinely named cali*.
+        - matchArgs:
+            - index: 0
+              operator: "Prefix"
+              values:
+                - "cali"
+                - "netdev-cali"
+          matchBinaries:
+            - operator: "In"
+              values:
+                - /usr/bin/udevadm
+                - /usr/sbin/ip
+          matchActions:
+            - action: "NoPost"
+
         - matchArgs:
             - index: 0
               operator: "NotEqual"
               values:
-                # allow Multipath TCP over IPv4
+                # Multipath TCP over IPv4
                 - "net-pf-2-proto-262"
                 - "net-pf-2-proto-262-type-1"
           matchReturnArgs:
@@ -33,6 +51,12 @@ spec:
               operator: "Equal"
               values:
                 - "0" # LSM allowed the auto-load; denied attempts are not a threat signal
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                # Suppress: mount.nfs requests rpc-auth-gss-<oid> for Kerberos GSSAPI on every NFS
+                # mount. All module requests from mount.nfs are GSSAPI/RPC-related and legitimate.
+                - /sbin/mount.nfs
           matchActions:
             - action: Post
               rateLimit: "1s"
