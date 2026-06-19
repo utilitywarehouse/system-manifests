@@ -192,7 +192,7 @@ metadata:
     actions.github.com/scale-set-name: system-dev-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 1b1236ec7d17115f372a330326bb9073a5d784e100bf912292c216154633a8c
+    actions.github.com/values-hash: 927bf439f9e88eab6b9759c893150303151f939e6b7318648615c3e72cfe2fd
     actions.github.com/cleanup-manager-role-binding: system-dev-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-dev-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-dev-merit-gha-rs-kube-mode
@@ -203,10 +203,24 @@ spec:
   githubConfigSecret: arc-auth
   runnerScaleSetName: system-dev-merit
   minRunners: 1
+  listenerTemplate:
+    spec:
+      containers:
+        - name: listener
+      nodeSelector:
+        node.uw.systems/with-stepsecurity-harden-runner: "true"
+      tolerations:
+        - effect: NoSchedule
+          key: node.uw.systems/with-stepsecurity-harden-runner
   template:
     spec:
+      nodeSelector:
+        node.uw.systems/with-stepsecurity-harden-runner: "true"
       securityContext:
         fsGroup: 123
+      tolerations:
+        - effect: NoSchedule
+          key: node.uw.systems/with-stepsecurity-harden-runner
       restartPolicy: Never
       serviceAccountName: system-dev-merit-gha-rs-kube-mode
       containers:
