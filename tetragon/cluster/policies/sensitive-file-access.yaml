@@ -52,6 +52,19 @@ spec:
         index: 0
         type: "int"
       selectors:
+        # runner pods are monitored by harden runner
+        - matchWorkloads:
+            podSelector:
+              matchExpressions:
+                - key: "k8s:io.kubernetes.pod.namespace"
+                  operator: In
+                  values:
+                    - "sys-actions"
+              matchLabels:
+                app.kubernetes.io/component: runner
+          matchActions:
+            - action: "NoPost"
+
         # Suppress compiled cfssl binaries (e.g. cfssljson): matchBinaries sees
         # the real binary path for ELF binaries.
         # cfssl-new-* are shell scripts; the BPF matchBinaries
@@ -157,12 +170,26 @@ spec:
         index: 0
         type: "int"
       selectors:
+        # runner pods are monitored by harden runner
+        - matchWorkloads:
+            podSelector:
+              matchExpressions:
+                - key: "k8s:io.kubernetes.pod.namespace"
+                  operator: In
+                  values:
+                    - "sys-actions"
+              matchLabels:
+                app.kubernetes.io/component: runner
+          matchActions:
+            - action: "NoPost"
+
         - matchBinaries:
             - operator: "Prefix"
               values:
                 - /opt/bin/cfssl
           matchActions:
             - action: "NoPost"
+
         - matchArgs:
             - index: 0
               operator: "Prefix"
@@ -215,6 +242,7 @@ spec:
             - action: Post
               rateLimit: "1s"
               rateLimitScope: "process"
+
         # cgroup release_agent write detection (T1611 container escape).
         # Matches the Falco rule "Detect release_agent File Container Escapes"
         # which fires on open_write to any path ending in release_agent.
