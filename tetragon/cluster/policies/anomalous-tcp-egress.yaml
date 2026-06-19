@@ -4,9 +4,8 @@ metadata:
   name: anomalous-tcp-egress
   annotations:
     description: >
-      Detects outbound TCP connections to protocol anomalies (UDP-dominant ports
-      like DNS/NTP/TFTP) and legacy Windows/botnet ports highly suspicious in pure
-      Linux environments.
+      Detects outbound TCP connections to legacy Windows/botnet ports and protocol
+      anomalies that are highly suspicious in Linux container environments.
       MITRE: T1048 - Exfiltration Over Alternative Protocol, T1572 - Protocol Tunneling.
 spec:
   kprobes:
@@ -25,21 +24,15 @@ spec:
             - index: 0
               operator: "DPort"
               values:
-                # Protocol Anomalies (TCP is highly suspicious here)
-                - "53" # DNS TCP fallback (CoreDNS excluded below)
-                - "69" # TFTP
+                # Protocol anomalies (TCP is highly suspicious here)
+                - "69"  # TFTP
                 - "123" # NTP
-                # Legacy/Windows/Botnet Ports
-                - "88" # Kerberos
-                - "139" # SMB / NetBIOS
-                - "445" # SMB / CIFS
+                # Legacy/Windows/botnet ports — anomalous in Linux container environments
+                - "88"   # Kerberos
+                - "139"  # SMB / NetBIOS
+                - "445"  # SMB / CIFS
                 - "3389" # RDP
                 - "6667" # IRC
-          matchBinaries:
-            - operator: "NotIn"
-              values:
-                - /coredns
-                - /usr/lib/systemd/systemd-resolved
           matchActions:
             - action: Post
               rateLimit: "1s"
