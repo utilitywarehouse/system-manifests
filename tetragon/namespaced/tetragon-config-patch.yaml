@@ -97,6 +97,7 @@ data:
     {"event_set":["PROCESS_KPROBE"], "policy_names":["privileges-raise"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["bpf-library-policy"]}
 
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["anomalous-tcp-egress"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["fileless-memfd-create"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["packet-socket-creation"], "container_id":[".+"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["ptrace-activity"]}
