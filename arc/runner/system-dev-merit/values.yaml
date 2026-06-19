@@ -1,1 +1,19 @@
 runnerScaleSetName: system-dev-merit
+
+listenerTemplate:
+  spec:
+    nodeSelector:
+      node.uw.systems/with-stepsecurity-harden-runner: "true"
+    tolerations:
+      - key: "node.uw.systems/with-stepsecurity-harden-runner"
+        effect: "NoSchedule"
+    containers:
+      - name: listener
+
+template:
+  spec:
+    nodeSelector:
+      node.uw.systems/with-stepsecurity-harden-runner: "true"
+    tolerations:
+      - key: "node.uw.systems/with-stepsecurity-harden-runner"
+        effect: "NoSchedule"
