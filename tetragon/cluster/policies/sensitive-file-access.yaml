@@ -52,32 +52,6 @@ spec:
         index: 0
         type: "int"
       selectors:
-        # runner pods are monitored by harden runner
-        - matchWorkloads:
-            podSelector:
-              matchExpressions:
-                - key: "k8s:io.kubernetes.pod.namespace"
-                  operator: In
-                  values:
-                    - "sys-actions"
-              matchLabels:
-                app.kubernetes.io/component: runner
-          matchActions:
-            - action: "NoPost"
-
-        # Suppress compiled cfssl binaries (e.g. cfssljson): matchBinaries sees
-        # the real binary path for ELF binaries.
-        # cfssl-new-* are shell scripts; the BPF matchBinaries
-        # filter resolves to the interpreter (/bin/bash), not the script path,
-        # so the Prefix above misses them. They all open the ssl directory
-        # itself which is filtered in next step.
-        - matchBinaries:
-            - operator: "Prefix"
-              values:
-                - /opt/bin/cfssl
-          matchActions:
-            - action: "NoPost"
-
         # Directory opens under /etc/kubernetes/ are not sensitive reads —
         # opening a directory only allows listing its entries, not reading
         # file contents. Suppress to avoid noise from cert renewal scripts,
@@ -119,6 +93,14 @@ spec:
                 - /usr/bin/dpkg # package install — reads shadow/pam during configuration
                 - /usr/sbin/dpkg-preconfigure # package install — reads shadow/pam during configuration
                 - /usr/share/debconf/frontend # debconf reads /etc/shadow to check system users during dpkg postinst scripts
+
+                # Suppress all /opt/bin/cfssl* binaries (cert renewal service):
+                # cfssl-new-* are shell scripts; the BPF matchBinaries
+                # filter resolves to the interpreter (/bin/bash), not the script path,
+                # so the Prefix above misses them. They all open the ssl directory
+                # itself which is filtered in next step.
+                - /opt/bin/cfssl
+                - /opt/bin/cfssljson
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -170,26 +152,6 @@ spec:
         index: 0
         type: "int"
       selectors:
-        # runner pods are monitored by harden runner
-        - matchWorkloads:
-            podSelector:
-              matchExpressions:
-                - key: "k8s:io.kubernetes.pod.namespace"
-                  operator: In
-                  values:
-                    - "sys-actions"
-              matchLabels:
-                app.kubernetes.io/component: runner
-          matchActions:
-            - action: "NoPost"
-
-        - matchBinaries:
-            - operator: "Prefix"
-              values:
-                - /opt/bin/cfssl
-          matchActions:
-            - action: "NoPost"
-
         - matchArgs:
             - index: 0
               operator: "Prefix"
@@ -238,6 +200,11 @@ spec:
               values:
                 - /sbin/apk # Exec allowlist already catches apk installs
                 - /usr/bin/dpkg # Exec allowlist already catches dpkg installs
+
+                # Suppress all /opt/bin/cfssl* binaries (cert renewal service):
+                # cfssl-new-* are shell scripts; the BPF matchBinaries
+                - /opt/bin/cfssl
+                - /opt/bin/cfssljson
           matchActions:
             - action: Post
               rateLimit: "1s"
