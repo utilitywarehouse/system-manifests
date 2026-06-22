@@ -52,19 +52,6 @@ spec:
         index: 0
         type: "int"
       selectors:
-        # runner pods are monitored by harden runner
-        - matchWorkloads:
-            podSelector:
-              matchExpressions:
-                - key: "k8s:io.kubernetes.pod.namespace"
-                  operator: In
-                  values:
-                    - "sys-actions"
-              matchLabels:
-                app.kubernetes.io/component: runner
-          matchActions:
-            - action: "NoPost"
-
         # Directory opens under /etc/kubernetes/ are not sensitive reads —
         # opening a directory only allows listing its entries, not reading
         # file contents. Suppress to avoid noise from cert renewal scripts,
@@ -165,19 +152,6 @@ spec:
         index: 0
         type: "int"
       selectors:
-        # runner pods are monitored by harden runner
-        - matchWorkloads:
-            podSelector:
-              matchExpressions:
-                - key: "k8s:io.kubernetes.pod.namespace"
-                  operator: In
-                  values:
-                    - "sys-actions"
-              matchLabels:
-                app.kubernetes.io/component: runner
-          matchActions:
-            - action: "NoPost"
-
         - matchArgs:
             - index: 0
               operator: "Prefix"
