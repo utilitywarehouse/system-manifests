@@ -27,7 +27,9 @@ template:
           - -c
           - |
             sudo apt-get update
-            sudo apt-get -y install make gettext-base
+            # build-essential (gcc/g++/make) and python3 are required by node-gyp
+            # to compile native node modules when no prebuilt binary is available
+            sudo apt-get -y install build-essential python3 gettext-base
             /home/runner/run.sh
         env:
           # Avoid forcing jobs to have a `container` section

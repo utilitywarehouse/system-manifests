@@ -192,7 +192,7 @@ metadata:
     actions.github.com/scale-set-name: system-dev-aws
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 32c731d71886bcef90e0c39c7bc74f8302f98a783128029167adb0be2bc92ef
+    actions.github.com/values-hash: 55f4cba4348d32a1a736529d187e79b622c8e8ec0ab9532f1b039fd79fd64a7
     actions.github.com/cleanup-manager-role-binding: system-dev-aws-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-dev-aws-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-dev-aws-gha-rs-kube-mode
@@ -216,7 +216,9 @@ spec:
             - -c
             - |
               sudo apt-get update
-              sudo apt-get -y install make gettext-base
+              # build-essential (gcc/g++/make) and python3 are required by node-gyp
+              # to compile native node modules when no prebuilt binary is available
+              sudo apt-get -y install build-essential python3 gettext-base
               /home/runner/run.sh
           image: ghcr.io/actions/actions-runner:latest
           env:
