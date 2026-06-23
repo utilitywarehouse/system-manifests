@@ -192,7 +192,7 @@ metadata:
     actions.github.com/scale-set-name: system-prod-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: c8e627caff899e21957f092f653c980bb7852833a18f6d419bdcd82c3513412
+    actions.github.com/values-hash: 731b65f3566bc5ba60216436b850efc0f1067cf08195ae468efe0a06edf30af
     actions.github.com/cleanup-manager-role-binding: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-prod-merit-gha-rs-kube-mode
@@ -216,7 +216,9 @@ spec:
             - -c
             - |
               sudo apt-get update
-              sudo apt-get -y install make gettext-base
+              # build-essential (gcc/g++/make) and python3 are required by node-gyp
+              # to compile native node modules when no prebuilt binary is available
+              sudo apt-get -y install build-essential python3 gettext-base
               /home/runner/run.sh
           image: ghcr.io/actions/actions-runner:latest
           env:
