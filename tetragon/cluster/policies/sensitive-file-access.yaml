@@ -86,6 +86,9 @@ spec:
                 - /usr/bin/sudo # we already log all sudo* execs
                 - /usr/bin/systemd-tmpfiles
                 - /usr/lib/systemd/systemd
+                - /usr/lib/systemd/systemd-executor
+                - /usr/lib/systemd/systemd-userwork
+                - /usr/lib64/misc/sshd-session
                 - /usr/local/bin/kube-apiserver
                 - /usr/local/bin/kube-controller-manager
                 - /usr/local/bin/kube-scheduler
