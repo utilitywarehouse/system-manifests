@@ -21,42 +21,37 @@ spec:
         index: 0
         type: "int"
       selectors:
-        # Suppress: kernel netdev autoload fires request_module("netdev-<ifname>") for every
-        # new interface. Calico creates cali<hash> veth pairs per pod, generating constant
-        # noise. Scoped to udevadm and ip to preserve visibility if other tools request
-        # a module genuinely named cali*.
-        - matchArgs:
-            - index: 0
-              operator: "Prefix"
-              values:
-                - "cali"
-                - "netdev-cali"
-          matchBinaries:
+        # Any binary in this list triggering an auto-load is ignored.
+        - matchBinaries:
             - operator: "In"
               values:
+                - /sbin/mount.nfs
+                - /usr/bin/dockerd
+                - /usr/bin/mount
+                - /usr/bin/multipathd
                 - /usr/bin/udevadm
                 - /usr/sbin/ip
+                - /usr/sbin/ipset
+                - /usr/sbin/iptables-nft-restore
           matchActions:
             - action: "NoPost"
 
+        # Suppress specific noisy module strings
         - matchArgs:
-            - index: 0
-              operator: "NotEqual"
-              values:
-                # Multipath TCP over IPv4
-                - "net-pf-2-proto-262"
-                - "net-pf-2-proto-262-type-1"
-          matchReturnArgs:
             - index: 0
               operator: "Equal"
               values:
-                - "0" # LSM allowed the auto-load; denied attempts are not a threat signal
-          matchBinaries:
-            - operator: "NotIn"
+                # Multipath TCP
+                - "net-pf-2-proto-262"
+                - "net-pf-2-proto-262-type-1"
+          matchActions:
+            - action: "NoPost"
+
+        - matchReturnArgs:
+            - index: 0
+              operator: "Equal"
               values:
-                # Suppress: mount.nfs requests rpc-auth-gss-<oid> for Kerberos GSSAPI on every NFS
-                # mount. All module requests from mount.nfs are GSSAPI/RPC-related and legitimate.
-                - /sbin/mount.nfs
+                - "0"
           matchActions:
             - action: Post
               rateLimit: "1s"
