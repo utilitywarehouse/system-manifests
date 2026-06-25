@@ -115,11 +115,15 @@ spec:
             - "--log-format=text"
             - "--runner-max-concurrent-reconciles=2"
             - "--update-strategy=immediate"
-            - "--listener-metrics-addr=0"
-            - "--listener-metrics-endpoint="
-            - "--metrics-addr=0"
+            - "--listener-metrics-addr=:8080"
+            - "--listener-metrics-endpoint=/metrics"
+            - "--metrics-addr=:8080"
           command:
             - "/manager"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: metrics
           env:
             - name: CONTROLLER_MANAGER_CONTAINER_IMAGE
               value: "ghcr.io/actions/gha-runner-scale-set-controller:0.12.0"

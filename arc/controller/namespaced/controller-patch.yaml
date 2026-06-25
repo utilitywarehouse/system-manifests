@@ -3,6 +3,10 @@ kind: Deployment
 metadata:
   name: arc-gha-rs-controller
   namespace: sys-actions
+  annotations:
+    prometheus.io/path: /metrics
+    prometheus.io/port: "8080"
+    prometheus.io/scrape: "true"
 spec:
   template:
     spec:
