@@ -47,11 +47,12 @@ spec:
             - operator: "NotIn"
               values:
                 - /sbin/apk # uses memfd internally for atomic file ops
-                - /usr/lib/systemd/systemd
+                - /usr/bin/bpftool
                 - /usr/bin/calico-node
-                - /home/github/bin/Runner.Listener  # .NET CoreCLR doublemapper
-                - /home/runner/bin/Runner.Listener  # .NET CoreCLR doublemapper
-                - /home/runner/bin/Runner.Worker    # .NET CoreCLR doublemapper
+                - /usr/lib/systemd/systemd
+                - /home/github/bin/Runner.Listener # .NET CoreCLR doublemapper
+                - /home/runner/bin/Runner.Listener # .NET CoreCLR doublemapper
+                - /home/runner/bin/Runner.Worker # .NET CoreCLR doublemapper
           matchReturnArgs:
             - index: 0
               operator: "GT"

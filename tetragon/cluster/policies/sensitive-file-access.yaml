@@ -84,6 +84,7 @@ spec:
             - operator: "NotIn"
               values:
                 - /opt/bin/kubelet
+                - /sbin/unix_chkpwd
                 - /usr/bin/sudo # we already log all sudo* execs
                 - /usr/bin/systemd-tmpfiles
                 - /usr/lib/systemd/systemd
