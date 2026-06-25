@@ -40,11 +40,12 @@ spec:
           matchBinaries:
             - operator: "NotIn"
               values:
+                - /usr/bin/bpftool
+                - /usr/bin/calico-node
                 - /usr/bin/falco
                 - /usr/bin/runc
                 - /usr/bin/tetragon
                 - /usr/lib/systemd/systemd
-                - /usr/bin/calico-node
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -106,10 +107,11 @@ spec:
           matchBinaries:
             - operator: "NotIn"
               values:
+                - /usr/bin/bpftool
+                - /usr/bin/calico-node
                 - /usr/bin/falco
                 - /usr/bin/runc
                 - /usr/bin/tetragon
-                - /usr/bin/calico-node
                 - /usr/local/bin/arc-harden-runner
           matchActions:
             - action: Post
