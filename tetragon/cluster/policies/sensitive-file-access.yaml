@@ -64,6 +64,7 @@ spec:
                 - "/etc/kubernetes/pki"
                 - "/etc/kubernetes/pki/etcd"
                 - "/etc/kubernetes/config"
+                - "/etc/kubernetes/config/kubeletenv"
           matchActions:
             - action: "NoPost"
 
@@ -104,6 +105,11 @@ spec:
                 # itself which is filtered in next step.
                 - /opt/bin/cfssl
                 - /opt/bin/cfssljson
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -118,6 +124,11 @@ spec:
               operator: "Postfix"
               values:
                 - "/release_agent"
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -155,6 +166,16 @@ spec:
         index: 0
         type: "int"
       selectors:
+        # exceptions
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                # accessed during morning cert rotation contains non sensitive info
+                - "/etc/kubernetes/config/kubeletenv"
+          matchActions:
+            - action: "NoPost"
+
         - matchArgs:
             - index: 0
               operator: "Prefix"
@@ -208,6 +229,11 @@ spec:
                 # cfssl-new-* are shell scripts; the BPF matchBinaries
                 - /opt/bin/cfssl
                 - /opt/bin/cfssljson
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -226,6 +252,11 @@ spec:
               operator: "Equal"
               values:
                 - "2" # MAY_WRITE only
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -270,6 +301,11 @@ spec:
               operator: "Mask"
               values:
                 - "1" # MAP_SHARED
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -304,6 +340,11 @@ spec:
                 - "/etc" # Truncate to sensitive directories
                 - "/root/.ssh"
                 - "/var/log" # Truncate to logs
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
           matchActions:
             - action: Post
               rateLimit: "1s"
