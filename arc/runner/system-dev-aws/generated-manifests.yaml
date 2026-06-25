@@ -192,7 +192,7 @@ metadata:
     actions.github.com/scale-set-name: system-dev-aws
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 55f4cba4348d32a1a736529d187e79b622c8e8ec0ab9532f1b039fd79fd64a7
+    actions.github.com/values-hash: fea0046078e6730d890f8e1ff42939feff52eb46ea66a2ff0291a106bfabc7c
     actions.github.com/cleanup-manager-role-binding: system-dev-aws-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-dev-aws-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-dev-aws-gha-rs-kube-mode
@@ -203,6 +203,206 @@ spec:
   githubConfigSecret: arc-auth
   runnerScaleSetName: system-dev-aws
   minRunners: 1
+  listenerTemplate:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
+  listenerMetrics:
+    counters:
+      gha_completed_jobs_total:
+        labels:
+          - repository
+          - organization
+          - enterprise
+          - job_name
+          - event_name
+          - job_result
+          - job_workflow_ref
+          - job_workflow_name
+          - job_workflow_target
+      gha_started_jobs_total:
+        labels:
+          - repository
+          - organization
+          - enterprise
+          - job_name
+          - event_name
+          - job_workflow_ref
+          - job_workflow_name
+          - job_workflow_target
+    gauges:
+      gha_assigned_jobs:
+        labels:
+          - name
+          - namespace
+          - repository
+          - organization
+          - enterprise
+      gha_busy_runners:
+        labels:
+          - name
+          - namespace
+          - repository
+          - organization
+          - enterprise
+      gha_desired_runners:
+        labels:
+          - name
+          - namespace
+          - repository
+          - organization
+          - enterprise
+      gha_idle_runners:
+        labels:
+          - name
+          - namespace
+          - repository
+          - organization
+          - enterprise
+      gha_max_runners:
+        labels:
+          - name
+          - namespace
+          - repository
+          - organization
+          - enterprise
+      gha_min_runners:
+        labels:
+          - name
+          - namespace
+          - repository
+          - organization
+          - enterprise
+      gha_registered_runners:
+        labels:
+          - name
+          - namespace
+          - repository
+          - organization
+          - enterprise
+      gha_running_jobs:
+        labels:
+          - name
+          - namespace
+          - repository
+          - organization
+          - enterprise
+    histograms:
+      gha_job_execution_duration_seconds:
+        buckets:
+          - 0.01
+          - 0.05
+          - 0.1
+          - 0.5
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 12
+          - 15
+          - 18
+          - 20
+          - 25
+          - 30
+          - 40
+          - 50
+          - 60
+          - 70
+          - 80
+          - 90
+          - 100
+          - 110
+          - 120
+          - 150
+          - 180
+          - 210
+          - 240
+          - 300
+          - 360
+          - 420
+          - 480
+          - 540
+          - 600
+          - 900
+          - 1200
+          - 1800
+          - 2400
+          - 3000
+          - 3600
+        labels:
+          - repository
+          - organization
+          - enterprise
+          - job_name
+          - event_name
+          - job_result
+          - job_workflow_ref
+          - job_workflow_name
+          - job_workflow_target
+      gha_job_startup_duration_seconds:
+        buckets:
+          - 0.01
+          - 0.05
+          - 0.1
+          - 0.5
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 12
+          - 15
+          - 18
+          - 20
+          - 25
+          - 30
+          - 40
+          - 50
+          - 60
+          - 70
+          - 80
+          - 90
+          - 100
+          - 110
+          - 120
+          - 150
+          - 180
+          - 210
+          - 240
+          - 300
+          - 360
+          - 420
+          - 480
+          - 540
+          - 600
+          - 900
+          - 1200
+          - 1800
+          - 2400
+          - 3000
+          - 3600
+        labels:
+          - repository
+          - organization
+          - enterprise
+          - job_name
+          - event_name
+          - job_workflow_ref
+          - job_workflow_name
+          - job_workflow_target
   template:
     spec:
       securityContext:

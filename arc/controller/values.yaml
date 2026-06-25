@@ -1,3 +1,8 @@
 resources:
   limits:
     memory: 512Mi
+
+metrics:
+  controllerManagerAddr: ":8080"
+  listenerAddr: ":8080"
+  listenerEndpoint: "/metrics"
