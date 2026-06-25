@@ -1,0 +1,14 @@
+
+
+We have a noticeable amount of pods that are dropping logs, but not too
+many, and we have room to spare.
+
+Vector is bothered when logs get on the 5000/s range, and since kube
+limits pods to 100 per node, in theory we could have 500 logs/s per
+pod.
+
+Our limit key groups several pod/containers together, so granting 100/s
+per limit key should be well inside safe ground.
+
+The real trouble are pods that get into the thousands per second, that
+we need to deal with a method different that throttling.

@@ -41,6 +41,9 @@ sinks:
     endpoint: http://loki-audits.sys-log.svc.cluster.aws:3100
     encoding:
       codec: text
+    buffer:
+      type: disk
+      max_size: 1073741824 # 1Gi
     labels:
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"

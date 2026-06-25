@@ -69,7 +69,12 @@ sinks:
     path: /loki/api/v1/push
     encoding:
       codec: text
+    buffer:
+      type: disk
+      max_size: 1073741824 # 1Gi
+      # when_full: drop_newest # Explicitely drop logs instead of blocking, which drops then hidden by throttle
     labels:
+      host_name: "${VECTOR_SELF_NODE_NAME}" # relevant for statefulsets, that have static pod name
       cloud_provider: "${CLOUD_PROVIDER}"
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"

@@ -1,0 +1,8 @@
+I can't see in vector metrics the dropped logs that where lost during the outage. If I can't see that, I can't test that rolling all pods at once is safe
+
+
+why is the "received bytes" of the input logs in vector zero??? is this backoff because the buffers were full? are these logs read and processed later once the pipeline is back up?? I need to test this behaviour properly, to know if there were lost logs or not
+
+
+
+I need to check what happens when vector buffers logs for more than 2h, which is the maximum loki lookback time. does loki only care about the latest new log, or it looks at the log time vs current time???

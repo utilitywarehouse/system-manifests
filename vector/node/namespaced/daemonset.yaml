@@ -31,7 +31,7 @@ spec:
       serviceAccountName: vector-node
       containers:
         - name: vector
-          image: "timberio/vector:0.53.X-debian"
+          image: "timberio/vector:0.55.X-debian"
           args:
             - --config-dir
             - /etc/vector
