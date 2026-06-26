@@ -100,7 +100,7 @@ data:
     {"event_set":["PROCESS_KPROBE"], "policy_names":["bpf-library-policy"]}
 
     {"event_set":["PROCESS_KPROBE"], "policy_names":["fileless-memfd-create"]}
-    {"event_set":["PROCESS_KPROBE"], "policy_names":["packet-socket-creation"], "container_id":[".+"]}
+    {"event_set":["PROCESS_KPROBE"], "policy_names":["packet-socket-creation"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["ptrace-activity"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-access"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-links"]}
