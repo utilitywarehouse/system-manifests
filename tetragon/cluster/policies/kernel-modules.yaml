@@ -10,53 +10,6 @@ metadata:
     description: "Monitor kernel modules operations"
 spec:
   kprobes:
-    - call: "security_kernel_module_request"
-      message: "Kernel module requested and is being loaded automatically"
-      syscall: false
-      return: true
-      args:
-        - index: 0
-          type: "string"
-      returnArg:
-        index: 0
-        type: "int"
-      selectors:
-        # Any binary in this list triggering an auto-load is ignored.
-        - matchBinaries:
-            - operator: "In"
-              values:
-                - /sbin/mount.nfs
-                - /usr/bin/dockerd
-                - /usr/bin/mount
-                - /usr/bin/multipathd
-                - /usr/bin/udevadm
-                - /usr/sbin/ip
-                - /usr/sbin/ipset
-                - /usr/sbin/iptables-nft-restore
-          matchActions:
-            - action: "NoPost"
-
-        # Suppress specific noisy module strings
-        - matchArgs:
-            - index: 0
-              operator: "Equal"
-              values:
-                # Multipath TCP
-                - "net-pf-2-proto-262"
-                - "net-pf-2-proto-262-type-1"
-          matchActions:
-            - action: "NoPost"
-
-        - matchReturnArgs:
-            - index: 0
-              operator: "Equal"
-              values:
-                - "0"
-          matchActions:
-            - action: Post
-              rateLimit: "1s"
-              rateLimitScope: "process"
-
     - call: "security_kernel_read_file"
       message: "Kernel module is being loaded"
       # Explicit module loading using file descriptor finit_module() to print module full path
