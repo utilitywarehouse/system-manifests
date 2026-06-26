@@ -9,11 +9,7 @@ metadata:
       Detects AF_PACKET socket creation, which gives a process raw access to the
       network interface below the IP layer. Used for packet sniffing and network
       reconnaissance tools (tcpdump, Wireshark, scapy, custom sniffers).
-      MITRE: T1040 - Network Sniffing.
-
-      Scoped to containers at the export layer (container_id filter in
-      tetragon-config-patch.yaml) — AF_PACKET on the host is expected for
-      monitoring tools like node_exporter, cilium, etc.
+      MITRE: T1040 - Network Sniffing. Scoped to containers only via containerSelector
 
       Socket type context:
         SOCK_RAW (3)   — raw Ethernet frames, highest privilege, most suspicious
@@ -23,6 +19,7 @@ metadata:
       Return value: positive fd on success, negative errno (e.g. EPERM) on failure.
       A denied attempt (EPERM) is still worth alerting — it confirms a process tried.
 spec:
+  containerSelector: {}
   kprobes:
     - call: "sys_socket"
       syscall: true
