@@ -12,3 +12,9 @@ list-versions:
 		--entrypoint=/bin/sh alpine/helm  -c  \
 		"helm repo add stepsecurity https://helm.stepsecurity.io/arc-harden-runner && \
 		  helm search repo -l  stepsecurity/arc-harden-runner | head -n 20"
+
+values:
+	docker run -it --rm \
+		--entrypoint=/bin/sh alpine/helm  -c  \
+		"helm repo add stepsecurity https://helm.stepsecurity.io/arc-harden-runner && \
+		  helm show values stepsecurity/arc-harden-runner"
