@@ -29,14 +29,6 @@ spec:
           object.spec.?hostPID.orValue(false) ||
           object.spec.?hostIPC.orValue(false)
         )
-    # Exluding aws-ebs-csi-drive because of 'failed to set MOUNT_ATTR_IDMAP on /dev: invalid
-    # argument (maybe the filesystem used doesn't support idmap mounts on this kernel?)'
-    - name: exclude-aws-ebs-csi-driver
-      expression: >
-        !(
-          object.metadata.namespace == "kube-system" &&
-          object.metadata.labels["app.kubernetes.io/name"] == "aws-ebs-csi-driver"
-        )
 
   mutations:
     - patchType: ApplyConfiguration
