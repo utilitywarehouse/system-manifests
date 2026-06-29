@@ -17,6 +17,8 @@ data:
     
     affinity: {}
     broker:
+      affinity: {}
+      automountServiceAccountToken: false
       containerSecurityContext:
         allowPrivilegeEscalation: false
         capabilities:
@@ -29,14 +31,20 @@ data:
           type: RuntimeDefault
       customEnvVars: []
       enabled: false
-      image: ghcr.io/step-security/broker/broker@sha256:78b7ac308f6416f3a01e4658bb851139d7bf135288a6bae2ed10b8f92db88809
+      image: ghcr.io/step-security/broker/broker@sha256:ec49a6db9f5e513c756a2647967f31cb4af764a99b8e5334e925948ba8e9b3fd
+      imagePullSecrets: []
       instanceCount: 2
       label: ""
       maxQueueSize: 10000
       messageTimeoutSeconds: 90
+      nodeSelector: {}
       podSecurityContext:
         fsGroup: 1001
+      resources: {}
       serverURL: wss://prod.websocket-api.stepsecurity.io/v1
+      serviceAccountName: ""
+      tolerations: []
+      topologySpreadConstraints: []
       volumeMounts: []
       volumes: []
       workerThreads: 5
@@ -65,6 +73,7 @@ data:
       enableConnectMonitoring: "true"
       enableFileMonitoring: "true"
       enableFipsMode: "false"
+      enableNodeReadinessGate: false
       enableProfiling: false
       enabled: true
       excludedBinaries:
@@ -76,7 +85,7 @@ data:
       - /usr/bin/containerd
       - /usr/local/bin/containerd
       filePrefixFiltering: "true"
-      hardenRunnerImage: ghcr.io/step-security/arc-harden-runner/arc-harden-runner@sha256:7eae79c10f94c513f95808e69c63505e5648e9081b43dc78b7fc91047789239b
+      hardenRunnerImage: ghcr.io/step-security/arc-harden-runner/arc-harden-runner@sha256:7fb760b33dcd9a697e40d552b932e8d8594d3926a4e3a8228dc8fd784f5c2bdc
       healthReportInterval: 900
       hubbleServerCertsSecretName: hubble-server-certs
       ignoreDNSRegex: ""
@@ -254,8 +263,8 @@ spec:
       nodeSelector:
         node.uw.systems/with-stepsecurity-harden-runner: "true"
       tolerations:
-      - effect: NoSchedule
-        key: node.uw.systems/with-stepsecurity-harden-runner
+        - effect: NoSchedule
+          key: node.uw.systems/with-stepsecurity-harden-runner
       volumes:
         - name: host-sys-fs-cgroup
           hostPath:
@@ -282,8 +291,8 @@ spec:
         - name: hardenrunner
           securityContext: 
             privileged: true
-          image: ghcr.io/step-security/arc-harden-runner/arc-harden-runner@sha256:7eae79c10f94c513f95808e69c63505e5648e9081b43dc78b7fc91047789239b
-          imagePullPolicy: Always
+          image: ghcr.io/step-security/arc-harden-runner/arc-harden-runner@sha256:7fb760b33dcd9a697e40d552b932e8d8594d3926a4e3a8228dc8fd784f5c2bdc
+          imagePullPolicy: IfNotPresent
           ports:
             - name: hr-metrics
               containerPort: 8008
@@ -302,7 +311,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: helmChartVersion
-              value: "2.17.16"
+              value: "2.18.4"
             - name: stepSecurityApiEndpoint
               value: "https://agent.api.stepsecurity.io/v1"
             - name: stepSecurityTelemetryEndpoint
