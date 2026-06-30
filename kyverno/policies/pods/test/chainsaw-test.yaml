@@ -341,3 +341,30 @@ spec:
                 name: test-user-ns-hostipc-pod
                 namespace: sys-log
               spec: {}
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-hostpath-pod
+                namespace: sys-log
+              spec:
+                volumes:
+                  - name: ssl
+                    hostPath:
+                      path: /etc/kubernetes/ssl
+                      type: Directory
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-emptydir-pod
+                namespace: sys-log
+              spec:
+                hostUsers: false
+                volumes:
+                  - name: data
+                    emptyDir: {}

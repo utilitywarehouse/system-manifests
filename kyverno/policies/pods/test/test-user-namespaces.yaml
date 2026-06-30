@@ -102,3 +102,48 @@ spec:
   containers:
     - name: test
       image: alpine
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-user-ns-hostpath-pod-exception
+  namespace: kube-system
+spec:
+  policyRefs:
+    - name: hostpath-vols
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'sys-log'"
+    - name: for-given-pod
+      expression: "object.metadata.name == 'test-user-ns-hostpath-pod'"
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-hostpath-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: ssl
+      hostPath:
+        path: /etc/kubernetes/ssl
+        type: Directory
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-emptydir-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      emptyDir: {}
+  containers:
+    - name: test
+      image: alpine

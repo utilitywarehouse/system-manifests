@@ -29,6 +29,13 @@ spec:
           object.spec.?hostPID.orValue(false) ||
           object.spec.?hostIPC.orValue(false)
         )
+    # failed to fulfil mount request: failed to set MOUNT_ATTR_IDMAP on /dev: invalid
+    # argument (maybe the filesystem used doesn't support idmap mounts on this kernel?
+    - name: exclude-hostpath-volumes
+      expression: >-
+        object.spec.?volumes.orValue([]).all(v,
+          !has(v.hostPath)
+        )
 
   mutations:
     - patchType: ApplyConfiguration
