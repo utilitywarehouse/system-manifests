@@ -95,6 +95,7 @@ spec:
                 - /usr/local/bin/kube-controller-manager
                 - /usr/local/bin/kube-scheduler
                 - /usr/bin/truncate # cert renewal clears kubeletenv via open+ftruncate
+                - /usr/sbin/runc # bind-mounting Secret/ConfigMap volumes into containers; path resolves to container-side destination
                 - /usr/bin/dpkg # package install — reads shadow/pam during configuration
                 - /usr/sbin/dpkg-preconfigure # package install — reads shadow/pam during configuration
                 - /usr/share/debconf/frontend # debconf reads /etc/shadow to check system users during dpkg postinst scripts
