@@ -307,6 +307,10 @@ spec:
               operator: "Equal"
               values:
                 - "0"
+          matchBinaries:
+            - operator: "NotIn"
+              values:
+                - /sbin/apk # Exec allowlist already catches apk installs
           matchActions:
             - action: Post
               rateLimit: "1s"

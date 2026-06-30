@@ -33,6 +33,7 @@ data:
 
     {"event_set": ["PROCESS_EXEC"], "binary_regex":[".*/apt-get$"], "arguments_regex":["^update$"]}
     {"event_set": ["PROCESS_EXEC"], "arguments_regex":["^apt-get update$"]}
+    {"event_set": ["PROCESS_EXEC"], "binary_regex": [".*/(insmod|modprobe|rmmod)$"], "parent_binary_regex":[".*/(calico-node|kube-proxy)$"]}
 
     {"event_set": ["PROCESS_EXEC"], "binary_regex":[".*/ssh$"], "arguments_regex":[".*github.com\\s+.*"]}
 
