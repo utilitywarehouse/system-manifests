@@ -13,6 +13,10 @@ export:
 #   interface: nri-hook
 #   failAllowNamespacesRegex: [".*"]
 
+#  triggers rollout when `tetragon-config` configMap is updated
+daemonSetAnnotations:
+  reloader.stakater.com/auto: "true"
+
 tetragon:
   processAncestors:
     enabled: "base,kprobe,tracepoint,lsm"

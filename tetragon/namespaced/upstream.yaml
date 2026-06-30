@@ -211,6 +211,8 @@ spec:
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
+  annotations:
+    reloader.stakater.com/auto: "true"
   labels:
     app.kubernetes.io/name: tetragon
     app.kubernetes.io/instance: tetragon
