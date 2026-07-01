@@ -45,5 +45,6 @@ spec:
             - operator: "NotIn"
               values:
                 - "/speaker" # Ignores the MetalLB speaker binary
+                - /usr/bin/containerd-shim-runc-v2
           matchActions:
             - action: Post
