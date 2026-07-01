@@ -29,6 +29,7 @@ data:
 
     {"event_set": ["PROCESS_EXEC"], "namespace": ["sys-terraform-applier"], "binary_regex": ["^/tmp/.*"]}
     {"event_set": ["PROCESS_EXEC"], "namespace": ["uwcouk-cms"], "arguments_regex": ["^-c \"git rev-parse HEAD\"$", "^-c \"next start\"$"]}
+    {"event_set": ["PROCESS_EXEC"], "namespace": ["sys-argocd"], "parent_binary_regex": [".*/git$"]}
     {"event_set": ["PROCESS_EXEC"], "namespace": ["sys-actions"], "labels": ["app.kubernetes.io/component=runner"]}
 
     {"event_set": ["PROCESS_EXEC"], "binary_regex":[".*/apt-get$"], "arguments_regex":["^update$"]}
