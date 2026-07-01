@@ -87,6 +87,7 @@ spec:
                 - "/etc/shadow"
                 - "/etc/sudoers"
                 - "/etc/sudoers.d/"
+                - "/etc/ssh/" # reading host private keys = host impersonation
                 - "/root/.ssh/"
           matchNamespaces:
             - namespace: Mnt
@@ -103,6 +104,7 @@ spec:
                 - /usr/lib/systemd/systemd-executor
                 - /usr/lib/systemd/systemd-userwork
                 - /usr/lib64/misc/sshd-session
+                - /usr/sbin/sshd # listener reads /etc/ssh host keys at startup
                 - /usr/local/bin/kube-apiserver
                 - /usr/local/bin/kube-controller-manager
                 - /usr/local/bin/kube-scheduler
@@ -118,6 +120,27 @@ spec:
                 # itself which is filtered in next step.
                 - /opt/bin/cfssl
                 - /opt/bin/cfssljson
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
+
+        # Direct physical/kernel memory read = credential harvesting from RAM,
+        # bypassing all file ACLs. Nothing legitimate reads these on a node.
+        # Deliberately NOT namespace-scoped: a container reading them (needs
+        # privileged + host /dev/proc) is equally suspicious.
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "/dev/mem"
+                - "/dev/kmem"
+                - "/proc/kcore"
           matchReturnArgs:
             - index: 0
               operator: "Equal"
@@ -225,6 +248,10 @@ spec:
                 - "/etc/profile.d/"
                 - "/etc/bashrc"
                 - "/etc/environment"
+                # systemd units — primary persistence mechanism on Flatcar
+                # (writing a unit body; `systemctl enable` symlinks go through
+                # security_inode_symlink, not this MAY_WRITE hook, so no noise)
+                - "/etc/systemd/system/"
                 # Dynamic linker config — library hijacking
                 - "/etc/ld.so"
                 # Binary paths — supply chain / tamper
@@ -236,8 +263,9 @@ spec:
                 - "/lib"
                 - "/lib64"
                 - "/usr/lib"
-                # SSH keys for root
+                # SSH authorized_keys — persistence (root + core login user)
                 - "/root/.ssh"
+                - "/home/core/.ssh"
             - index: 1
               operator: "Equal"
               values:
