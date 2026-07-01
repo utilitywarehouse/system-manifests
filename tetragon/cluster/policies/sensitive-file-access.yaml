@@ -40,6 +40,14 @@ spec:
     # security_file_open fires after VFS path resolution — no TOCTOU.
     # Covers all open variants (open, openat, openat2) in one hook.
     # Return value: 0 = allowed, negative errno = denied by LSM.
+    #
+    # Scoped to the host mount namespace (matchNamespaces Mnt=host_ns): a read of
+    # these paths inside a container hits either the container's own copies
+    # (meaningless) or hostPath-mounted host files from pods we already expect to
+    # read them — both noise, and reads are high-volume. Host-side reads by an
+    # unexpected binary are the signal. The write rules (2-4) are deliberately NOT
+    # namespace-scoped: container writes to these paths are rare and meaningful
+    # (see Rule 2).
     # -------------------------------------------------------------------------
     - call: "security_file_open"
       syscall: false
@@ -79,23 +87,28 @@ spec:
                 - "/etc/shadow"
                 - "/etc/sudoers"
                 - "/etc/sudoers.d/"
+                - "/etc/ssh/" # reading host private keys = host impersonation
                 - "/root/.ssh/"
+          matchNamespaces:
+            - namespace: Mnt
+              operator: In
+              values:
+                - "host_ns"
           matchBinaries:
             - operator: "NotIn"
               values:
                 - /opt/bin/kubelet
                 - /sbin/unix_chkpwd
-                - /usr/bin/sudo # we already log all sudo* execs
                 - /usr/bin/systemd-tmpfiles
                 - /usr/lib/systemd/systemd
                 - /usr/lib/systemd/systemd-executor
                 - /usr/lib/systemd/systemd-userwork
                 - /usr/lib64/misc/sshd-session
+                - /usr/sbin/sshd # listener reads /etc/ssh host keys at startup
                 - /usr/local/bin/kube-apiserver
                 - /usr/local/bin/kube-controller-manager
                 - /usr/local/bin/kube-scheduler
                 - /usr/bin/truncate # cert renewal clears kubeletenv via open+ftruncate
-                - /usr/sbin/runc # bind-mounting Secret/ConfigMap volumes into containers; path resolves to container-side destination
                 - /usr/bin/dpkg # package install — reads shadow/pam during configuration
                 - /usr/sbin/dpkg-preconfigure # package install — reads shadow/pam during configuration
                 - /usr/share/debconf/frontend # debconf reads /etc/shadow to check system users during dpkg postinst scripts
@@ -107,6 +120,27 @@ spec:
                 # itself which is filtered in next step.
                 - /opt/bin/cfssl
                 - /opt/bin/cfssljson
+          matchReturnArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "0"
+          matchActions:
+            - action: Post
+              rateLimit: "1s"
+              rateLimitScope: "process"
+
+        # Direct physical/kernel memory read = credential harvesting from RAM,
+        # bypassing all file ACLs. Nothing legitimate reads these on a node.
+        # Deliberately NOT namespace-scoped: a container reading them (needs
+        # privileged + host /dev/proc) is equally suspicious.
+        - matchArgs:
+            - index: 0
+              operator: "Equal"
+              values:
+                - "/dev/mem"
+                - "/dev/kmem"
+                - "/proc/kcore"
           matchReturnArgs:
             - index: 0
               operator: "Equal"
@@ -151,9 +185,19 @@ spec:
     # dynamic resolv.conf updates, etc.). The binary path prefixes (/bin, /usr/bin,
     # etc.) remain broad since any write there is suspicious regardless of filename.
     #
-    # NOTE: On Flatcar, /usr is immutable so writes there will be denied by
-    # the OS, but the event is still valuable — it confirms a process attempted
-    # to tamper with the immutable filesystem.
+    # Unlike Rule 1 (host-only), this runs in ALL mount namespaces. Reads inside
+    # containers are high-volume noise, but writes to these paths at runtime are
+    # rare and meaningful: a compromised container dropping a binary into /usr/bin,
+    # backdooring a library, or rewriting its own /etc/passwd is exactly the
+    # tamper/persistence signal we want to keep. (Image builds happen off-node at
+    # CI time, so runtime writes here are uncommon.)
+    #
+    # NOTE: On Flatcar the host /usr is a read-only (dm-verity) filesystem, so a
+    # write to /usr/bin, /lib, etc. fails at open() — before this hook runs — and
+    # produces no event. On the host these binary-path prefixes therefore only fire
+    # after /usr has been remounted read-write (itself a strong tamper signal);
+    # inside containers (writable layers) they fire on the tool-drop / persistence
+    # writes described above.
     # -------------------------------------------------------------------------
     - call: "security_file_permission"
       syscall: false
@@ -204,6 +248,10 @@ spec:
                 - "/etc/profile.d/"
                 - "/etc/bashrc"
                 - "/etc/environment"
+                # systemd units — primary persistence mechanism on Flatcar
+                # (writing a unit body; `systemctl enable` symlinks go through
+                # security_inode_symlink, not this MAY_WRITE hook, so no noise)
+                - "/etc/systemd/system/"
                 # Dynamic linker config — library hijacking
                 - "/etc/ld.so"
                 # Binary paths — supply chain / tamper
@@ -215,8 +263,9 @@ spec:
                 - "/lib"
                 - "/lib64"
                 - "/usr/lib"
-                # SSH keys for root
+                # SSH authorized_keys — persistence (root + core login user)
                 - "/root/.ssh"
+                - "/home/core/.ssh"
             - index: 1
               operator: "Equal"
               values:
