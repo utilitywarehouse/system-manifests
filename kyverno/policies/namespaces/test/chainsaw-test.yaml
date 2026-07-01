@@ -9,6 +9,8 @@ spec:
         - apply:
             file: ../ensure-ns-name-label.yaml
         - apply:
+            file: ../restrict-limitrange-values.yaml
+        - apply:
             file: ../require-annotation-to-delete-ns.yaml
         - apply:
             file: ../require-ns-owner-label.yaml
@@ -106,6 +108,117 @@ spec:
               apiVersion: v1
               kind: Namespace
               name: valid-delete-annotation
+            expect:
+              - check:
+                  ($error == null): true
+
+    - name: test-restrict-limitrange-values
+      try:
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: LimitRange
+              metadata:
+                name: invalid-max-cpu-too-high
+                namespace: default
+              spec:
+                limits:
+                  - type: Container
+                    max:
+                      cpu: "7"
+                      memory: 24Gi
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'LimitRange max.cpu cannot exceed 6 cores'))": true
+
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: LimitRange
+              metadata:
+                name: invalid-max-memory-too-high
+                namespace: default
+              spec:
+                limits:
+                  - type: Container
+                    max:
+                      cpu: "6"
+                      memory: 25Gi
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'LimitRange max.memory cannot exceed 24Gi'))": true
+
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: LimitRange
+              metadata:
+                name: invalid-default-cpu-too-high
+                namespace: default
+              spec:
+                limits:
+                  - type: Container
+                    default:
+                      cpu: "7"
+                      memory: 24Gi
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'LimitRange default.cpu cannot exceed 6 cores'))": true
+
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: LimitRange
+              metadata:
+                name: invalid-default-memory-too-high
+                namespace: default
+              spec:
+                limits:
+                  - type: Container
+                    default:
+                      cpu: "6"
+                      memory: 25Gi
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'LimitRange default.memory cannot exceed 24Gi'))": true
+
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: LimitRange
+              metadata:
+                name: valid-limitrange
+                namespace: default
+              spec:
+                limits:
+                  - type: Container
+                    default:
+                      cpu: "6"
+                      memory: 24Gi
+                    max:
+                      cpu: "6"
+                      memory: 24Gi
+            expect:
+              - check:
+                  ($error == null): true
+
+        - apply:
+            resource:
+              apiVersion: v1
+              kind: LimitRange
+              metadata:
+                name: valid-limitrange-default-values-only
+                namespace: default
+              spec:
+                limits:
+                  - type: Container
+                    default:
+                      cpu: "6"
+                      memory: 24Gi
             expect:
               - check:
                   ($error == null): true
