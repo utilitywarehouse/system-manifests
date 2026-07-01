@@ -275,6 +275,7 @@ spec:
               values:
                 - /sbin/apk # Exec allowlist already catches apk installs
                 - /usr/bin/dpkg # Exec allowlist already catches dpkg installs
+                - /opt/bin/ssh-key-agent # manages core user's authorized_keys
 
                 # Suppress all /opt/bin/cfssl* binaries (cert renewal service):
                 # cfssl-new-* are shell scripts; the BPF matchBinaries
