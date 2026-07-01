@@ -99,11 +99,14 @@ spec:
               values:
                 - /opt/bin/kubelet
                 - /sbin/unix_chkpwd
+                - /usr/sbin/unix_chkpwd # usr-merged path (exec map may record either)
+                - /usr/bin/sudo # sudo reads sudoers/pam; execs already logged
                 - /usr/bin/systemd-tmpfiles
                 - /usr/lib/systemd/systemd
                 - /usr/lib/systemd/systemd-executor
                 - /usr/lib/systemd/systemd-userwork
                 - /usr/lib64/misc/sshd-session
+                - /usr/lib64/misc/sshd-auth
                 - /usr/sbin/sshd # listener reads /etc/ssh host keys at startup
                 - /usr/local/bin/kube-apiserver
                 - /usr/local/bin/kube-controller-manager
