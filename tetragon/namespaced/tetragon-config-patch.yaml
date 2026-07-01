@@ -43,11 +43,13 @@ data:
   #
   # **PROCESS_EXEC**
   # Search Private Keys or Passwords / Find AWS Credentials
+  # Cloud instance-metadata (IMDS) access via curl/wget — credential theft
   # Detect Netcat Remote Code Execution (nc/ncat with exec flags)
   # Clear Log Activities (Detects commands targeting /var/log)
   # Remove Bulk Data from Disk
   # Monitor execution of a binary in the /tmp directory.
   # Monitor sudo invocations
+  # Account manipulation (host-only)
   # Catch the actual *execution* of a fileless binary from memory
   # Privileges Escalation via SUID Binary Execution. Monitor execution of SUID “Set User ID” binaries.
   # Execution from /dev/shm, /tmp, /var/tmp on host or container (direct binary or shell indirect via args)
@@ -57,6 +59,7 @@ data:
   #
   # Explicitly catch kernel module loading binaries executed inside containers
   # Detect file system debugger launched in a container
+  # Escape tooling (container-scoped)
   # monitor-drop-and-execute (monitor executions occurring in traditionally writable paths)
   # Package manager execution in containers (apt, apk, pip, npm, etc.)
   # Run shell untrusted detect potential RCE
@@ -77,11 +80,13 @@ data:
     {"event_set":["PROCESS_UPROBE", "PROCESS_TRACEPOINT", "PROCESS_LSM"]}
 
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(grep|egrep|fgrep|find)$"], "arguments_regex":[".*(id_rsa|id_ed25519|BEGIN PRIVATE|aws_access_key_id|aws_secret_access_key|\\.aws/credentials).*"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(curl|wget)$"], "arguments_regex":[".*(169\\.254\\.169\\.254|metadata\\.google\\.internal).*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(nc|ncat)$"], "arguments_regex":[".*(-e|-c|--sh-exec|--exec|--lua-exec).*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(rm|truncate|cat|echo)$"], "arguments_regex":[".*/var/log/.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(shred|mkfs|mke2fs)$"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/tmp/.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":["^/.*/(sudo|su|pkexec)$"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(useradd|usermod|adduser|passwd|chpasswd|groupadd)$"], "container_id":["^$"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary) && process_exec.process.binary.startsWith('memfd:')"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && (has(process_exec.process.binary_properties.setuid) || has(process_exec.process.binary_properties.setgid))"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && has(process_exec.process.binary_properties.file)"]}
@@ -90,6 +95,7 @@ data:
 
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(insmod|modprobe|rmmod)$"]}
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/debugfs$"]}
+    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(nsenter|unshare|mount|crictl|ctr|runc|nerdctl|docker)$"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":["^/dev/shm/.*", "^/tmp/.*", "^/var/tmp/.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(bash|sh|zsh|ash|dash|ksh|csh|tcsh)$"], "arguments_regex":[".*/dev/shm/.*"]}
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":["^/run/.*"]}
