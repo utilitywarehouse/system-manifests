@@ -96,7 +96,7 @@ data:
 
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(insmod|modprobe|rmmod)$"]}
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/debugfs$"]}
-    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(nsenter|unshare|mount|crictl|ctr|runc|nerdctl|docker)$"]}
+    {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":[".*/(nsenter|unshare|mount|crictl|ctr|nerdctl|docker)$"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":["^/dev/shm/.*", "^/tmp/.*", "^/var/tmp/.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(bash|sh|zsh|ash|dash|ksh|csh|tcsh)$"], "arguments_regex":[".*/dev/shm/.*"]}
     {"event_set":["PROCESS_EXEC"], "container_id":[".+"], "binary_regex":["^/run/.*"]}
