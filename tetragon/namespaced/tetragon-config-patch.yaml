@@ -46,7 +46,6 @@ data:
   #
   # **PROCESS_EXEC**
   # Search Private Keys or Passwords / Find AWS Credentials
-  # Cloud instance-metadata (IMDS) access via curl/wget — credential theft
   # Detect Netcat Remote Code Execution (nc/ncat with exec flags)
   # Clear Log Activities (Detects commands targeting /var/log)
   # Remove Bulk Data from Disk
@@ -83,7 +82,6 @@ data:
     {"event_set":["PROCESS_UPROBE", "PROCESS_TRACEPOINT", "PROCESS_LSM"]}
 
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(grep|egrep|fgrep|find)$"], "arguments_regex":[".*(id_rsa|id_ed25519|BEGIN PRIVATE|aws_access_key_id|aws_secret_access_key|\\.aws/credentials).*"]}
-    {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(curl|wget)$"], "arguments_regex":[".*(169\\.254\\.169\\.254|metadata\\.google\\.internal).*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(nc|ncat)$"], "arguments_regex":[".*(-e|-c|--sh-exec|--exec|--lua-exec).*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(rm|truncate|cat|echo)$"], "arguments_regex":[".*/var/log/.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(shred|mkfs|mke2fs)$"]}
