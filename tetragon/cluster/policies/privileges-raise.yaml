@@ -75,6 +75,8 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/containerd-shim-runc-v2 # sets up container caps on container start
+                - /usr/lib/systemd/systemd # PID1 sets service caps
                 - /usr/lib/systemd/systemd-coredump
                 - /usr/lib/systemd/systemd-executor # sets up service caps before exec'ing the actual service binary
           matchActions:
@@ -93,6 +95,8 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/containerd-shim-runc-v2 # sets up container caps on container start
+                - /usr/lib/systemd/systemd # PID1 sets service caps
                 - /usr/lib/systemd/systemd-coredump
                 - /usr/lib/systemd/systemd-executor # sets up service caps before exec'ing the actual service binary
           matchActions:
@@ -111,6 +115,8 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/containerd-shim-runc-v2 # sets up container caps on container start
+                - /usr/lib/systemd/systemd # PID1 sets service caps
                 - /usr/lib/systemd/systemd-coredump
                 - /usr/lib/systemd/systemd-executor # sets up service caps before exec'ing the actual service binary
           matchActions:
@@ -144,6 +150,8 @@ spec:
             - operator: "NotIn"
               values:
                 - /usr/bin/runc
+                - /usr/bin/containerd-shim-runc-v2 # sets up container caps on container start
+                - /usr/lib/systemd/systemd # PID1 sets service caps
                 - /usr/lib/systemd/systemd-coredump
                 - /usr/lib/systemd/systemd-executor # sets up service caps before exec'ing the actual service binary
           matchActions:
