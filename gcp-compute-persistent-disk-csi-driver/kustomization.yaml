@@ -8,10 +8,10 @@ namespace: kube-system
 
 # Use a commit ref instead of tag, as images do not follow tags in the repo
 # manifests.
-# commit is for release: v1.26.0
+# commit is for release: v1.26.1
 # image in the commit: v1.17.4
 resources:
-  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-master?ref=026234c6b7ecf0221a16f896db5ae3a40b73faa1
+  - github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver/deploy/kubernetes/overlays/stable-master?ref=6961be01056ee0c418147f363d1824695422f32e
 
 patches:
   - path: csi-gce-pd-controller-patch.yaml
