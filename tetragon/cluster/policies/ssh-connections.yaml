@@ -23,6 +23,12 @@ spec:
               operator: "SPort"
               values:
                 - "22"
+          # Host network namespace only.
+          matchNamespaces:
+            - namespace: Net
+              operator: In
+              values:
+                - "host_ns"
 
     # Inbound Audit: Watch for the SSH socket to be closed (Session End)
     - call: "tcp_close"
@@ -36,3 +42,9 @@ spec:
               operator: "SPort"
               values:
                 - "22"
+          # Host network namespace only.
+          matchNamespaces:
+            - namespace: Net
+              operator: In
+              values:
+                - "host_ns"
