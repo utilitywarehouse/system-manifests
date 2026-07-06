@@ -5,7 +5,6 @@ resources:
   - crds.yaml
 
   - policies/ebpf.yaml
-  - policies/fileless-memfd-create.yaml
   - policies/kernel-modules.yaml
   - policies/packet-socket-creation.yaml
   - policies/privileges-raise.yaml
