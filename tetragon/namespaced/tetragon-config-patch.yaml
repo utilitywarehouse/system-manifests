@@ -19,6 +19,7 @@ data:
     {"redact": ["(?:-H|--header)(?:\\s+|=)\"Authorization:\\s+(.*)\""]}
     {"redact": ["(?:-u|--user|-U|--proxy-user)\\s+(\\S+):(\\S+)"]}
     {"redact": ["--token(?:\\s+|=)(\\S*)"]}
+    {"redact": ["--sql\\w*p(?:\\s+|=)(\\S+)"]}
     {"redact": ["https:\\/\\/(\\S+):(\\S+)@"]}
 
   export-denylist: |-
