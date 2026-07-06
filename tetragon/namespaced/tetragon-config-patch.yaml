@@ -74,7 +74,6 @@ data:
   # & Monitor creation of User namespaces by unprivileged.
   # & Monitor execution of the capset() system call.
   #
-  # Catch the creation of anonymous memory files
   # Packet socket created in container
   # Catch process injection and anti-debugger checks
   # Read sensitive file untrusted
@@ -89,7 +88,7 @@ data:
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/tmp/.*"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":["^/.*/(sudo|su|pkexec)$"]}
     {"event_set":["PROCESS_EXEC"], "binary_regex":[".*/(useradd|usermod|adduser|passwd|chpasswd|groupadd)$"], "container_id":["^$"]}
-    {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary) && process_exec.process.binary.startsWith('memfd:')"]}
+    {"event_set":["PROCESS_EXEC"], "binary_regex":["^memfd:"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && (has(process_exec.process.binary_properties.setuid) || has(process_exec.process.binary_properties.setgid))"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && has(process_exec.process.binary_properties.file)"]}
     {"event_set":["PROCESS_EXEC"], "cel_expression":["has(process_exec.process.binary_properties) && has(process_exec.process.binary_properties.privileges_changed)"]}
@@ -109,7 +108,6 @@ data:
     {"event_set":["PROCESS_KPROBE"], "policy_names":["privileges-raise"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["bpf-library-policy"]}
 
-    {"event_set":["PROCESS_KPROBE"], "policy_names":["fileless-memfd-create"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["packet-socket-creation"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["ptrace-activity"]}
     {"event_set":["PROCESS_KPROBE"], "policy_names":["sensitive-file-access"]}
