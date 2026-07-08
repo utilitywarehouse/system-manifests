@@ -225,6 +225,18 @@ spec:
           matchActions:
             - action: "NoPost"
 
+        # Python bytecode cache: interpreters write compiled .pyc into __pycache__
+        # dirs under the stdlib/site-packages on first import (atomic temp file
+        # <mod>.pyc.<random>, so Postfix ".pyc" can't match it). Legit and high
+        # volume in Python containers. All such caches live under /usr/lib/python*.
+        - matchArgs:
+            - index: 0
+              operator: "Prefix"
+              values:
+                - "/usr/lib/python"
+          matchActions:
+            - action: "NoPost"
+
         - matchArgs:
             - index: 0
               operator: "Prefix"
