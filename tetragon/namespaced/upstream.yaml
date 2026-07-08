@@ -91,7 +91,7 @@ data:
   export-rate-limit: "-1"
   enable-k8s-api: "true"
   metrics-server: :2112
-  metrics-label-filter: namespace,workload,pod,binary
+  metrics-label-filter: namespace
   server-address: unix:///var/run/tetragon/tetragon.sock
   health-server-address: :6789
   health-server-interval: "10"
@@ -231,7 +231,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/configmap: 1264213d903745c890b5d1d9a0f69968f848333e8c73a48f3af57014d920b3b7
+        checksum/configmap: 627239aa8dd3d85b3ce53d7741d07bb1912af978f89c413a3a1d1c81a74a37ea
       labels:
         app.kubernetes.io/name: tetragon
         app.kubernetes.io/instance: tetragon
