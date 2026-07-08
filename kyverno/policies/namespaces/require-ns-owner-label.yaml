@@ -37,6 +37,7 @@ spec:
           'iam', 'insurance',
           'partner',
           'payment',
+          'qe',
           'system',
           'telecom',
           'unicom',
