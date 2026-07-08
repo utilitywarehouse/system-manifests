@@ -24,3 +24,9 @@ tetragon:
     # owner) or "640"/"644" (to allow read access by logs collector or another agent).
     # vector runs as root
   exportFilePerm: "600"
+
+  prometheus:
+    # -- Comma-separated list of enabled metrics labels.
+    # The configurable labels are: namespace, workload, pod, binary. Unknown labels will be ignored.
+    # Removing some labels from the list might help reduce the metrics cardinality if needed.
+    metricsLabelFilter: "namespace"
