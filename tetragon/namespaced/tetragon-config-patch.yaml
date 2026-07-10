@@ -14,14 +14,25 @@ data:
     { "fields":"parent.pod,parent.cap,parent.ns,parent.process_credentials", "action":"EXCLUDE" }
     { "fields":"ancestors.pod,ancestors.cap,ancestors.ns,ancestors.process_credentials", "action":"EXCLUDE" }
 
+  # 1. HTTP Auth Headers: Redacts token in -H "Authorization: Bearer mySecret"
+  # 2. Basic/Proxy Auth: Redacts BOTH sides of colon in -u admin:myPassword or -u token:x
+  # 3. Long Password / Java Flags: Redacts secret in --password,--pass, -Ddb.password=123, -a
+  # 4. Token/Key Flags: Redacts secret in --client-secret, --auth-token, --bearer
+  # 5. SQL Password Flags: Redacts secret in --sql...p
+  # 6. Short Password Flag: Redacts secret in -pSecret or -p 1234 (Note: also redacts ports like -p 8080)
+  # 7. Connection URIs: Redacts password in postgresql://admin:secret@db.local or https://token@github.com
+  # 8. Inline Env Vars: Redacts value in AWS_SECRET_ACCESS_KEY=123, db_password=abc, etc.
   redaction-filters: |-
-    {"redact": ["--password(?:\\s+|=)(\\S*)"]}
     {"redact": ["(?:-H|--header)(?:\\s+|=)\"Authorization:\\s+(.*)\""]}
     {"redact": ["(?:-u|--user|-U|--proxy-user)\\s+(\\S+):(\\S+)"]}
-    {"redact": ["--token(?:\\s+|=)(\\S*)"]}
-    {"redact": ["AWS_SECRET_ACCESS_KEY(?:\\s+|=)(\\S*)"]}
+
+    {"redact": ["(?:-a|--pass|(?:--|-D)[a-zA-Z0-9._-]*password)(?:\\s+|=)(\\S*)"]}
+    {"redact": ["--[a-zA-Z0-9._-]*(?:key|secret|token|bearer)(?:\\s+|=)(\\S*)"]}
     {"redact": ["--sql\\w*p(?:\\s+|=)(\\S+)"]}
-    {"redact": ["https:\\/\\/(\\S+):(\\S+)@"]}
+    {"redact": ["-p(?:\\s+|=)?([^\\s\"']+)"]}
+
+    {"redact": ["(?:[a-zA-Z0-9+-]+):\\/\\/(?:[^:\\s]+:)?([^@\\s]+)@"]}
+    {"redact": ["(?i)(?:[A-Z0-9_]*)(?:PASSWORD|SECRET|TOKEN|AUTH|API_KEY|ACCESS_KEY)(?:[A-Z0-9_]*)=([^\\s\"']+)"]}
 
   export-denylist: |-
     {"health_check":true}
