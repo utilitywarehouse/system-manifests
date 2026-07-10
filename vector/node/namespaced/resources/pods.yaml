@@ -10,9 +10,6 @@ sources:
     #
     # Log dirs look like `/var/log/pods/kube-system_coredns-69fbfdd545-cm59c_<some_hash>`
     exclude_paths_glob_patterns:
-      # Permanent excludes
-      - "/var/log/pods/sys-falco_*/**"
-
       # Dynamic drop pattern, to quickly deal with misbehaving workloads that
       # burn cpu processing and throttling them. Defaults to dropping nothing
       # if the env var is unset.

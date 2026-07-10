@@ -42,7 +42,6 @@ spec:
               values:
                 - /usr/bin/bpftool
                 - /usr/bin/calico-node
-                - /usr/bin/falco
                 - /usr/bin/runc
                 - /usr/bin/tetragon
                 - /usr/lib/systemd/systemd
@@ -81,7 +80,6 @@ spec:
           matchBinaries:
             - operator: "NotIn"
               values:
-                - /usr/bin/falco
                 - /usr/bin/tetragon
                 - /usr/local/bin/arc-harden-runner
           matchActions:
@@ -109,7 +107,6 @@ spec:
               values:
                 - /usr/bin/bpftool
                 - /usr/bin/calico-node
-                - /usr/bin/falco
                 - /usr/bin/runc
                 - /usr/bin/tetragon
                 - /usr/local/bin/arc-harden-runner

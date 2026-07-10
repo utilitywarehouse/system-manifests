@@ -1,8 +1,4 @@
 sources:
-  kubernetes_events:
-    type: kubernetes_logs
-    extra_namespace_label_selector: "name=sys-falco"
-    use_apiserver_cache: true
   kubernetes_apiserver:
     type: file
     include:
@@ -12,12 +8,6 @@ sources:
     include: ["/var/run/cilium/tetragon/tetragon.log"]
 
 transforms:
-  kubernetes_events_remap:
-    inputs:
-      - kubernetes_events
-    type: remap
-    source: |
-      .log_source = "kube_audits_events"
   kubernetes_apiserver_remap:
     inputs:
       - kubernetes_apiserver
@@ -34,7 +24,6 @@ transforms:
 sinks:
   loki_audits:
     inputs:
-      - kubernetes_events_remap
       - kubernetes_apiserver_remap
       - kubernetes_tetragon_events_remap
     type: loki
