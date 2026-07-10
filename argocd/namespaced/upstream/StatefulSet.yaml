@@ -41,6 +41,12 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
+            - name: GRPC_ENABLE_TXT_SERVICE_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.grpc.enable.txt.service.config
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_CONTROLLER_REPLICAS
               value: "1"
             - name: ARGOCD_RECONCILIATION_TIMEOUT
@@ -107,6 +113,48 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: log.format.timestamp
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_CLIENT_QPS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8s.client.qps
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_CLIENT_BURST
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8s.client.burst
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_CLIENT_MAX_IDLE_CONNECTIONS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8s.client.max.idle.connections
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_TCP_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8s.tcp.timeout
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_TCP_KEEPALIVE
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8s.tcp.keepalive
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_TLS_HANDSHAKE_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8s.tls.handshake.timeout
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_TCP_IDLE_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.k8s.tcp.idle.timeout
                   name: argocd-cmd-params-cm
                   optional: true
             - name: ARGOCD_APPLICATION_CONTROLLER_METRICS_CACHE_EXPIRATION
@@ -297,7 +345,7 @@ spec:
                   optional: true
             - name: KUBECACHEDIR
               value: /tmp/kubecache
-          image: quay.io/argoproj/argocd:v3.3.6
+          image: quay.io/argoproj/argocd:v3.4.5
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
@@ -372,7 +420,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/init-config: fd74f7d84e39b3f6eac1d7ce5deb0083e58f218376faf363343d91a0fb4f2563
+        checksum/init-config: cb9ebad11d288a7327d836f5f0fa63a61806e11078082ffaf78cd15e5b6f04fa
       labels:
         app.kubernetes.io/name: argocd-redis-ha
     spec:
@@ -543,7 +591,28 @@ spec:
                   name: argocd-redis
           image: public.ecr.aws/docker/library/redis:8.2.3-alpine
           imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /readonly-config/redis.conf
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 15
           name: split-brain-fix
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - test -d /proc/1
+            failureThreshold: 5
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 15
           resources: {}
           securityContext:
             allowPrivilegeEscalation: false
