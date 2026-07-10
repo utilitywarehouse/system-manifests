@@ -33,6 +33,12 @@ spec:
                   key: notificationscontroller.log.level
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_NOTIFICATION_CONTROLLER_PROCESSORS_COUNT
+              valueFrom:
+                configMapKeyRef:
+                  key: notificationscontroller.processors.count
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_LOG_FORMAT_TIMESTAMP
               valueFrom:
                 configMapKeyRef:
@@ -57,7 +63,7 @@ spec:
                   key: notificationscontroller.repo.server.plaintext
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v3.3.6
+          image: quay.io/argoproj/argocd:v3.4.5
           imagePullPolicy: Always
           livenessProbe:
             tcpSocket:
@@ -117,7 +123,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: cd6508bdf9819601c454d0cc491fb77a209e3a88761d92514d105b6681829953
+        checksum/config: cda181423e5fd3b17fbdaa2433890ba317affcdb717c9c12ec3ded1fd6875177
         prometheus.io/path: /metrics
         prometheus.io/port: "9101"
         prometheus.io/scrape: "true"
@@ -181,7 +187,7 @@ spec:
             - argocd
             - admin
             - redis-initial-password
-          image: quay.io/argoproj/argocd:v3.3.6
+          image: quay.io/argoproj/argocd:v3.4.5
           imagePullPolicy: IfNotPresent
           name: secret-init
           securityContext:
@@ -270,6 +276,12 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
+            - name: GRPC_ENABLE_TXT_SERVICE_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  key: reposerver.grpc.enable.txt.service.config
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_RECONCILIATION_TIMEOUT
               valueFrom:
                 configMapKeyRef:
@@ -498,13 +510,19 @@ spec:
                   key: reposerver.include.hidden.directories
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_HELM_USER_AGENT
+              valueFrom:
+                configMapKeyRef:
+                  key: reposerver.helm.user.agent
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: HELM_CACHE_HOME
               value: /helm-working-dir
             - name: HELM_CONFIG_HOME
               value: /helm-working-dir
             - name: HELM_DATA_HOME
               value: /helm-working-dir
-          image: quay.io/argoproj/argocd:v3.3.6
+          image: quay.io/argoproj/argocd:v3.4.5
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3
@@ -552,11 +570,11 @@ spec:
               name: plugins
       initContainers:
         - args:
-            - /bin/cp --update=none /usr/local/bin/argocd /var/run/argocd/argocd && /bin/ln -s /var/run/argocd/argocd /var/run/argocd/argocd-cmp-server
+            - /bin/cp /usr/local/bin/argocd /var/run/argocd/argocd && /bin/ln -sf /var/run/argocd/argocd /var/run/argocd/argocd-cmp-server
           command:
             - sh
             - -c
-          image: quay.io/argoproj/argocd:v3.3.6
+          image: quay.io/argoproj/argocd:v3.4.5
           name: copyutil
           securityContext:
             allowPrivilegeEscalation: false
@@ -604,6 +622,13 @@ spec:
           name: var-files
         - emptyDir: {}
           name: plugins
+        - configMap:
+            items:
+              - key: reposerver.profile.enabled
+                path: profiler.enabled
+            name: argocd-cmd-params-cm
+            optional: true
+          name: argocd-cmd-params-cm
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -648,6 +673,12 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
+            - name: GRPC_ENABLE_TXT_SERVICE_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  key: server.grpc.enable.txt.service.config
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_SERVER_INSECURE
               valueFrom:
                 configMapKeyRef:
@@ -676,6 +707,48 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: server.log.level
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_CLIENT_QPS
+              valueFrom:
+                configMapKeyRef:
+                  key: server.k8s.client.qps
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_CLIENT_BURST
+              valueFrom:
+                configMapKeyRef:
+                  key: server.k8s.client.burst
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_CLIENT_MAX_IDLE_CONNECTIONS
+              valueFrom:
+                configMapKeyRef:
+                  key: server.k8s.client.max.idle.connections
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_TCP_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: server.k8s.tcp.timeout
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_TCP_KEEPALIVE
+              valueFrom:
+                configMapKeyRef:
+                  key: server.k8s.tcp.keepalive
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_TLS_HANDSHAKE_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: server.k8s.tls.handshake.timeout
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_K8S_TCP_IDLE_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  key: server.k8s.tcp.idle.timeout
                   name: argocd-cmd-params-cm
                   optional: true
             - name: ARGOCD_SERVER_REPO_SERVER
@@ -930,7 +1003,7 @@ spec:
                   key: server.sync.replace.allowed
                   name: argocd-cmd-params-cm
                   optional: true
-          image: quay.io/argoproj/argocd:v3.3.6
+          image: quay.io/argoproj/argocd:v3.4.5
           imagePullPolicy: Always
           livenessProbe:
             httpGet:

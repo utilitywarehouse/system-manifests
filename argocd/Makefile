@@ -1,19 +1,19 @@
 .DEFAULT_GOAL := get-upstream
 
 # https://github.com/argoproj/argo-cd
-VERSION=v3.3.6
+VERSION=v3.4.5
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
 # This fetches manifests from upstream and splits resources into cluster/ and
-# namespaced/ directories based on type of resources. 
+# namespaced/ directories based on type of resources.
 .PHONY: get-upstream
 get-upstream:
 	curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
 
 	# replace namespace
 	sd "namespace: argocd" "namespace: sys-argocd" /tmp/argo.yaml
-	
+
 	# Filter out dex and applicationset resoruces
 	# also create new secrets when required instead of patching it
 	yq 'select(.kind!="Secret" and .metadata.name != "argocd-dex-server*" and .metadata.name != "argocd-applicationset*")' /tmp/argo.yaml > /tmp/argo_filtered.yaml
@@ -40,17 +40,17 @@ get-upstream:
 .PHONY: diff-upstream
 diff-upstream:
 	@curl -Ls https://raw.githubusercontent.com/argoproj/argo-cd/$(VERSION)/manifests/ha/install.yaml > /tmp/argo.yaml
-	
+
 	@# Filter out dex and applicationset resoruces
 	@yq 'select(.metadata.name != "argocd-dex-server*" and .metadata.name != "argocd-applicationset*")' /tmp/argo.yaml > /tmp/argo_filtered.yaml
 
 	@yq -o=tsv '.metadata.name + " (" + .kind + ")"' /tmp/argo.yaml | sort > /tmp/argocd_remote_res
 	@yq -o=tsv '.metadata.name + " (" + .kind + ")"' /tmp/argo_filtered.yaml | sort > /tmp/argocd_filtered_remote_res
 	@yq -o=tsv '.metadata.name + " (" + .kind + ")"' cluster/upstream/*.yaml namespaced/upstream/*.yaml | sort > /tmp/argocd_local_res
-	
+
 	# diff betweeen remote and local
 	-diff --color -U 0 /tmp/argocd_remote_res /tmp/argocd_local_res
-	# 
+	#
 	# diff betweeen filtered remote and local
 	-diff --color -U 0 /tmp/argocd_filtered_remote_res /tmp/argocd_local_res
 
