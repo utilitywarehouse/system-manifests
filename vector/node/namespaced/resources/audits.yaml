@@ -38,7 +38,7 @@ sinks:
       - kubernetes_apiserver_remap
       - kubernetes_tetragon_events_remap
     type: loki
-    endpoint: http://loki-audits.sys-log.svc.cluster.aws:3100
+    endpoint: http://loki.sys-audit.svc.cluster.aws:3100
     encoding:
       codec: text
     labels:
