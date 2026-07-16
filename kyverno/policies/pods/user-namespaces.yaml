@@ -16,10 +16,6 @@ spec:
         operations: ["CREATE"]
         resources: ["pods"]
 
-    namespaceSelector:
-      matchLabels:
-        uw.systems/owner: system
-
   matchConditions:
     # https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/#limitations
     - name: exclude-host-namespaces
