@@ -15,4 +15,5 @@ spec:
           args:
             - --metrics-bind-address=:8080
             - --metrics-secure=false
+            - --watch-namespaces="*"
             - run

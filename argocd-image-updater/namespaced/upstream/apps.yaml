@@ -40,13 +40,17 @@ spec:
         - args:
             - --metrics-bind-address=:8443
             - run
-          command:
-            - /manager
           env:
             - name: ARGOCD_NAMESPACE
               valueFrom:
                 configMapKeyRef:
                   key: argocd.namespace
+                  name: argocd-image-updater-config
+                  optional: true
+            - name: IMAGE_UPDATER_WATCH_NAMESPACES
+              valueFrom:
+                configMapKeyRef:
+                  key: watch.namespaces
                   name: argocd-image-updater-config
                   optional: true
             - name: IMAGE_UPDATER_INTERVAL
@@ -151,6 +155,12 @@ spec:
                   key: webhook.harbor-secret
                   name: argocd-image-updater-secret
                   optional: true
+            - name: ALIYUN_ACR_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: webhook.aliyun-acr-secret
+                  name: argocd-image-updater-secret
+                  optional: true
             - name: CLOUDEVENTS_WEBHOOK_SECRET
               valueFrom:
                 secretKeyRef:
@@ -163,7 +173,31 @@ spec:
                   key: webhook.ratelimit-allowed
                   name: argocd-image-updater-config
                   optional: true
-          image: quay.io/argoprojlabs/argocd-image-updater:v1.1.1
+            - name: DISABLE_TLS
+              valueFrom:
+                configMapKeyRef:
+                  key: disable-tls
+                  name: argocd-image-updater-config
+                  optional: true
+            - name: TLS_MIN_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  key: tls.min-version
+                  name: argocd-image-updater-config
+                  optional: true
+            - name: TLS_MAX_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  key: tls.max-version
+                  name: argocd-image-updater-config
+                  optional: true
+            - name: TLS_CIPHERS
+              valueFrom:
+                configMapKeyRef:
+                  key: tls.ciphers
+                  name: argocd-image-updater-config
+                  optional: true
+          image: quay.io/argoprojlabs/argocd-image-updater:v1.2.2
           livenessProbe:
             httpGet:
               path: /healthz
@@ -206,6 +240,9 @@ spec:
               name: ssh-signing-key
               readOnly: true
               subPath: sshPrivateKey
+            - mountPath: /app/config/tls
+              name: argocd-image-updater-tls
+              readOnly: true
       securityContext:
         runAsNonRoot: true
       serviceAccountName: argocd-image-updater-controller
@@ -232,5 +269,14 @@ spec:
           secret:
             optional: true
             secretName: ssh-git-creds
+        - name: argocd-image-updater-tls
+          secret:
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+            optional: true
+            secretName: argocd-image-updater-tls
         - emptyDir: {}
           name: tmp
