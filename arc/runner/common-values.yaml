@@ -2,7 +2,8 @@ githubConfigUrl: "https://github.com/utilitywarehouse"
 
 githubConfigSecret: arc-auth
 
-minRunners: 1
+minRunners: 5 # runners are running on dedicated node
+maxRunners: 15 # node's volume restriction
 
 containerMode:
   type: kubernetes
