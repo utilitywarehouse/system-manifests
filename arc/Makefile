@@ -1,4 +1,4 @@
-VERSION=0.12.0
+VERSION=0.14.2
 NAMESPACE=sys-actions
 
 .DEFAULT_GOAL := generate-manifests
@@ -15,7 +15,7 @@ controller:
 
 	yq 'select(.kind != "CustomResourceDefinition" and .kind != "ClusterRole" and .kind != "ClusterRoleBinding")' /tmp/arc-controller.yaml > /tmp/arc-controller-namespaced.yaml
 	# Remove empty yaml documents by generated a unified yaml document and splitting it back
-	yq ea '[.]' /tmp/arc-controller-namespaced.yaml | yq '.[] | split_doc' > controller/namespaced/generated-manifests.yaml
+	yq ea '[.]' /tmp/arc-controller-namespaced.yaml | yq '.[] | select(.Pulled == null) | split_doc' > controller/namespaced/generated-manifests.yaml
 
 .PHONY: runners
 runners:
