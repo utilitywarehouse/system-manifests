@@ -5,10 +5,10 @@ metadata:
   name: system-prod-merit-gha-rs-kube-mode
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.12.0
+    helm.sh/chart: gha-rs-0.14.2
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/version: "0.14.2"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
@@ -22,10 +22,10 @@ metadata:
   name: system-prod-merit-gha-rs-kube-mode
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.12.0
+    helm.sh/chart: gha-rs-0.14.2
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/version: "0.14.2"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
@@ -55,10 +55,10 @@ metadata:
   name: system-prod-merit-gha-rs-manager
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.12.0
+    helm.sh/chart: gha-rs-0.14.2
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/version: "0.14.2"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
@@ -130,10 +130,10 @@ metadata:
   name: system-prod-merit-gha-rs-kube-mode
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.12.0
+    helm.sh/chart: gha-rs-0.14.2
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/version: "0.14.2"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
@@ -155,10 +155,10 @@ metadata:
   name: system-prod-merit-gha-rs-manager
   namespace: sys-actions
   labels:
-    helm.sh/chart: gha-rs-0.12.0
+    helm.sh/chart: gha-rs-0.14.2
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/version: "0.14.2"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
@@ -182,16 +182,16 @@ metadata:
   namespace: sys-actions
   labels:
     app.kubernetes.io/component: "autoscaling-runner-set"
-    helm.sh/chart: gha-rs-0.12.0
+    helm.sh/chart: gha-rs-0.14.2
     app.kubernetes.io/name: system-prod-merit
     app.kubernetes.io/instance: system-prod-merit
-    app.kubernetes.io/version: "0.12.0"
+    app.kubernetes.io/version: "0.14.2"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: gha-rs
     actions.github.com/scale-set-name: system-prod-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 6d405ecacd199a40ea0a1c82be310fe26130af00d5b3ed64a1b1b9cfc60eb63
+    actions.github.com/values-hash: 5ebe51428bcba70a9763e4d3d6500620f38e005d11957de34a0bcf6395db680
     actions.github.com/cleanup-manager-role-binding: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-prod-merit-gha-rs-kube-mode
