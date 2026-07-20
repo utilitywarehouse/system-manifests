@@ -1,19 +1,19 @@
 .DEFAULT_GOAL := get-upstream
 
-# https://github.com/argoproj-labs/argocd_image_updater
-ARGOCD_VERSION=v1.1.1
+# https://github.com/argoproj-labs/argocd-image-updater
+ARGOCD_VERSION=v1.2.2
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
 # This fetches manifests from upstream and splits resources into cluster/ and
-# namespaced/ directories based on type of resources. 
+# namespaced/ directories based on type of resources.
 .PHONY: get-upstream
 get-upstream:
 	curl -Ls https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/$(ARGOCD_VERSION)/config/install.yaml > /tmp/argocd_image_updater.yaml
 
 	# replace namespace
 	sd "namespace: argocd" "namespace: sys-argocd" /tmp/argocd_image_updater.yaml
-	
+
 
 	# cluster resources
 	yq 'select(.kind=="CustomResourceDefinition")' /tmp/argocd_image_updater.yaml > cluster/upstream/crds.yaml
@@ -25,6 +25,9 @@ get-upstream:
 	yq 'select(.kind=="ConfigMap")' /tmp/argocd_image_updater.yaml > namespaced/upstream/configMaps.yaml
 	yq 'select(.kind=="NetworkPolicy")' /tmp/argocd_image_updater.yaml > namespaced/upstream/netpols.yaml
 
+	# create rbac for team namespaces
+	yq 'select(.metadata.name == "argocd-image-updater-manager-role*")'  /tmp/argocd_image_updater.yaml > namespaced/manager-role/rbac.yaml
+
 	# remove temp file
 	rm /tmp/argocd_image_updater.yaml
 
@@ -34,7 +37,7 @@ diff-upstream:
 
 	@yq -o=tsv '.metadata.name + " (" + .kind + ")"' /tmp/argocd_image_updater.yaml | sort > /tmp/argocd_image_updater_remote_res
 	@yq -o=tsv '.metadata.name + " (" + .kind + ")"' cluster/upstream/*.yaml namespaced/upstream/*.yaml | sort > /tmp/argocd_image_updater_local_res
-	
+
 	# diff betweeen remote and local
 	-diff --color -U 0 /tmp/argocd_image_updater_remote_res /tmp/argocd_image_updater_local_res
 
