@@ -191,7 +191,7 @@ metadata:
     actions.github.com/scale-set-name: system-prod-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 9693a4d1daa84a2f037921552233c138dbc9a625b434e49bcf6fbb104b3ec7d
+    actions.github.com/values-hash: c381097911418e12c596a43c8a222469b0de6f0ed51c657aaf5a84615041b9e
     actions.github.com/cleanup-manager-role-binding: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-prod-merit-gha-rs-kube-mode
@@ -298,34 +298,10 @@ spec:
     histograms:
       gha_job_execution_duration_seconds:
         buckets:
-          - 0.01
-          - 0.05
-          - 0.1
-          - 0.5
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
           - 10
-          - 12
-          - 15
-          - 18
-          - 20
-          - 25
           - 30
-          - 40
-          - 50
           - 60
-          - 70
-          - 80
           - 90
-          - 100
-          - 110
           - 120
           - 150
           - 180
@@ -343,6 +319,14 @@ spec:
           - 2400
           - 3000
           - 3600
+          - 5400
+          - 7200
+          - 9000
+          - 10800
+          - 12600
+          - 14400
+          - 18000
+          - 21600
         labels:
           - repository
           - organization
