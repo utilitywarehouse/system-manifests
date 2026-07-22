@@ -60,7 +60,6 @@ listenerMetrics:
           "enterprise",
           "job_name",
           "event_name",
-          "job_workflow_ref",
           "job_workflow_name",
           "job_workflow_target",
         ]
@@ -73,7 +72,6 @@ listenerMetrics:
           "job_name",
           "event_name",
           "job_result",
-          "job_workflow_ref",
           "job_workflow_name",
           "job_workflow_target",
         ]
@@ -103,7 +101,6 @@ listenerMetrics:
           "enterprise",
           "job_name",
           "event_name",
-          "job_workflow_ref",
           "job_workflow_name",
           "job_workflow_target",
         ]
@@ -164,7 +161,6 @@ listenerMetrics:
           "job_name",
           "event_name",
           "job_result",
-          "job_workflow_ref",
           "job_workflow_name",
           "job_workflow_target",
         ]

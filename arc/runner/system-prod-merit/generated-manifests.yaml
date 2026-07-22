@@ -191,7 +191,7 @@ metadata:
     actions.github.com/scale-set-name: system-prod-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 5ebe51428bcba70a9763e4d3d6500620f38e005d11957de34a0bcf6395db680
+    actions.github.com/values-hash: 9693a4d1daa84a2f037921552233c138dbc9a625b434e49bcf6fbb104b3ec7d
     actions.github.com/cleanup-manager-role-binding: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-prod-merit-gha-rs-kube-mode
@@ -227,7 +227,6 @@ spec:
           - job_name
           - event_name
           - job_result
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
       gha_started_jobs_total:
@@ -237,7 +236,6 @@ spec:
           - enterprise
           - job_name
           - event_name
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
     gauges:
@@ -352,7 +350,6 @@ spec:
           - job_name
           - event_name
           - job_result
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
       gha_job_startup_duration_seconds:
@@ -408,7 +405,6 @@ spec:
           - enterprise
           - job_name
           - event_name
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
   template:

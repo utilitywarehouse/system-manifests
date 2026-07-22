@@ -191,7 +191,7 @@ metadata:
     actions.github.com/scale-set-name: system-dev-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 6c1ff48f8bf7313c050480bada8a845fd2ca4ca27b3b24168e2a5109494c9a1
+    actions.github.com/values-hash: e8aaff53868c6290f7a54cdeeb6036194a1743b7dc523da5e6eeb05eed584eb
     actions.github.com/cleanup-manager-role-binding: system-dev-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-dev-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-dev-merit-gha-rs-kube-mode
@@ -227,7 +227,6 @@ spec:
           - job_name
           - event_name
           - job_result
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
       gha_started_jobs_total:
@@ -237,7 +236,6 @@ spec:
           - enterprise
           - job_name
           - event_name
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
     gauges:
@@ -352,7 +350,6 @@ spec:
           - job_name
           - event_name
           - job_result
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
       gha_job_startup_duration_seconds:
@@ -408,7 +405,6 @@ spec:
           - enterprise
           - job_name
           - event_name
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
   template:
