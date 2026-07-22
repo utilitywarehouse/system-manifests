@@ -191,7 +191,7 @@ metadata:
     actions.github.com/scale-set-name: system-exp-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 067e6275b59e591caf5266d86cf539e05390ddd4985f10cd4200e415c4c4889
+    actions.github.com/values-hash: 2a83976f88fa0083f3191179c05caf21a307da76e02dbf60d8b23424e3eb3e7
     actions.github.com/cleanup-manager-role-binding: system-exp-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-exp-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-exp-merit-gha-rs-kube-mode
@@ -227,7 +227,6 @@ spec:
           - job_name
           - event_name
           - job_result
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
       gha_started_jobs_total:
@@ -237,7 +236,6 @@ spec:
           - enterprise
           - job_name
           - event_name
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
     gauges:
@@ -300,34 +298,10 @@ spec:
     histograms:
       gha_job_execution_duration_seconds:
         buckets:
-          - 0.01
-          - 0.05
-          - 0.1
-          - 0.5
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
           - 10
-          - 12
-          - 15
-          - 18
-          - 20
-          - 25
           - 30
-          - 40
-          - 50
           - 60
-          - 70
-          - 80
           - 90
-          - 100
-          - 110
           - 120
           - 150
           - 180
@@ -345,6 +319,14 @@ spec:
           - 2400
           - 3000
           - 3600
+          - 5400
+          - 7200
+          - 9000
+          - 10800
+          - 12600
+          - 14400
+          - 18000
+          - 21600
         labels:
           - repository
           - organization
@@ -352,7 +334,6 @@ spec:
           - job_name
           - event_name
           - job_result
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
       gha_job_startup_duration_seconds:
@@ -408,7 +389,6 @@ spec:
           - enterprise
           - job_name
           - event_name
-          - job_workflow_ref
           - job_workflow_name
           - job_workflow_target
   template:
