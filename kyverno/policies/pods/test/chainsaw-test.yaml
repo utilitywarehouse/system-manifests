@@ -368,3 +368,44 @@ spec:
                 volumes:
                   - name: data
                     emptyDir: {}
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-nfs-pvc-pod
+                namespace: sys-log
+              spec:
+                volumes:
+                  - name: data
+                    persistentVolumeClaim:
+                      claimName: test-user-ns-nfs-pvc
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-standard-pvc-pod
+                namespace: sys-log
+              spec:
+                hostUsers: false
+                volumes:
+                  - name: data
+                    persistentVolumeClaim:
+                      claimName: test-user-ns-standard-pvc
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-no-storageclass-pvc-pod
+                namespace: sys-log
+              spec:
+                hostUsers: false
+                volumes:
+                  - name: data
+                    persistentVolumeClaim:
+                      claimName: test-user-ns-no-storageclass-pvc

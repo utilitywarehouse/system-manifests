@@ -32,6 +32,18 @@ spec:
         object.spec.?volumes.orValue([]).all(v,
           !has(v.hostPath)
         )
+    # NFS volumes cannot be mounted in a user-namespace pod because Linux NFS
+    # client doesn't yet support idmap mounts.
+    # https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/#limitations
+    # Excluding all pods that mount PVCs with no StorageClass, as these PVCs
+    # use NFS-backed PVs.
+    - name: exclude-pods-with-nfs-volumes
+      expression: >-
+        !object.spec.?volumes.orValue([]).exists(v,
+          has(v.persistentVolumeClaim) &&
+          resource.Get("v1", "persistentvolumeclaims", object.metadata.namespace, v.persistentVolumeClaim.claimName)
+            .?spec.storageClassName.orValue(null) == ""
+        )
 
   mutations:
     - patchType: ApplyConfiguration
