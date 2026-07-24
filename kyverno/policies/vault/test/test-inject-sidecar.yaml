@@ -57,6 +57,7 @@ metadata:
   annotations:
     uw.systems/kyverno-inject-sidecar-request: "vault-init-container-aws"
 spec:
+  initContainers: [{ name: init, image: alpine }]
   containers: [{ name: app, image: alpine }]
 ---
 # Fail-open Variants

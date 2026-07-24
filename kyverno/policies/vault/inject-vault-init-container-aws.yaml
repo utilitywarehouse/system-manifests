@@ -133,8 +133,8 @@ spec:
       jsonPatch:
         expression: >-
           (
-            size(object.spec.?initContainers.orValue([])) > 0 
-              ? [ JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload} ]
+            size(object.spec.?initContainers.orValue([])) > 0
+              ? [ JSONPatch{op: "add", path: "/spec/initContainers/0", value: variables.sidecar_payload} ]
               : [ JSONPatch{op: "add", path: "/spec/initContainers", value: [variables.sidecar_payload]} ]
           ) + (
             size(object.spec.?volumes.orValue([])) > 0

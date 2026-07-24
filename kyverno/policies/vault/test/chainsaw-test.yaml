@@ -421,6 +421,14 @@ spec:
                       - name: vault-aws-credentials
                         mountPath: /etc/aws
                       - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                  - name: init
+                    env:
+                      - name: AWS_SHARED_CREDENTIALS_FILE
+                        value: "/etc/aws/credentials"
+                    volumeMounts:
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                      - name: vault-aws-credentials
+                        mountPath: /etc/aws
                 containers:
                   - name: app
                     env:
