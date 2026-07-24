@@ -147,3 +147,86 @@ spec:
   containers:
     - name: test
       image: alpine
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-user-ns-nfs-pvc
+  namespace: sys-log
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-nfs-pvc-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: test-user-ns-nfs-pvc
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-user-ns-standard-pvc
+  namespace: sys-log
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-standard-pvc-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: test-user-ns-standard-pvc
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-user-ns-no-storageclass-pvc
+  namespace: sys-log
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-no-storageclass-pvc-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: test-user-ns-no-storageclass-pvc
+  containers:
+    - name: test
+      image: alpine
