@@ -14,13 +14,13 @@ data:
     { "fields":"parent.pod,parent.cap,parent.ns,parent.process_credentials", "action":"EXCLUDE" }
     { "fields":"ancestors.pod,ancestors.cap,ancestors.ns,ancestors.process_credentials", "action":"EXCLUDE" }
 
-  # HTTP Headers: Redacts token in -H "Authorization: Bearer xyz" or -H 'X-Api-Key: xyz'
+  # HTTP Headers: Redacts token in -H "Authorization: Bearer xyz" or -H 'X-Api-Key: xyz' or X-aws-ec2-metadata-token: xyz"
   # Basic/Proxy Auth: Redacts BOTH sides of colon in -u admin:myPassword or -u token:x
   # JSON Payloads: Redacts secret values in inline JSON like curl -d '{"password":"123"}'
   # Connection URIs: Redacts password in postgresql://admin:secret@db.local or https://token@github.com
   #
   # Long Password / Java Flags: Redacts secret in --password,--pass, -Ddb.password=123, -a
-  # Token/Key Flags: Redacts secret in --client-secret, --auth-token, --bearer
+  # Token/Key Flags: Redacts secret in --client-secret, --auth-token, --bearer, --registry.accessToken
   # SQL Password Flags: Redacts secret in --sql...p
   # Short Password Flag: Redacts secret in -pSecret or -p 1234 (Note: also redacts ports like -p 8080)
   #
@@ -28,13 +28,13 @@ data:
   # TruffleHog Cloud Tokens (Identifiable Prefixes): GitHub, Slack, Stripe, OpenAI, Vault, NPM, SendGrid, HuggingFace
   # TruffleHog Cloud Tokens (Strict Lengths): GCP (AIza), Twilio (SK)
   redaction-filters: |-
-    {"redact": ["(?:-H|--header)(?:\\s+|=)[\"']?(?:(?i)authorization|x-api-key|api-key|private-token|secret-token):\\s*([^\"']+)"]}
+    {"redact": ["(?:-H|--header)(?:\\s+|=)[\"']?(?:(?i)authorization|[a-z0-9.-]*(?:api-key|secret|token)):\\s*([^\"']+)"]}
     {"redact": ["(?:-u|--user|-U|--proxy-user)\\s+(\\S+):(\\S+)"]}
     {"redact": ["\"(?i)[a-z0-9_.-]*(?:password|secret|token|api_key)\"\\s*:\\s*\"([^\"]+)\""]}
     {"redact": ["(?:[a-zA-Z0-9+-]+):\\/\\/(?:[^:\\s]+:)?([^@\\s]+)@"]}
 
-    {"redact": ["(?:-a|--pass|(?:--|-D)[a-zA-Z0-9._-]*password)(?:\\s+|=)(\\S*)"]}
-    {"redact": ["--[a-zA-Z0-9._-]*(?:key|secret|token|bearer)(?:\\s+|=)(\\S*)"]}
+    {"redact": ["(?i)(?:-a|--pass|(?:--|-D)[a-z0-9._-]*password)(?:\\s+|=)(\\S*)"]}
+    {"redact": ["(?i)--[a-z0-9._-]*(?:key|secret|token|bearer)(?:\\s+|=)(\\S*)"]}
     {"redact": ["--sql\\w*p(?:\\s+|=)(\\S+)"]}
     {"redact": ["-p(?:\\s+|=)?([^\\s\"']+)"]}
 
