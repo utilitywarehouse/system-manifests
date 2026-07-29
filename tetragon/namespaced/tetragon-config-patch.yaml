@@ -28,19 +28,19 @@ data:
   # TruffleHog Cloud Tokens (Identifiable Prefixes): GitHub, Slack, Stripe, OpenAI, Vault, NPM, SendGrid, HuggingFace
   # TruffleHog Cloud Tokens (Strict Lengths): GCP (AIza), Twilio (SK)
   redaction-filters: |-
-    {"redact": ["(?:-H|--header)(?:\\s+|=)[\"']?(?:(?i)authorization|[a-z0-9.-]*(?:api-key|secret|token)):\\s*([^\"']+)"]}
+    {"redact": ["(?:-H|--header)(?:\\s+|=)[\"']?(?:(?i)authorization|[\\w.-]*(?:api-key|secret|token)):\\s*([^\"']+)"]}
     {"redact": ["(?:-u|--user|-U|--proxy-user)\\s+(\\S+):(\\S+)"]}
-    {"redact": ["\"(?i)[a-z0-9_.-]*(?:password|secret|token|api_key)\"\\s*:\\s*\"([^\"]+)\""]}
-    {"redact": ["(?:[a-zA-Z0-9+-]+):\\/\\/(?:[^:\\s]+:)?([^@\\s]+)@"]}
+    {"redact": ["\"(?i)[\\w.-]*(?:password|secret|token|api_key)\"\\s*:\\s*\"([^\"]+)\""]}
+    {"redact": ["(?:[\\w+-]+):\\/\\/([^@\\s]+)@"]}
 
-    {"redact": ["(?i)(?:-a|--pass|(?:--|-D)[a-z0-9._-]*password)(?:\\s+|=)(\\S*)"]}
-    {"redact": ["(?i)--[a-z0-9._-]*(?:key|secret|token|bearer)(?:\\s+|=)(\\S*)"]}
+    {"redact": ["(?i)(?:-a|--pass|(?:--|-D)[\\w.-]*password)(?:\\s+|=)(\\S*)"]}
+    {"redact": ["(?i)--[\\w.-]*(?:key|secret|token|bearer)(?:\\s+|=)(\\S*)"]}
     {"redact": ["--sql\\w*p(?:\\s+|=)(\\S+)"]}
-    {"redact": ["-p(?:\\s+|=)?([^\\s\"']+)"]}
+    {"redact": ["-p(?:\\s+|=)?(\\S+)"]}
 
-    {"redact": ["(?i)(?:[A-Z0-9_]*)(?:PASSWORD|SECRET|TOKEN|AUTH|API_KEY|ACCESS_KEY)(?:[A-Z0-9_]*)=([^\\s\"']+)"]}
-    {"redact": ["(?:\\b|[\"'])((?:ghp_|github_pat_|gh[ou]_|glpat-|xox[baprs]-|sk_(?:live|test)_|sk-[a-zA-Z0-9\\-_]+|[hs]vs\\.[a-zA-Z0-9_-]+|npm_|SG\\.|sq0[a-z]{3}-|hf_[a-zA-Z0-9]+)[a-zA-Z0-9._-]+)"]}
-    {"redact": ["(?:\\b|[\"'])(AIza[0-9A-Za-z\\-_]{35}|SK[0-9a-fA-F]{32})(?:\\b|[\"'])"]}
+    {"redact": ["(?i)\\w*(?:PASSWORD|SECRET|TOKEN|AUTH|API_KEY|ACCESS_KEY)\\w*=(\\S+)"]}
+    {"redact": ["(?:\\b|[\"'])((?:ghp_|github_pat_|gh[ou]_|glpat-|xox[baprs]-|sk_(?:live|test)_|sk-[\\w-]+|[hs]vs\\.[\\w-]+|npm_|SG\\.|sq0[a-z]{3}-|hf_\\w+)[\\w.-]+)"]}
+    {"redact": ["(?:\\b|[\"'])(AIza[\\w-]{35}|SK[0-9a-fA-F]{32})(?:\\b|[\"'])"]}
 
   export-denylist: |-
     {"health_check":true}
