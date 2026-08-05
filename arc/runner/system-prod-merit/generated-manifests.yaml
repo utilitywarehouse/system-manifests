@@ -191,7 +191,7 @@ metadata:
     actions.github.com/scale-set-name: system-prod-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: c381097911418e12c596a43c8a222469b0de6f0ed51c657aaf5a84615041b9e
+    actions.github.com/values-hash: e5555ee85c71a43088f1821f08fbd866105d06d1b41b59d64c6588ff5fb7b8e
     actions.github.com/cleanup-manager-role-binding: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-prod-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-prod-merit-gha-rs-kube-mode
@@ -405,15 +405,8 @@ spec:
       containers:
         - name: runner
           command:
-            - /bin/bash
-            - -c
-            - |
-              sudo apt-get update
-              # build-essential (gcc/g++/make) and python3 are required by node-gyp
-              # to compile native node modules when no prebuilt binary is available
-              sudo apt-get -y install build-essential python3 gettext-base
-              /home/runner/run.sh
-          image: ghcr.io/actions/actions-runner:latest
+            - /home/runner/run.sh
+          image: quay.io/utilitywarehouse/actions-runner:sha-75c74fa
           env:
             - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
               value: "false"

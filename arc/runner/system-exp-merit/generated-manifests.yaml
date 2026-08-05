@@ -191,7 +191,7 @@ metadata:
     actions.github.com/scale-set-name: system-exp-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 475b2732ef43b55e531cc0ea7a1fc3f215bfcf413a64cbd61e755e96a36d945
+    actions.github.com/values-hash: cce79f049b71aff42f03b5069f918bc16fb127c74682147e647b7d564a4842b
     actions.github.com/cleanup-manager-role-binding: system-exp-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-exp-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-exp-merit-gha-rs-kube-mode
@@ -404,7 +404,9 @@ spec:
       serviceAccountName: system-exp-merit-gha-rs-kube-mode
       containers:
         - name: runner
-          image: quay.io/utilitywarehouse/actions-runner:latest
+          command:
+            - /home/runner/run.sh
+          image: quay.io/utilitywarehouse/actions-runner:master
           env:
             - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
               value: "false"
