@@ -18,24 +18,6 @@ template:
     # https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/troubleshooting-actions-runner-controller-errors#error-access-to-the-path-homerunner_work_tool-is-denied
     securityContext:
       fsGroup: 123
-    containers:
-      - name: runner
-        image: ghcr.io/actions/actions-runner:latest
-        # image of the self hosted runners is different than the base image of GH's cloud runner
-        # install common dependencies. git, curl and jq is pre-installed in the image
-        command:
-          - /bin/bash
-          - -c
-          - |
-            sudo apt-get update
-            # build-essential (gcc/g++/make) and python3 are required by node-gyp
-            # to compile native node modules when no prebuilt binary is available
-            sudo apt-get -y install build-essential python3 gettext-base
-            /home/runner/run.sh
-        env:
-          # Avoid forcing jobs to have a `container` section
-          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
-            value: "false"
 
 controllerServiceAccount:
   namespace: sys-actions
