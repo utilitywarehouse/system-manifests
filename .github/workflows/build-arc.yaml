@@ -1,0 +1,30 @@
+name: build
+
+# Caller for the `arc` base. To add another base, copy this file to
+# build-<base>.yaml, change the `paths` globs below and the `base` input.
+# also set `image_name`
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "arc/**"
+      - ".github/workflows/build-arc.yaml"
+      - ".github/workflows/build-base.yaml"
+  pull_request:
+    branches: ["master"]
+    paths:
+      - "arc/**"
+      - ".github/workflows/build-arc.yaml"
+      - ".github/workflows/build-base.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-base.yaml
+    with:
+      base: arc
+      image_name: actions-runner
+    secrets:
+      system_quay_token: ${{ secrets.SYSTEM_QUAY_TOKEN }}
