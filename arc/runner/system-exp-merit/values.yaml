@@ -19,7 +19,8 @@ template:
         effect: "NoSchedule"
     containers:
       - name: runner
-        image: quay.io/utilitywarehouse/actions-runner:latest
+        image: quay.io/utilitywarehouse/actions-runner:master
+        command: ["/home/runner/run.sh"]
         env:
           # Avoid forcing jobs to have a `container` section
           - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
