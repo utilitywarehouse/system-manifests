@@ -26,5 +26,7 @@ jobs:
     with:
       base: arc
       image_name: actions-runner
+      # Kept in sync with arc/Makefile's UW_RUNNER_IMAGE_VERSION by `make runner-image-version`.
+      version: 2.336.0-1
     secrets:
       system_quay_token: ${{ secrets.SYSTEM_QUAY_TOKEN }}
