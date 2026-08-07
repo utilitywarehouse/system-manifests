@@ -11,6 +11,10 @@ on:
         description: Image name (without registry/owner).
         required: true
         type: string
+      version:
+        description: Static, manually-bumped version to tag the image with (optional).
+        required: false
+        type: string
     secrets:
       system_quay_token:
         required: true
@@ -49,6 +53,7 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=sha
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' && github.ref == 'refs/heads/master' }}
 
       - name: Login to Quay.io Container Registry
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0

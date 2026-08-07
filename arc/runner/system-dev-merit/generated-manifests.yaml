@@ -191,7 +191,7 @@ metadata:
     actions.github.com/scale-set-name: system-dev-merit
     actions.github.com/scale-set-namespace: sys-actions
   annotations:
-    actions.github.com/values-hash: 8d027920d3b221d59f4a399528f2d3a9012c28e114c6c060ab347a5f6792895
+    actions.github.com/values-hash: 193c2386ca93db81032d790d3511315345e9e787e12b6536e69f4f6ad05b2f0
     actions.github.com/cleanup-manager-role-binding: system-dev-merit-gha-rs-manager
     actions.github.com/cleanup-manager-role-name: system-dev-merit-gha-rs-manager
     actions.github.com/cleanup-kubernetes-mode-role-binding-name: system-dev-merit-gha-rs-kube-mode
@@ -406,7 +406,7 @@ spec:
         - name: runner
           command:
             - /home/runner/run.sh
-          image: quay.io/utilitywarehouse/actions-runner:sha-75c74fa
+          image: quay.io/utilitywarehouse/actions-runner:2.336.0-1
           env:
             - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
               value: "false"
