@@ -8,6 +8,8 @@ patches:
   - target:
       kind: Deployment
       name: prometheus-pushgateway
+    # Remove labels we don't need and remove default namespace
+    # Set log level to 'warn'
     patch: |
       - op: remove
         path: /metadata/namespace
@@ -28,6 +30,10 @@ patches:
       - op: replace
         path: /metadata/name
         value: prometheus-pushgateway-shared
+      - op: add
+        path: /spec/template/spec/containers/0/args
+        value:
+          - --log.level=warn
   - target:
       kind: Service
       name: prometheus-pushgateway
