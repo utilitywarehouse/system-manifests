@@ -1,10 +1,5 @@
 #!/bin/sh
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm template prometheus-pushgateway prometheus-pushgateway --repo https://prometheus-community.github.io/helm-charts --version "${VERSION}" \
-  | grep -v "namespace: default" \
-  | grep -iv "helm" \
-  | yq 'del(.. | select(has("app.kubernetes.io/instance")).["app.kubernetes.io/instance"])' \
-  | yq 'with(select(.kind == "Deployment"); .metadata.name = "prometheus-pushgateway-shared")' \
-  | yq 'with(select(.kind == "Deployment"); .spec.template.spec.containers[0].args = ["--log.level=warn"])' \
+helm template prometheus-pushgateway prometheus-pushgateway --repo https://prometheus-community.github.io/helm-charts --version "${VERSION}" -f values.yaml \
   > upstream/pushgateway.yaml

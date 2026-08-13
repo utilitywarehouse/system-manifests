@@ -1,0 +1,3 @@
+fullnameOverride: prometheus-pushgateway-shared
+extraArgs:
+  - "--log.level=warn"
