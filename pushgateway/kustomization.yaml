@@ -2,4 +2,61 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - pushgateway.yaml
+  - upstream/pushgateway.yaml
+
+patches:
+  - target:
+      kind: Deployment
+      name: prometheus-pushgateway
+    # Remove labels we don't need and remove default namespace
+    # Set log level to 'warn'
+    patch: |
+      - op: remove
+        path: /metadata/namespace
+      - op: remove
+        path: /metadata/labels/app.kubernetes.io~1instance
+      - op: remove
+        path: /metadata/labels/helm.sh~1chart
+      - op: remove
+        path: /metadata/labels/app.kubernetes.io~1managed-by
+      - op: remove
+        path: /spec/selector/matchLabels/app.kubernetes.io~1instance
+      - op: remove
+        path: /spec/template/metadata/labels/app.kubernetes.io~1instance
+      - op: remove
+        path: /spec/template/metadata/labels/helm.sh~1chart
+      - op: remove
+        path: /spec/template/metadata/labels/app.kubernetes.io~1managed-by
+      - op: replace
+        path: /metadata/name
+        value: prometheus-pushgateway-shared
+      - op: add
+        path: /spec/template/spec/containers/0/args
+        value:
+          - --log.level=warn
+  - target:
+      kind: Service
+      name: prometheus-pushgateway
+    patch: |
+      - op: remove
+        path: /metadata/namespace
+      - op: remove
+        path: /metadata/labels/app.kubernetes.io~1instance
+      - op: remove
+        path: /metadata/labels/helm.sh~1chart
+      - op: remove
+        path: /metadata/labels/app.kubernetes.io~1managed-by
+      - op: remove
+        path: /spec/selector/app.kubernetes.io~1instance
+  - target:
+      kind: ServiceAccount
+      name: prometheus-pushgateway
+    patch: |
+      - op: remove
+        path: /metadata/namespace
+      - op: remove
+        path: /metadata/labels/app.kubernetes.io~1instance
+      - op: remove
+        path: /metadata/labels/helm.sh~1chart
+      - op: remove
+        path: /metadata/labels/app.kubernetes.io~1managed-by

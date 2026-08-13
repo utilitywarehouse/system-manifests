@@ -1,0 +1,103 @@
+---
+# Source: prometheus-pushgateway/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    helm.sh/chart: prometheus-pushgateway-3.8.0
+    app.kubernetes.io/name: prometheus-pushgateway
+    app.kubernetes.io/instance: prometheus-pushgateway
+    app.kubernetes.io/version: "v1.11.3"
+    app.kubernetes.io/managed-by: Helm
+  name: prometheus-pushgateway
+  namespace: default
+automountServiceAccountToken: true
+---
+# Source: prometheus-pushgateway/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    helm.sh/chart: prometheus-pushgateway-3.8.0
+    app.kubernetes.io/name: prometheus-pushgateway
+    app.kubernetes.io/instance: prometheus-pushgateway
+    app.kubernetes.io/version: "v1.11.3"
+    app.kubernetes.io/managed-by: Helm
+  name: prometheus-pushgateway
+  namespace: default
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9091
+      targetPort: 9091
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: prometheus-pushgateway
+    app.kubernetes.io/instance: prometheus-pushgateway
+---
+# Source: prometheus-pushgateway/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    helm.sh/chart: prometheus-pushgateway-3.8.0
+    app.kubernetes.io/name: prometheus-pushgateway
+    app.kubernetes.io/instance: prometheus-pushgateway
+    app.kubernetes.io/version: "v1.11.3"
+    app.kubernetes.io/managed-by: Helm  
+  name: prometheus-pushgateway
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-pushgateway
+      app.kubernetes.io/instance: prometheus-pushgateway
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: prometheus-pushgateway-3.8.0
+        app.kubernetes.io/name: prometheus-pushgateway
+        app.kubernetes.io/instance: prometheus-pushgateway
+        app.kubernetes.io/version: "v1.11.3"
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      serviceAccountName: prometheus-pushgateway
+      automountServiceAccountToken: true
+      containers:
+        - name: pushgateway
+          image: quay.io/prometheus/pushgateway:v1.11.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: metrics
+              containerPort: 9091
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9091
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9091
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+          volumeMounts:
+            - name: storage-volume
+              mountPath: "/data"
+              subPath: ""
+      securityContext:
+        fsGroup: 65534
+        runAsNonRoot: true
+        runAsUser: 65534
+      volumes:
+        - name: storage-volume
+          emptyDir:
+            {}
