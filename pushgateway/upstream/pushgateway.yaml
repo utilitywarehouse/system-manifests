@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/instance: prometheus-pushgateway
     app.kubernetes.io/version: "v1.11.3"
     app.kubernetes.io/managed-by: Helm
-  name: prometheus-pushgateway-shared
+  name: prometheus-pushgateway
   namespace: default
 automountServiceAccountToken: true
 ---
@@ -23,7 +23,7 @@ metadata:
     app.kubernetes.io/instance: prometheus-pushgateway
     app.kubernetes.io/version: "v1.11.3"
     app.kubernetes.io/managed-by: Helm
-  name: prometheus-pushgateway-shared
+  name: prometheus-pushgateway
   namespace: default
 spec:
   type: ClusterIP
@@ -46,7 +46,7 @@ metadata:
     app.kubernetes.io/instance: prometheus-pushgateway
     app.kubernetes.io/version: "v1.11.3"
     app.kubernetes.io/managed-by: Helm  
-  name: prometheus-pushgateway-shared
+  name: prometheus-pushgateway
   namespace: default
 spec:
   replicas: 1
@@ -65,7 +65,7 @@ spec:
         app.kubernetes.io/version: "v1.11.3"
         app.kubernetes.io/managed-by: Helm
     spec:
-      serviceAccountName: prometheus-pushgateway-shared
+      serviceAccountName: prometheus-pushgateway
       automountServiceAccountToken: true
       containers:
         - name: pushgateway
