@@ -1,5 +1,5 @@
 # https://github.com/kubernetes-csi/external-snapshotter/releases
-VERSION=v6.3.1
+VERSION=v8.6.0
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
