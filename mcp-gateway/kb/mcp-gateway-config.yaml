@@ -1,0 +1,21 @@
+kb:
+  - name: uw-logs
+    description: >
+      Use when looking up or querying UW stack logs (Loki) via the MCP servers
+      Knows which datasource UID to use per tier, the real (verified live) log label set,
+      and provides light LogQL query examples for common questions (recent pod logs, error grep, label listing, range tail).
+    file: /etc/mcp-gateway/uw-logs.md
+
+  - name: uw-metrics
+    description: >
+      Use when looking up or querying UW stack runtime metrics (Prometheus/Thanos) via the grafana MCP servers.
+      Knows which datasource UID to use per tier and provides light PromQL query examples for common
+      questions (up, request rate, error rate, CPU, memory, pod restarts, SLO latency).
+    file: /etc/mcp-gateway/uw-metrics.md
+
+  - name: uw-traces
+    description: >
+      Use when looking up or querying UW stack distributed traces (Tempo) via the MCP servers.
+      Knows which tiers actually expose trace tools, the real (verified live) span/resource attribute set,
+      and provides light TraceQL query examples for common questions (find slow/error traces for a service, fetch a trace by ID, correlate to logs).
+    file: /etc/mcp-gateway/uw-traces.md
