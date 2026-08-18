@@ -3,6 +3,7 @@ kind: Component
 
 configMapGenerator:
   - name: mcp-gateway-config
+    behavior: merge
     files:
       - config.yaml=mcp-gateway-config.yaml
       - uw-logs.md=uw-logs.md
