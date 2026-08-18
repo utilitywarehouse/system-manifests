@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+configMapGenerator:
+  - name: mcp-gateway-config
+    behavior: merge
+    files:
+      - uw-logs.md=uw-logs.md
+      - uw-metrics.md=uw-metrics.md
+      - uw-traces.md=uw-traces.md
