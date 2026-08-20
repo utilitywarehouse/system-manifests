@@ -391,7 +391,22 @@ spec:
                   EOT
                   }
                   ' > config.hcl
-                  /usr/bin/dumb-init -- wget -qO ca.crt $VAULT_CAURL && vault agent -ca-cert ca.crt -config=config.hcl
+
+                  # The first DNS lookup from a fresh pod can transiently fail
+                  # (kubernetes "first query" conntrack race). Retry with a backoff
+                  # so a single dropped lookup does not fail the one-shot init
+                  # container.
+                  attempts=0
+                  until wget -qO ca.crt $VAULT_CAURL; do
+                    attempts=$((attempts+1))
+                    if [ "$attempts" -ge 5 ]; then
+                      echo "failed to fetch vault CA after $attempts attempts" >&2
+                      exit 1
+                    fi
+                    echo "vault CA fetch attempt $attempts failed, retrying" >&2
+                    sleep 5
+                  done
+                  vault agent -ca-cert ca.crt -config=config.hcl
             resource:
               apiVersion: v1
               kind: Pod
