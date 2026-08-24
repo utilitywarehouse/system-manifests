@@ -26,11 +26,10 @@ spec:
       
       containers:
       - name: trident-main
-        image: docker.io/netapp/trident:26.06.1
+        image: docker.io/netapp/trident:26.02.1
         imagePullPolicy: IfNotPresent
         securityContext:
           runAsNonRoot: false
-          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -60,8 +59,7 @@ spec:
         
         
         #- -debug
-        - "--k8s_api_qps=100.0"
-        - "--k8s_api_burst=200"
+        
         livenessProbe:
           exec:
             command:
@@ -112,10 +110,9 @@ spec:
         
       
       - name: trident-autosupport
-        image: docker.io/netapp/trident-autosupport:26.06
+        image: docker.io/netapp/trident-autosupport:26.02
         imagePullPolicy: IfNotPresent
         securityContext:
-          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -141,10 +138,9 @@ spec:
           mountPath: /asup
 
       - name: csi-provisioner
-        image: registry.k8s.io/sig-storage/csi-provisioner:v6.3.0
+        image: registry.k8s.io/sig-storage/csi-provisioner:v6.2.0
         imagePullPolicy: IfNotPresent
         securityContext:
-          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -155,8 +151,7 @@ spec:
         - "--timeout=600s"
         - "--retry-interval-start=10s"
         - "--retry-interval-max=300s"
-        - "--kube-api-qps=25.0"
-        - "--kube-api-burst=50"
+        
         resources:
           requests:
             cpu: 2m
@@ -171,7 +166,6 @@ spec:
         image: registry.k8s.io/sig-storage/csi-attacher:v4.11.0
         imagePullPolicy: IfNotPresent
         securityContext:
-          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -182,8 +176,7 @@ spec:
         - "--timeout=600s"
         - "--retry-interval-start=10s"
         - "--retry-interval-max=300s"
-        - "--kube-api-qps=25.0"
-        - "--kube-api-burst=50"
+        
         resources:
           requests:
             cpu: 2m
@@ -198,7 +191,6 @@ spec:
         image: registry.k8s.io/sig-storage/csi-resizer:v2.1.0
         imagePullPolicy: IfNotPresent
         securityContext:
-          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -209,8 +201,7 @@ spec:
         - "--timeout=600s"
         - "--retry-interval-start=10s"
         - "--retry-interval-max=300s"
-        - "--kube-api-qps=25.0"
-        - "--kube-api-burst=50"
+        
         resources:
           requests:
             cpu: 3m
@@ -222,10 +213,9 @@ spec:
         - name: socket-dir
           mountPath: /var/lib/csi/sockets/pluginproxy/
       - name: csi-snapshotter
-        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.6.0
+        image: registry.k8s.io/sig-storage/csi-snapshotter:v8.5.0
         imagePullPolicy: IfNotPresent
         securityContext:
-          readOnlyRootFilesystem: true
           capabilities:
             drop:
             - all
@@ -237,8 +227,7 @@ spec:
         - "--retry-interval-start=10s"
         - "--retry-interval-max=300s"
         
-        - "--kube-api-qps=25.0"
-        - "--kube-api-burst=50"
+        
         resources:
           requests:
             cpu: 2m

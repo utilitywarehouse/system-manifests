@@ -18,8 +18,6 @@ mv setup/trident-service.yaml namespaced/
 
 mv setup/trident-controller-clusterrole.yaml cluster/
 mv setup/trident-controller-clusterrolebinding.yaml cluster/
-mv setup/trident-node-linux-clusterrole.yaml cluster/
-mv setup/trident-node-linux-clusterrolebinding.yaml cluster/
 mv setup/trident-crds.yaml cluster/
 
 # clean up
