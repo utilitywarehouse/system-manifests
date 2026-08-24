@@ -74,7 +74,8 @@ rules:
 "tridentnoderemediationtemplates", "tridentnoderemediationtemplates/status",
 "tridentgroupsnapshots", "tridentgroupsnapshots/status",
 "tridentautogrowpolicies", "tridentautogrowpolicies/status",
-"tridentautogrowrequestinternals", "tridentautogrowrequestinternals/status"]
+"tridentautogrowrequestinternals", "tridentautogrowrequestinternals/status",
+"tridentvolumemoves", "tridentvolumemoves/status"]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]

@@ -26,6 +26,7 @@ spec:
       containers:
       - name: trident-main
         securityContext:
+          readOnlyRootFilesystem: true
           privileged: true
           allowPrivilegeEscalation: true
           capabilities:
@@ -33,7 +34,7 @@ spec:
             - all
             add:
             - SYS_ADMIN
-        image: docker.io/netapp/trident:26.02.1
+        image: docker.io/netapp/trident:26.06.1
         imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
@@ -121,8 +122,10 @@ spec:
           mountPath: /certs
           readOnly: true
       - name: node-driver-registrar
-        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.16.0
+        image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.17.0
         imagePullPolicy: IfNotPresent
+        securityContext:
+          readOnlyRootFilesystem: true
         args:
         - "--v=2"
         - "--csi-address=$(ADDRESS)"
