@@ -17,5 +17,6 @@ images:
     newTag: v1.9.0
   - name: docker.io/bitnami/kafka
     newName: registry.uw.systems/bitnami/kafka
+    newTag: 4.3.1-debian-12-r2
   - name: docker.io/bitnami/jmx-exporter
     newName: registry.uw.systems/bitnami/jmx-exporter
