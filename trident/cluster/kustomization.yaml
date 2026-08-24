@@ -3,6 +3,8 @@ kind: Kustomization
 resources:
   - trident-controller-clusterrolebinding.yaml
   - trident-controller-clusterrole.yaml
+  - trident-node-linux-clusterrolebinding.yaml
+  - trident-node-linux-clusterrole.yaml
   - trident-crds.yaml
 patches:
 - target:
