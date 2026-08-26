@@ -20,14 +20,15 @@ jobs:
         id: kyverno-check
         run: |
           changed_files="$(git diff --name-only --diff-filter=d HEAD^1 HEAD)"
+          found=false
           # Look for any files changed in `kyverno` directory
           while IFS= read -r file; do
             if [[ "${file}" == "kyverno"* ]]; then
-              echo "::set-output name=found::true"
-              exit 0
+              found=true
+              break
             fi
           done <<< "${changed_files}"
-          echo "::set-output name=found::false"
+          echo "found=${found}" >> "$GITHUB_OUTPUT"
 
   compare-with-upstream:
     needs: check-for-kyverno
@@ -112,5 +113,39 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run Kyverno chainsaw tests
+        with:
+          fetch-depth: 2
+      - name: Determine test scope
+        id: scope
+        run: |
+          changed_files="$(git diff --name-only --diff-filter=d HEAD^1 HEAD)"
+          run_all=false
+          declare -A seen
+          dirs=()
+          while IFS= read -r file; do
+            [[ -z "${file}" ]] && continue
+            if [[ "${file}" =~ ^kyverno/policies/([^/]+)/.+ ]]; then
+              dir="${BASH_REMATCH[1]}"
+              if [[ -z "${seen[${dir}]:-}" ]]; then
+                seen[${dir}]=1
+                dirs+=("${dir}")
+              fi
+            else
+              # Shared config (e.g. kyverno/policies/.chainsaw.yaml) or changes
+              # outside kyverno/policies (deploy/e2e-deploy/upstream) can affect
+              # every policy, so fall back to running the full suite.
+              run_all=true
+            fi
+          done <<< "${changed_files}"
+          echo "run-all=${run_all}" >> "$GITHUB_OUTPUT"
+          echo "dirs=${dirs[*]}" >> "$GITHUB_OUTPUT"
+      - name: Run all Kyverno chainsaw tests
+        if: steps.scope.outputs.run-all == 'true'
         run: make test-all
+      - name: Run Kyverno chainsaw tests for changed policies
+        if: steps.scope.outputs.run-all == 'false'
+        run: |
+          for dir in ${{ steps.scope.outputs.dirs }}; do
+            echo "Running tests for kyverno/policies/${dir}"
+            make test-target TEST_DIR="kyverno/policies/${dir}"
+          done
