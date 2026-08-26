@@ -230,3 +230,18 @@ spec:
   containers:
     - name: test
       image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-missing-pvc-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: test-user-ns-missing-pvc
+  containers:
+    - name: test
+      image: alpine
