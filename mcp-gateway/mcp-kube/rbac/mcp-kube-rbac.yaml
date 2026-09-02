@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-kube
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: mcp-kube
+---
+# The SA is bound to the built-in `view`role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mcp-kube-view
+  labels:
+    app.kubernetes.io/name: mcp-kube
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+  - kind: ServiceAccount
+    name: mcp-kube
+    namespace: kube-system
+---
+# `view`lacks these reads can be used for debugging
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: mcp-kube-viewer-extras
+  labels:
+    app.kubernetes.io/name: mcp-kube
+rules:
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - rolebindings
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - cert-manager.io
+    resources:
+      - certificates/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: mcp-kube-viewer-extras
+  labels:
+    app.kubernetes.io/name: mcp-kube
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: mcp-kube-viewer-extras
+subjects:
+  - kind: ServiceAccount
+    name: mcp-kube
+    namespace: kube-system
