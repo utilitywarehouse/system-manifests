@@ -68,3 +68,11 @@ subjects:
   - kind: ServiceAccount
     name: mcp-kube
     namespace: kube-system
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mcp-kube-token
+  annotations:
+    kubernetes.io/service-account.name: mcp-kube
+type: kubernetes.io/service-account-token
