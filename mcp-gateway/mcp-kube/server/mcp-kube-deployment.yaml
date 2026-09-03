@@ -119,9 +119,6 @@ spec:
             - name: config
               mountPath: /etc/mcp-kube
               readOnly: true
-            - name: tokens
-              mountPath: /etc/mcp-kube/tokens
-              readOnly: true
             - name: ca
               mountPath: /etc/mcp-kube/ca
               readOnly: true
