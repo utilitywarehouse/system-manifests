@@ -8,3 +8,4 @@ configMapGenerator:
       - uw-logs.md=uw-logs.md
       - uw-metrics.md=uw-metrics.md
       - uw-traces.md=uw-traces.md
+      - uw-kubernetes.md=uw-kubernetes.md
