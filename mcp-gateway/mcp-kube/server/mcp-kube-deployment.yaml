@@ -129,17 +129,5 @@ spec:
         - name: config
           configMap:
             name: mcp-kube-config
-        - name: tokens
-          projected:
-            sources:
-              - secret:
-                  name: mcp-kube-tokens
-                  items:
-                    - key: aws
-                      path: aws
-                    - key: gcp
-                      path: gcp
-                    - key: merit
-                      path: merit
         - name: ca
           emptyDir: {}
