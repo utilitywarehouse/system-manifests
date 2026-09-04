@@ -1,3 +1,11 @@
+---
+name: uw-metrics
+description: >
+  Use when looking up or querying UW stack runtime metrics (Prometheus/Thanos) via the grafana MCP servers.
+  Knows which datasource UID to use per tier and provides light PromQL query examples for common
+  questions (up, request rate, error rate, CPU, memory, pod restarts, SLO latency).
+---
+
 ## Datasource UIDs
 
 `globalthanos` default - federates every provider (aws/gcp/merit).
