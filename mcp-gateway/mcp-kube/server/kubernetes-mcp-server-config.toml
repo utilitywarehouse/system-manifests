@@ -1,0 +1,20 @@
+# kubernetes-mcp-server configuration (loaded via --config).
+# Server-side access control: applies globally to every configured cluster
+# (local and remote), independent of the per-cluster RBAC.
+#
+# read_only is also set via --read-only on the container args;
+# exec/run/portforward tools aren't even advertised.
+read_only = true
+
+# Tools removed from tools/list entirely (cannot be called).
+# - configuration_* : exposes kubeconfig content / context enumeration.
+#   Agent is told the clusters via the gateway description instead.
+# - projects_list : OpenShift projects tool not required
+disabled_tools = ["configuration_contexts_list", "configuration_view", "projects_list"]
+
+# view-equivalent access must never include Secrets; enforced at the HTTP
+# round-trip layer for every cluster context.
+[[denied_resources]]
+group = ""
+version = "v1"
+kind = "Secret"
