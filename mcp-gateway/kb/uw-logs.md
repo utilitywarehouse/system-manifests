@@ -1,3 +1,11 @@
+---
+name: uw-logs
+description: >
+  Use when looking up or querying UW stack logs (Loki) via the MCP servers
+  Knows which datasource UID to use per tier, the real (verified live) log label set,
+  and provides light LogQL query examples for common questions (recent pod logs, error grep, label listing, range tail).
+---
+
 ## Datasource
 
 Loki, UID `loki`; verify with `grafana__list_datasources`. Gateway is read-only.

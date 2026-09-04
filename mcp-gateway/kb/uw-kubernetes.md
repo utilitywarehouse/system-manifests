@@ -1,9 +1,15 @@
-## Clusters
-
-One kube mcp server serves all clusters in the <env>; target via the `context` parameter
-on every tool: `<env>-aws`, `<env>-gcp`, `<env>-merit`.
+---
+name: uw-kubernetes
+description: >
+  Use when inspecting Kubernetes resources (pods, deployments, services, events, CRDs)
+  via the kube MCP server. Read-only. Knows how to target a cluster via the `context`
+  parameter and the key read-only tools with their arguments. Prefer Grafana
+  (uw-logs/uw-metrics/uw-traces) for logs, metrics and traces.
+---
 
 ## Querying
+
+Every tool targets a cluster via the `context` parameter.
 
 `kubernetes__pods_list_in_namespace` (`namespace`, `context`) for pods;
 `kubernetes__pods_log` (`namespace`, `name`) for logs;

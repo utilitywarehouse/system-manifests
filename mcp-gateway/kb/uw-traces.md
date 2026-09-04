@@ -1,3 +1,11 @@
+---
+name: uw-traces
+description: >
+  Use when looking up or querying UW stack distributed traces (Tempo) via the MCP servers.
+  Knows which tiers actually expose trace tools, the real (verified live) span/resource attribute set,
+  and provides light TraceQL query examples for common questions (find slow/error traces for a service, fetch a trace by ID, correlate to logs).
+---
+
 ## Datasource
 
 Tempo, UID `tempo`; verify with `grafana__list_datasources`. Confirm a
