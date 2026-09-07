@@ -116,9 +116,35 @@ status:
         status: "True"
 ---
 apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-github
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
 kind: ValidatingPolicy
 metadata:
   name: vault-aws-role-arn
+status:
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"
+    (conditions[?type == 'WebhookConfigured']):
+      - reason: Succeeded
+        status: "True"
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: vault-github-permission-set
 status:
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):

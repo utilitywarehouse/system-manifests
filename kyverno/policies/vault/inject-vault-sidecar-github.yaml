@@ -1,0 +1,146 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: inject-vault-sidecar-github
+  labels:
+    uw.systems/kyverno-policy-group: vault-sidecar-injector
+  annotations:
+    policies.kyverno.io/title: Inject Sidecar - GitHub
+spec:
+  autogen:
+    mutatingAdmissionPolicy:
+      enabled: false
+    podControllers:
+      controllers: [] # disable autogen for other resources
+
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+
+  matchConditions:
+    - name: match-github-annotation
+      expression: >-
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-github'].orValue('') == 'true'
+    # The permission set name (unlike the AWS/GCP identity, which is derived
+    # only from the pod's own namespace/serviceAccountName) comes from a
+    # free-form annotation value, so it's restricted to a safe character set
+    # here before it's ever spliced into the sidecar args below - this is not
+    # a trust boundary in itself (Vault's ACL on the auth role's policy is
+    # what actually gates which permission sets can be read), it only
+    # prevents the annotation value from breaking out of the generated YAML.
+    - name: valid-permission-set-annotation
+      expression: >-
+        object.metadata.?annotations['github.uw.systems/permission-set'].orValue('').matches('^[a-zA-Z0-9_-]+$')
+
+  variables:
+    - name: vkac_env
+      expression: "'test-env'"
+    - name: pod_namespace
+      expression: "object.metadata.?namespace.orValue('default')"
+    - name: pod_sa
+      expression: "object.spec.?serviceAccountName.orValue('default')"
+    - name: permission_set
+      expression: "object.metadata.?annotations['github.uw.systems/permission-set'].orValue('')"
+
+    - name: sidecar_payload
+      expression: |
+        yaml.parse('''
+          name: vault-credentials-agent
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:dl-github-token
+          restartPolicy: Always
+          startupProbe:
+            exec:
+              command:
+                - test
+                - -e
+                - /var/run/secrets/github/token
+            failureThreshold: 5
+            periodSeconds: 15
+          args:
+            - sidecar
+            - -vault-role=''' + variables.vkac_env + '''_github_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
+            - -github-permission-set=''' + variables.permission_set + '''
+          env:
+            - name: GITSYNC_PASSWORD_FILE
+              value: "/var/run/secrets/github/token"
+            - name: VAULT_CAURL
+              value: "http://vault-ca-cert.sys-vault:8100"
+            - name: VAULT_ADDR
+              value: "https://vault.sys-vault:8200"
+          ports:
+            - name: metrics
+              containerPort: 8099
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 0m
+              memory: 25Mi
+            limits:
+              cpu: 1000m
+              memory: 100Mi
+          volumeMounts:
+            - name: github-token
+              mountPath: /var/run/secrets/github
+        ''')
+
+    - name: volume_payload
+      expression: |
+        yaml.parse('''
+        name: github-token
+        emptyDir: {}
+        ''')
+
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            metadata: Object.metadata{
+              annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" }
+            },
+            spec: Object.spec{
+              initContainers: has(object.spec.initContainers) ?
+                object.spec.initContainers.map(c,
+                  Object.spec.initContainers{
+                    name: c.name,
+                    env: [
+                      Object.spec.initContainers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/var/run/secrets/github/token" }
+                    ],
+                    volumeMounts: [
+                      Object.spec.initContainers.volumeMounts{ name: "github-token", mountPath: "/var/run/secrets/github" }
+                    ]
+                  }
+                ) : [],
+              containers: has(object.spec.containers) ?
+                object.spec.containers.map(c,
+                  Object.spec.containers{
+                    name: c.name,
+                    env: [
+                      Object.spec.containers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/var/run/secrets/github/token" }
+                    ],
+                    volumeMounts: [
+                      Object.spec.containers.volumeMounts{ name: "github-token", mountPath: "/var/run/secrets/github" }
+                    ]
+                  }
+                ) : []
+            }
+          }
+
+    - patchType: JSONPatch
+      jsonPatch:
+        # Concatenate JSONPatches for containers AND volumes
+        expression: >-
+          (
+            size(object.spec.?initContainers.orValue([])) > 0
+            ? [ JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload} ]
+            : [ JSONPatch{op: "add", path: "/spec/initContainers", value: [variables.sidecar_payload]} ]
+          )
+          +
+          (
+            size(object.spec.?volumes.orValue([])) > 0
+            ? [ JSONPatch{op: "add", path: "/spec/volumes/-", value: variables.volume_payload} ]
+            : [ JSONPatch{op: "add", path: "/spec/volumes", value: [variables.volume_payload]} ]
+          )

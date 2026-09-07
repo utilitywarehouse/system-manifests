@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-github-no-permission-set
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request-github: "true"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-github-invalid-permission-set
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request-github: "true"
+    github.uw.systems/permission-set: "uw_ro'''; -extra-flag"
+spec:
+  containers: [{ name: app, image: alpine }]

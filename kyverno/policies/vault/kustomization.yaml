@@ -10,4 +10,6 @@ resources:
   - inject-vault-sidecar-gcp-key.yaml
   - inject-vault-sidecar-gcp-token-fail-open.yaml
   - inject-vault-sidecar-gcp-token.yaml
+  - inject-vault-sidecar-github.yaml
   - vault-annotation.yaml
+  - vault-github-permission-set-annotation.yaml

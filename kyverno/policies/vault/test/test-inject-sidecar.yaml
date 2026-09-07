@@ -60,6 +60,17 @@ spec:
   initContainers: [{ name: init, image: alpine }]
   containers: [{ name: app, image: alpine }]
 ---
+# Pod for Rule: inject-vault-sidecar-github
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-github
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request-github: "true"
+    github.uw.systems/permission-set: "uw_ro"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
 # Fail-open Variants
 apiVersion: v1
 kind: Pod
