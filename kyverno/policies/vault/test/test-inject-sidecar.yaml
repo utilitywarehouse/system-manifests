@@ -4,7 +4,7 @@ kind: Pod
 metadata:
   name: test-aws-uw
   annotations:
-    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws"
+    uw.systems/kyverno-inject-sidecar-request-aws: "true"
 spec:
   containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
 ---
@@ -25,7 +25,7 @@ kind: Pod
 metadata:
   name: test-gcp-key
   annotations:
-    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-key"
+    uw.systems/kyverno-inject-sidecar-request-gcp-key: "true"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -35,7 +35,7 @@ kind: Pod
 metadata:
   name: test-gcp-token
   annotations:
-    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-token"
+    uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -55,7 +55,7 @@ kind: Pod
 metadata:
   name: test-init-aws-uw
   annotations:
-    uw.systems/kyverno-inject-sidecar-request: "vault-init-container-aws"
+    uw.systems/kyverno-inject-sidecar-request-vault-init-container-aws: "true"
 spec:
   initContainers: [{ name: init, image: alpine }]
   containers: [{ name: app, image: alpine }]
@@ -71,13 +71,27 @@ metadata:
 spec:
   containers: [{ name: app, image: alpine }]
 ---
+# Pod exercising TWO independent capabilities on one pod (aws + github), proving
+# the two policies fire independently with no container-name/port collision.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-and-github
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request-aws: "true"
+    uw.systems/kyverno-inject-sidecar-request-github: "true"
+    github.uw.systems/permission-set: "uw_ro"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
 # Fail-open Variants
 apiVersion: v1
 kind: Pod
 metadata:
   name: test-aws-fail-open
   annotations:
-    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-fail-open"
+    uw.systems/kyverno-inject-sidecar-request-aws: "true"
+    uw.systems/kyverno-inject-vault-sidecar-fail-open: "true"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -95,6 +109,27 @@ kind: Pod
 metadata:
   name: test-gcp-token-fail-open
   annotations:
-    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-token-fail-open"
+    uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"
+    uw.systems/kyverno-inject-vault-sidecar-fail-open: "true"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+# Fail-open Variants (old scheme) - handled entirely by the dedicated,
+# untouched old fail-open policies; the new shared flag plays no part here.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-fail-open-old
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws-fail-open
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-gcp-token-fail-open-old
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: vault-sidecar-gcp-token-fail-open
 spec:
   containers: [{ name: app, image: alpine }]
