@@ -26,6 +26,10 @@ spec:
             file: ../inject-vault-sidecar-gcp-token.yaml
         - apply:
             file: ../inject-vault-init-container-aws.yaml
+        - apply:
+            file: ../inject-vault-sidecar-github.yaml
+        - apply:
+            file: ../vault-github-permission-set-annotation.yaml
 
         - assert:
             timeout: 30s
@@ -44,6 +48,28 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'The annotation `vault.uw.systems/aws-role` must contain a valid role arn'))": true
+
+    - name: test-vault-github-permission-set-annotation
+      try:
+        - apply:
+            file: test-vault-github-permission-set-annotation.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-github-no-permission-set
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'must carry a'))": true
+              - match:
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: test-github-invalid-permission-set
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'must carry a'))": true
 
     - name: create-test-pods
       try:
@@ -278,6 +304,69 @@ spec:
                         value: "127.0.0.1:8098"
                       - name: GCE_METADATA_ROOT
                         value: "127.0.0.1:8098"
+
+    - name: inject-vault-sidecar-github
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-github
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec:
+                volumes:
+                  - projected:
+                      defaultMode: 420
+                  - name: github-token
+                    emptyDir: {}
+                initContainers:
+                  - name: vault-credentials-agent
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:dl-github-token
+                    restartPolicy: Always
+                    startupProbe:
+                      exec:
+                        command:
+                          - test
+                          - -e
+                          - /var/run/secrets/github/token
+                      failureThreshold: 5
+                      periodSeconds: 15
+                    args:
+                      - sidecar
+                      - (join('', ['-vault-role=test-env_github_', $namespace, '_default']))
+                      - -github-permission-set=uw_ro
+                    env:
+                      - name: GITSYNC_PASSWORD_FILE
+                        value: "/var/run/secrets/github/token"
+                      - *vault-caurl
+                      - *vault-addr
+                    ports:
+                      - name: metrics
+                        containerPort: 8099
+                        protocol: TCP
+                    resources:
+                      requests:
+                        cpu: "0"
+                        memory: 25Mi
+                      limits:
+                        cpu: "1"
+                        memory: 100Mi
+                    volumeMounts:
+                      - name: github-token
+                        mountPath: /var/run/secrets/github
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                containers:
+                  - name: app
+                    env:
+                      - name: GITSYNC_PASSWORD_FILE
+                        value: "/var/run/secrets/github/token"
+                    volumeMounts:
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                      - name: github-token
+                        mountPath: /var/run/secrets/github
 
     - name: inject-vault-sidecar-aws-gcp-key
       try:
