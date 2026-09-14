@@ -82,11 +82,11 @@ spec:
               protocol: TCP
           resources:
             requests:
-              cpu: 10m
+              cpu: "0"
               memory: 64Mi
             limits:
-              cpu: 200m
-              memory: 256Mi
+              cpu: "1"
+              memory: 512Mi
           securityContext:
             allowPrivilegeEscalation: false
             privileged: false
