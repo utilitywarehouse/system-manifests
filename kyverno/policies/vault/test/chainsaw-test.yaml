@@ -89,9 +89,9 @@ spec:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
                 initContainers:
-                  - name: vault-credentials-agent
+                  - name: vault-credentials-agent-aws
                     <<: &aws-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
                       restartPolicy: Always
                       startupProbe:
                         exec:
@@ -152,7 +152,7 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
                     restartPolicy: Always
                     startupProbe:
                       exec:
@@ -208,8 +208,8 @@ spec:
                   - name: gcp
                     emptyDir: {}
                 initContainers:
-                  - name: vault-credentials-agent
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+                  - name: vault-credentials-agent-gcp-key
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
                     restartPolicy: Always
                     startupProbe:
                       exec:
@@ -223,6 +223,8 @@ spec:
                       - sidecar
                       - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
                       - -secret-type=service_account_key
+                      - -listen-address=127.0.0.1:8298
+                      - -operational-address=:8299
                     env:
                       - name: GOOGLE_APPLICATION_CREDENTIALS
                         value: "/gcp/sa.json"
@@ -230,7 +232,7 @@ spec:
                       - *vault-addr
                     ports:
                       - name: metrics
-                        containerPort: 8099
+                        containerPort: 8299
                         protocol: TCP
                     resources:
                       requests:
@@ -266,29 +268,31 @@ spec:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
                 initContainers:
-                  - name: vault-credentials-agent
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+                  - name: vault-credentials-agent-gcp-token
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
                     restartPolicy: Always
                     startupProbe:
                       exec:
                         command:
                           - /bin/sh
                           - -c
-                          - while ! nc -w 1 127.0.0.1 8098; do sleep 1; done
+                          - while ! nc -w 1 127.0.0.1 8198; do sleep 1; done
                     args:
                       - sidecar
                       - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
                       - -secret-type=access_token
+                      - -listen-address=127.0.0.1:8198
+                      - -operational-address=:8199
                     env:
                       - name: GCE_METADATA_HOST
-                        value: "127.0.0.1:8098"
+                        value: "127.0.0.1:8198"
                       - name: GCE_METADATA_ROOT
-                        value: "127.0.0.1:8098"
+                        value: "127.0.0.1:8198"
                       - *vault-caurl
                       - *vault-addr
                     ports:
                       - name: metrics
-                        containerPort: 8099
+                        containerPort: 8199
                         protocol: TCP
                     resources:
                       requests:
@@ -301,9 +305,9 @@ spec:
                   - name: app
                     env:
                       - name: GCE_METADATA_HOST
-                        value: "127.0.0.1:8098"
+                        value: "127.0.0.1:8198"
                       - name: GCE_METADATA_ROOT
-                        value: "127.0.0.1:8098"
+                        value: "127.0.0.1:8198"
 
     - name: inject-vault-sidecar-github
       try:
@@ -323,50 +327,97 @@ spec:
                   - name: github-token
                     emptyDir: {}
                 initContainers:
-                  - name: vault-credentials-agent
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:dl-github-token
-                    restartPolicy: Always
-                    startupProbe:
-                      exec:
-                        command:
-                          - test
-                          - -e
-                          - /var/run/secrets/github/token
-                      failureThreshold: 5
-                      periodSeconds: 15
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-role=test-env_github_', $namespace, '_default']))
-                      - -github-permission-set=uw_ro
-                    env:
+                  - name: vault-credentials-agent-github
+                    <<: &github-agent-base
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                      restartPolicy: Always
+                      startupProbe:
+                        exec:
+                          command:
+                            - test
+                            - -e
+                            - /var/run/secrets/github/token
+                        failureThreshold: 5
+                        periodSeconds: 15
+                      args:
+                        - sidecar
+                        - -vault-role=k8s_github_uw_ro
+                        - -github-permission-set=uw_ro
+                        - -listen-address=127.0.0.1:8398
+                        - -operational-address=:8399
+                      env:
+                        - name: GITSYNC_PASSWORD_FILE
+                          value: "/var/run/secrets/github/token"
+                        - *vault-caurl
+                        - *vault-addr
+                      ports:
+                        - name: metrics
+                          containerPort: 8399
+                          protocol: TCP
+                      resources:
+                        requests:
+                          cpu: "0"
+                          memory: 25Mi
+                        limits:
+                          cpu: "1"
+                          memory: 100Mi
+                      volumeMounts:
+                        - name: github-token
+                          mountPath: /var/run/secrets/github
+                        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                containers:
+                  - name: app
+                    env: &app-github-env
                       - name: GITSYNC_PASSWORD_FILE
                         value: "/var/run/secrets/github/token"
-                      - *vault-caurl
-                      - *vault-addr
+                    volumeMounts:
+                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                      - name: github-token
+                        mountPath: /var/run/secrets/github
+
+    - name: inject-vault-sidecar-aws-and-github
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-and-github
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec:
+                (length(initContainers)): 2
+                (initContainers[?name=='vault-credentials-agent-aws']):
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                    restartPolicy: Always
+                    args:
+                      - sidecar
+                      - (join('', ['-vault-role=test-env_aws_', $namespace, '_default']))
                     ports:
                       - name: metrics
                         containerPort: 8099
                         protocol: TCP
-                    resources:
-                      requests:
-                        cpu: "0"
-                        memory: 25Mi
-                      limits:
-                        cpu: "1"
-                        memory: 100Mi
-                    volumeMounts:
-                      - name: github-token
-                        mountPath: /var/run/secrets/github
-                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                (initContainers[?name=='vault-credentials-agent-github']):
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                    restartPolicy: Always
+                    args:
+                      - sidecar
+                      - -vault-role=k8s_github_uw_ro
+                      - -github-permission-set=uw_ro
+                      - -listen-address=127.0.0.1:8398
+                      - -operational-address=:8399
+                    ports:
+                      - name: metrics
+                        containerPort: 8399
+                        protocol: TCP
                 containers:
                   - name: app
                     env:
+                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                        value: "http://127.0.0.1:8098/credentials"
                       - name: GITSYNC_PASSWORD_FILE
                         value: "/var/run/secrets/github/token"
-                    volumeMounts:
-                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-                      - name: github-token
-                        mountPath: /var/run/secrets/github
 
     - name: inject-vault-sidecar-aws-gcp-key
       try:
@@ -387,7 +438,7 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
                     restartPolicy: Always
                     startupProbe:
                       exec:
@@ -554,9 +605,9 @@ spec:
                 name: test-aws-fail-open
               spec:
                 initContainers:
-                  - name: vault-credentials-agent
+                  - name: vault-credentials-agent-aws
                     <<: &aws-fail-open-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
                       restartPolicy: Always
                       args:
                         - sidecar
@@ -594,7 +645,7 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-fail-open-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
                     restartPolicy: Always
                     args:
                       - sidecar
@@ -636,8 +687,72 @@ spec:
                 name: test-gcp-token-fail-open
               spec:
                 initContainers:
+                  - name: vault-credentials-agent-gcp-token
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                    restartPolicy: Always
+                    args:
+                      - sidecar
+                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
+                      - -secret-type=access_token
+                      - -listen-address=127.0.0.1:8198
+                      - -operational-address=:8199
+                    env:
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8198"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8198"
+                      - *vault-caurl
+                      - *vault-addr
+                    ports:
+                      - name: metrics
+                        containerPort: 8199
+                        protocol: TCP
+                    resources:
+                      requests:
+                        cpu: "0"
+                        memory: 25Mi
+                      limits:
+                        cpu: "1"
+                        memory: 100Mi
+                    (startupProbe == null): true
+                containers:
+                  - name: app
+                    env:
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8198"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8198"
+
+    - name: inject-vault-sidecar-aws-fail-open-old
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-fail-open-old
+              spec:
+                initContainers:
                   - name: vault-credentials-agent
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+                    <<: *aws-fail-open-base
+                containers:
+                  - name: app
+                    env: *app-aws-env
+
+    - name: inject-vault-sidecar-gcp-token-fail-open-old
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-gcp-token-fail-open-old
+              spec:
+                initContainers:
+                  - name: vault-credentials-agent
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
                     restartPolicy: Always
                     args:
                       - sidecar
