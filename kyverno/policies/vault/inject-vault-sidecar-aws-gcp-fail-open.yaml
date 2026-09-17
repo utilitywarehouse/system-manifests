@@ -37,11 +37,13 @@ spec:
       expression: |
         yaml.parse('''
           name: vault-credentials-agent-aws
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
           restartPolicy: Always
           args:
             - sidecar
             - -vault-role=''' + variables.vkac_env + '''_aws_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
+            - -listen-address=127.0.0.1:8498
+            - -operational-address=:8499
           env:
             - name: VAULT_CAURL
               value: "http://vault-ca-cert.sys-vault:8100"
@@ -49,7 +51,7 @@ spec:
               value: "https://vault.sys-vault:8200"
           ports:
             - name: metrics
-              containerPort: 8099
+              containerPort: 8499
               protocol: TCP
           resources:
             requests:
@@ -64,7 +66,7 @@ spec:
       expression: |
         yaml.parse('''
           name: vault-credentials-agent-gcp
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
           restartPolicy: Always
           args:
             - sidecar
@@ -110,7 +112,7 @@ spec:
                   Object.spec.initContainers{
                     name: c.name,
                     env: [
-                      Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8098/credentials" },
+                      Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" },
                       Object.spec.initContainers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
                       Object.spec.initContainers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
                     ]
@@ -121,7 +123,7 @@ spec:
                     Object.spec.containers{
                       name: c.name,
                       env: [
-                        Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8098/credentials" },
+                        Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" },
                         Object.spec.containers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
                         Object.spec.containers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
                       ]

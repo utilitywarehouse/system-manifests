@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       annotations:
-        uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws
+        uw.systems/kyverno-inject-sidecar-request-aws: "true"
       labels:
         app: *app
     spec:

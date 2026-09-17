@@ -58,6 +58,7 @@ spec:
     - name: test-pod-capabilities
       try:
         - apply:
+            timeout: 2m
             file: test-capabilities.yaml
             expect:
               - match:
@@ -83,6 +84,7 @@ spec:
     - name: test-host-ipc
       try:
         - apply:
+            timeout: 2m
             file: test-hostIPC.yaml
             expect:
               - match:
@@ -108,6 +110,7 @@ spec:
     - name: test-host-network
       try:
         - apply:
+            timeout: 2m
             file: test-hostNetwork.yaml
             expect:
               - match:
@@ -133,6 +136,7 @@ spec:
     - name: test-hostpath-volumes
       try:
         - apply:
+            timeout: 2m
             file: test-hostpath.yaml
             expect:
               - match:
@@ -158,6 +162,7 @@ spec:
     - name: test-host-pid-and-ports
       try:
         - apply:
+            timeout: 2m
             file: test-host-pid-ports.yaml
             expect:
               - match:
@@ -222,6 +227,7 @@ spec:
     - name: test-privilege-combined
       try:
         - apply:
+            timeout: 2m
             file: test-privilege-combined.yaml
             expect:
               - match:
@@ -294,6 +300,7 @@ spec:
     - name: test-user-namespaces
       try:
         - apply:
+            timeout: 2m
             file: test-user-namespaces.yaml
         - assert:
             timeout: 30s

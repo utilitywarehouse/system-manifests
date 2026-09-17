@@ -23,6 +23,7 @@ spec:
   matchConditions:
     - name: match-gcp-token-annotation
       expression: >-
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-gcp-token'].orValue('') == 'true' ||
         object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-sidecar-gcp-token'
 
   variables:
@@ -33,34 +34,48 @@ spec:
     - name: pod_sa
       expression: "object.spec.?serviceAccountName.orValue('default')"
 
+    # Fail-open is a pod-wide toggle (uw.systems/kyverno-inject-vault-sidecar-fail-open)
+    # rather than a separate annotation/policy - it just decides which of the
+    # two payloads below gets injected. This is only honoured for pods on the
+    # new annotation; old-annotation pods use the dedicated, untouched
+    # inject-vault-sidecar-gcp-token-fail-open policy instead, which this
+    # policy never matches or overlaps with.
+    - name: fail_open
+      expression: >-
+        object.metadata.?annotations['uw.systems/kyverno-inject-vault-sidecar-fail-open'].orValue('') == 'true'
+
     - name: sidecar_payload
       expression: |
         yaml.parse('''
-          name: vault-credentials-agent
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+          name: vault-credentials-agent-gcp-token
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
           restartPolicy: Always
+        ''' + (variables.fail_open ? '' : '''
           startupProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
-                - "while ! nc -w 1 127.0.0.1 8098; do sleep 1; done"
+                - "while ! nc -w 1 127.0.0.1 8198; do sleep 1; done"
+        ''') + '''
           args:
             - sidecar
             - -vault-static-account=''' + variables.vkac_env + '''_gcp_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
             - -secret-type=access_token
+            - -listen-address=127.0.0.1:8198
+            - -operational-address=:8199
           env:
             - name: GCE_METADATA_HOST
-              value: "127.0.0.1:8098"
+              value: "127.0.0.1:8198"
             - name: GCE_METADATA_ROOT
-              value: "127.0.0.1:8098"
+              value: "127.0.0.1:8198"
             - name: VAULT_CAURL
               value: "http://vault-ca-cert.sys-vault:8100"
             - name: VAULT_ADDR
               value: "https://vault.sys-vault:8200"
           ports:
             - name: metrics
-              containerPort: 8099
+              containerPort: 8199
               protocol: TCP
           resources:
             requests:
@@ -78,23 +93,23 @@ spec:
           Object{
             metadata: Object.metadata{ annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" } },
             spec: Object.spec{
-              initContainers: has(object.spec.initContainers) ? 
-                object.spec.initContainers.map(c, 
+              initContainers: has(object.spec.initContainers) ?
+                object.spec.initContainers.map(c,
                   Object.spec.initContainers{
                     name: c.name,
                     env: [
-                      Object.spec.initContainers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8098" },
-                      Object.spec.initContainers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8098" }
+                      Object.spec.initContainers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
+                      Object.spec.initContainers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
                     ]
                   }
                 ) : [],
-              containers: has(object.spec.containers) ? 
-                object.spec.containers.map(c, 
+              containers: has(object.spec.containers) ?
+                object.spec.containers.map(c,
                   Object.spec.containers{
                     name: c.name,
                     env: [
-                      Object.spec.containers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8098" },
-                      Object.spec.containers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8098" }
+                      Object.spec.containers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
+                      Object.spec.containers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
                     ]
                   }
                 ) : []

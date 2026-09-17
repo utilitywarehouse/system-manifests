@@ -38,18 +38,15 @@ spec:
   variables:
     - name: vkac_env
       expression: "'test-env'"
-    - name: pod_namespace
-      expression: "object.metadata.?namespace.orValue('default')"
-    - name: pod_sa
-      expression: "object.spec.?serviceAccountName.orValue('default')"
+
     - name: permission_set
       expression: "object.metadata.?annotations['github.uw.systems/permission-set'].orValue('')"
 
     - name: sidecar_payload
       expression: |
         yaml.parse('''
-          name: vault-credentials-agent
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:dl-github-token
+          name: vault-credentials-agent-github
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
           restartPolicy: Always
           startupProbe:
             exec:
@@ -61,8 +58,10 @@ spec:
             periodSeconds: 15
           args:
             - sidecar
-            - -vault-role=''' + variables.vkac_env + '''_github_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
+            - -vault-role=k8s_github_''' + variables.permission_set + '''
             - -github-permission-set=''' + variables.permission_set + '''
+            - -listen-address=127.0.0.1:8398
+            - -operational-address=:8399
           env:
             - name: GITSYNC_PASSWORD_FILE
               value: "/var/run/secrets/github/token"
@@ -72,7 +71,7 @@ spec:
               value: "https://vault.sys-vault:8200"
           ports:
             - name: metrics
-              containerPort: 8099
+              containerPort: 8399
               protocol: TCP
           resources:
             requests:

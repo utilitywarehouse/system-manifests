@@ -23,6 +23,7 @@ spec:
   matchConditions:
     - name: match-aws-annotation
       expression: >-
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-aws'].orValue('') == 'true' ||
         object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-sidecar-aws'
 
   variables:
@@ -33,21 +34,35 @@ spec:
     - name: pod_sa
       expression: "object.spec.?serviceAccountName.orValue('default')"
 
+    # Fail-open is a pod-wide toggle (uw.systems/kyverno-inject-vault-sidecar-fail-open)
+    # rather than a separate annotation/policy - it just decides which of the
+    # two payloads below gets injected. This is only honoured for pods on the
+    # new annotation; old-annotation pods use the dedicated, untouched
+    # inject-vault-sidecar-aws-fail-open policy instead, which this policy
+    # never matches or overlaps with.
+    - name: fail_open
+      expression: >-
+        object.metadata.?annotations['uw.systems/kyverno-inject-vault-sidecar-fail-open'].orValue('') == 'true'
+
     - name: sidecar_payload
       expression: |
         yaml.parse('''
-          name: vault-credentials-agent
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.9.7
+          name: vault-credentials-agent-aws
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
           restartPolicy: Always
+        ''' + (variables.fail_open ? '' : '''
           startupProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
-                - "while ! nc -w 1 127.0.0.1 8098; do sleep 1; done"
+                - "while ! nc -w 1 127.0.0.1 8498; do sleep 1; done"
+        ''') + '''
           args:
             - sidecar
             - -vault-role=''' + variables.vkac_env + '''_aws_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
+            - -listen-address=127.0.0.1:8498
+            - -operational-address=:8499
           env:
             - name: VAULT_CAURL
               value: "http://vault-ca-cert.sys-vault:8100"
@@ -55,7 +70,7 @@ spec:
               value: "https://vault.sys-vault:8200"
           ports:
             - name: metrics
-              containerPort: 8099
+              containerPort: 8499
               protocol: TCP
           resources:
             requests:
@@ -77,21 +92,21 @@ spec:
               }
             },
             spec: Object.spec{
-              initContainers: has(object.spec.initContainers) ? 
-                object.spec.initContainers.map(c, 
+              initContainers: has(object.spec.initContainers) ?
+                object.spec.initContainers.map(c,
                   Object.spec.initContainers{
                     name: c.name,
-                    env: [ 
-                      Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8098/credentials" }
+                    env: [
+                      Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" }
                     ]
                   }
                 ) : [],
-              containers: has(object.spec.containers) ? 
-                  object.spec.containers.map(c, 
+              containers: has(object.spec.containers) ?
+                  object.spec.containers.map(c,
                     Object.spec.containers{
                       name: c.name,
                       env: [
-                        Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8098/credentials" }
+                        Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" }
                       ]
                     }
                 ) : []
