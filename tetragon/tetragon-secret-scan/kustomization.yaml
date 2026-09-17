@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - cronjob.yaml
+
+configMapGenerator:
+  - name: tetragon-secret-scan
+    files:
+      - fetch.sh
+      - gitleaks.toml
+      - reporter.sh
+    options:
+      disableNameSuffixHash: true
