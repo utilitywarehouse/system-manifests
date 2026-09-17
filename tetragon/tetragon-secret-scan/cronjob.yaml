@@ -2,7 +2,6 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: tetragon-secret-scan
-  namespace: sys-audit
   labels:
     app.kubernetes.io/name: tetragon-secret-scan
 spec:
