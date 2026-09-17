@@ -45,7 +45,7 @@ metadata:
     app.kubernetes.io/name: prometheus-pushgateway
     app.kubernetes.io/instance: prometheus-pushgateway
     app.kubernetes.io/version: "v1.11.3"
-    app.kubernetes.io/managed-by: Helm  
+    app.kubernetes.io/managed-by: Helm
   name: prometheus-pushgateway
   namespace: default
 spec:
@@ -58,6 +58,10 @@ spec:
       app.kubernetes.io/instance: prometheus-pushgateway
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9091"
       labels:
         helm.sh/chart: prometheus-pushgateway-3.8.0
         app.kubernetes.io/name: prometheus-pushgateway
@@ -99,5 +103,4 @@ spec:
         runAsUser: 65534
       volumes:
         - name: storage-volume
-          emptyDir:
-            {}
+          emptyDir: {}
