@@ -1,0 +1,93 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: tetragon-secret-scan
+  namespace: sys-audit
+  labels:
+    app.kubernetes.io/name: tetragon-secret-scan
+spec:
+  schedule: "0 10 * * *"
+  timeZone: UTC
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 600
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: tetragon-secret-scan
+        spec:
+          restartPolicy: Never
+          securityContext:
+            fsGroup: 101
+          initContainers:
+            - name: fetch
+              image: grafana/logcli:3.7.7
+              command: ["/bin/sh", "/cfg/fetch.sh"]
+              env:
+                - name: LOKI_ADDR
+                  value: http://loki.sys-audit.svc.cluster.aws:3100
+                - name: LOKI_EXTRA_ARGS
+                  value: --since=25h
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 128Mi
+                limits:
+                  memory: 1Gi
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+                - name: config
+                  mountPath: /cfg
+            - name: scan
+              image: ghcr.io/gitleaks/gitleaks:v8.28.0
+              args:
+                - --no-banner
+                - dir
+                - /work/logs
+                - --config=/cfg/gitleaks.toml
+                - --report-format=json
+                - --redact
+                - --report-path=/work/out/findings.json
+                - --exit-code=0
+                - --log-level=error
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 256Mi
+                limits:
+                  memory: 1Gi
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+                - name: config
+                  mountPath: /cfg
+          containers:
+            - name: report
+              image: curlimages/curl:8.11.1
+              command: ["/bin/sh", "/cfg/reporter.sh"]
+              env:
+                - name: PUSHGATEWAY_URL
+                  value: http://prometheus-pushgateway.sys-mon.svc.cluster.local:9091
+              resources:
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+                limits:
+                  memory: 128Mi
+              volumeMounts:
+                - name: work
+                  mountPath: /work
+                - name: config
+                  mountPath: /cfg
+          volumes:
+            - name: work
+              emptyDir: {}
+            - name: config
+              configMap:
+                name: tetragon-secret-scan
+                defaultMode: 0555
