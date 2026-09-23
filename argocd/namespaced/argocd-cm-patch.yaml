@@ -30,6 +30,16 @@ data:
   # exec.shells restricts which shells are allowed for `exec`, and in which order they are attempted
   exec.shells: "sh,bash"
 
+  # Enable manifest compression in the cluster cache. When enabled, cached resource manifests are serialized and
+  # compressed using the configured storage format and compression algorithm. When disabled (default), manifests are
+  # stored as raw in-memory objects.
+  resource.manifest.compression.enabled: "true"
+  # Serialization format for cached manifests. Supported values are "json" (default) and "msgpack".
+  # resource.manifest.storage: "json"
+  # Compression algorithm for cached manifests. Supported values are "gzip-bestspeed" (default), "gzip-default",
+  # "s2-encode", "s2-encodebetter", "zlib", and "none".
+  # resource.manifest.compression: "gzip-bestspeed"
+
   resource.customizations.health.networking.k8s.io_Ingress: |
     hs = {}
     hs.status = "Healthy"

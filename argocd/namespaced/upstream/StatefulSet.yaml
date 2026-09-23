@@ -97,6 +97,12 @@ spec:
                   key: controller.operation.processors
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_HYDRATION_PROCESSORS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.hydration.processors
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_APPLICATION_CONTROLLER_LOGFORMAT
               valueFrom:
                 configMapKeyRef:
@@ -163,6 +169,24 @@ spec:
                   key: controller.metrics.cache.expiration
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_METRICS_APPLICATION_LABELS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.metrics.application.labels
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_METRICS_APPLICATION_CONDITIONS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.metrics.application.conditions
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_METRICS_CLUSTER_LABELS
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.metrics.cluster.labels
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_APPLICATION_CONTROLLER_SELF_HEAL_TIMEOUT_SECONDS
               valueFrom:
                 configMapKeyRef:
@@ -217,6 +241,24 @@ spec:
                   key: controller.repo.server.strict.tls
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_REPO_SERVER_CA_CERT_PATH
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.repo.server.ca.cert.path
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_REPO_SERVER_CLIENT_CERT_PATH
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.repo.server.client.cert.path
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_REPO_SERVER_CLIENT_CERT_KEY_PATH
+              valueFrom:
+                configMapKeyRef:
+                  key: controller.repo.server.client.cert.key.path
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: ARGOCD_APPLICATION_CONTROLLER_PERSIST_RESOURCE_HEALTH
               valueFrom:
                 configMapKeyRef:
@@ -235,6 +277,18 @@ spec:
                   key: redis.server
                   name: argocd-cmd-params-cm
                   optional: true
+            - name: REDIS_SENTINEL_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  key: redis.sentinel.hosts
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: REDIS_SENTINEL_MASTER
+              valueFrom:
+                configMapKeyRef:
+                  key: redis.sentinel.master
+                  name: argocd-cmd-params-cm
+                  optional: true
             - name: REDIS_COMPRESSION
               valueFrom:
                 configMapKeyRef:
@@ -245,6 +299,12 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: redis.db
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_REDIS_KEY_PREFIX
+              valueFrom:
+                configMapKeyRef:
+                  key: redis.key.prefix
                   name: argocd-cmd-params-cm
                   optional: true
             - name: ARGOCD_DEFAULT_CACHE_EXPIRATION
@@ -275,6 +335,12 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: otlp.attrs
+                  name: argocd-cmd-params-cm
+                  optional: true
+            - name: ARGOCD_APPLICATION_CONTROLLER_OTLP_SAMPLE_RATIO
+              valueFrom:
+                configMapKeyRef:
+                  key: otlp.sample.ratio
                   name: argocd-cmd-params-cm
                   optional: true
             - name: ARGOCD_APPLICATION_NAMESPACES
@@ -345,7 +411,7 @@ spec:
                   optional: true
             - name: KUBECACHEDIR
               value: /tmp/kubecache
-          image: quay.io/argoproj/argocd:v3.4.5
+          image: quay.io/argoproj/argocd:v3.6.0-rc1
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
@@ -368,6 +434,8 @@ spec:
           volumeMounts:
             - mountPath: /app/config/controller/tls
               name: argocd-repo-server-tls
+            - mountPath: /app/config/reposerver/mtls
+              name: argocd-repo-server-mtls
             - mountPath: /home/argocd
               name: argocd-home
             - mountPath: /home/argocd/params
@@ -394,6 +462,17 @@ spec:
                 path: ca.crt
             optional: true
             secretName: argocd-repo-server-tls
+        - name: argocd-repo-server-mtls
+          secret:
+            items:
+              - key: client.crt
+                path: client.crt
+              - key: client.key
+                path: client.key
+              - key: server-ca.crt
+                path: server-ca.crt
+            optional: true
+            secretName: argocd-repo-server-mtls
         - configMap:
             items:
               - key: controller.profile.enabled
@@ -443,7 +522,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:8.2.3-alpine
+          image: public.ecr.aws/docker/library/redis:8.10.1-alpine
           imagePullPolicy: IfNotPresent
           lifecycle:
             preStop:
@@ -514,7 +593,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:8.2.3-alpine
+          image: public.ecr.aws/docker/library/redis:8.10.1-alpine
           imagePullPolicy: IfNotPresent
           lifecycle:
             postStart:
@@ -589,7 +668,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:8.2.3-alpine
+          image: public.ecr.aws/docker/library/redis:8.10.1-alpine
           imagePullPolicy: IfNotPresent
           livenessProbe:
             exec:
@@ -645,7 +724,7 @@ spec:
                 secretKeyRef:
                   key: auth
                   name: argocd-redis
-          image: public.ecr.aws/docker/library/redis:8.2.3-alpine
+          image: public.ecr.aws/docker/library/redis:8.10.1-alpine
           imagePullPolicy: IfNotPresent
           name: config-init
           securityContext:
