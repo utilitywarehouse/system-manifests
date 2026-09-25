@@ -55,7 +55,7 @@ kind: Pod
 metadata:
   name: test-init-aws-uw
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-vault-init-container-aws: "true"
+    uw.systems/kyverno-inject-sidecar-request-aws-init: "true"
 spec:
   initContainers: [{ name: init, image: alpine }]
   containers: [{ name: app, image: alpine }]
