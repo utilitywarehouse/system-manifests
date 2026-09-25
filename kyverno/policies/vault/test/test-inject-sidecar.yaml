@@ -104,7 +104,7 @@ metadata:
   name: test-aws-fail-open
   annotations:
     uw.systems/kyverno-inject-sidecar-request-aws: "true"
-    uw.systems/kyverno-inject-vault-sidecar-fail-open: "true"
+    uw.systems/kyverno-inject-sidecar-fail-open: "true"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -123,7 +123,7 @@ metadata:
   name: test-gcp-token-fail-open
   annotations:
     uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"
-    uw.systems/kyverno-inject-vault-sidecar-fail-open: "true"
+    uw.systems/kyverno-inject-sidecar-fail-open: "true"
 spec:
   containers: [{ name: app, image: alpine }]
 ---

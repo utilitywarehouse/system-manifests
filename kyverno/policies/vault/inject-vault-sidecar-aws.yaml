@@ -34,7 +34,7 @@ spec:
     - name: pod_sa
       expression: "object.spec.?serviceAccountName.orValue('default')"
 
-    # Fail-open is a pod-wide toggle (uw.systems/kyverno-inject-vault-sidecar-fail-open)
+    # Fail-open is a pod-wide toggle (uw.systems/kyverno-inject-sidecar-fail-open)
     # rather than a separate annotation/policy - it just decides which of the
     # two payloads below gets injected. This is only honoured for pods on the
     # new annotation; old-annotation pods use the dedicated, untouched
@@ -42,7 +42,7 @@ spec:
     # never matches or overlaps with.
     - name: fail_open
       expression: >-
-        object.metadata.?annotations['uw.systems/kyverno-inject-vault-sidecar-fail-open'].orValue('') == 'true'
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-fail-open'].orValue('') == 'true'
 
     - name: sidecar_payload
       expression: |

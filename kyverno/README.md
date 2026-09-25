@@ -50,19 +50,19 @@ since they're handled by the untouched separate policy.
 | Capability                                      | Old annotation                                                                 | New annotation                                                                                                                  |
 | ----------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | AWS                                             | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws`                 | `uw.systems/kyverno-inject-sidecar-request-aws: "true"`                                                                         |
-| AWS (fail-open)                                 | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws-fail-open`       | `uw.systems/kyverno-inject-sidecar-request-aws: "true"` **+** `uw.systems/kyverno-inject-vault-sidecar-fail-open: "true"`       |
+| AWS (fail-open)                                 | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws-fail-open`       | `uw.systems/kyverno-inject-sidecar-request-aws: "true"` **+** `uw.systems/kyverno-inject-sidecar-fail-open: "true"`       |
 | AWS init container                              | `uw.systems/kyverno-inject-sidecar-request: vault-init-container-aws`          | `uw.systems/kyverno-inject-sidecar-request-vault-init-container-aws: "true"`                                                    |
 | GCP service account key                         | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-gcp-key`             | `uw.systems/kyverno-inject-sidecar-request-gcp-key: "true"`                                                                     |
 | GCP access token                                | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-gcp-token`           | `uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"`                                                                   |
-| GCP access token (fail-open)                    | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-gcp-token-fail-open` | `uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"` **+** `uw.systems/kyverno-inject-vault-sidecar-fail-open: "true"` |
+| GCP access token (fail-open)                    | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-gcp-token-fail-open` | `uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"` **+** `uw.systems/kyverno-inject-sidecar-fail-open: "true"` |
 | AWS + GCP token (combo, legacy only)            | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws-gcp`             | `-request-aws: "true"` **+** `-request-gcp-token: "true"`                                                                       |
 | AWS + GCP key (combo, legacy only)              | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws-gcp-key`         | `-request-aws: "true"` **+** `-request-gcp-key: "true"`                                                                         |
-| AWS + GCP token (combo, fail-open, legacy only) | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws-gcp-fail-open`   | `-request-aws: "true"` **+** `-request-gcp-token: "true"` **+** `-vault-sidecar-fail-open: "true"`                              |
+| AWS + GCP token (combo, fail-open, legacy only) | `uw.systems/kyverno-inject-sidecar-request: vault-sidecar-aws-gcp-fail-open`   | `-request-aws: "true"` **+** `-request-gcp-token: "true"` **+** `-sidecar-fail-open: "true"`                              |
 | GitHub                                          | _(none — net new)_                                                             | `uw.systems/kyverno-inject-sidecar-request-github: "true"`                                                                      |
 
 Notes:
 
-- `uw.systems/kyverno-inject-vault-sidecar-fail-open: "true"` is a pod-wide
+- `uw.systems/kyverno-inject-sidecar-fail-open: "true"` is a pod-wide
   toggle, not per-capability - it applies to every fail-open-capable sidecar
   requested on that pod. AWS and GCP access token support it; GCP service
   account key and the GitHub sidecar do not currently have a fail-open mode.
