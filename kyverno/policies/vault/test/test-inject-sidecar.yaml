@@ -4,7 +4,7 @@ kind: Pod
 metadata:
   name: test-aws-uw
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-aws: "true"
+    uw.systems/kyverno-inject-sidecar-request-aws: "sts-http-endpoint"
 spec:
   containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
 ---
@@ -25,7 +25,7 @@ kind: Pod
 metadata:
   name: test-gcp-key
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-gcp-key: "true"
+    uw.systems/kyverno-inject-sidecar-request-gcp: "key"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -35,7 +35,7 @@ kind: Pod
 metadata:
   name: test-gcp-token
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"
+    uw.systems/kyverno-inject-sidecar-request-gcp: "token"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -55,7 +55,7 @@ kind: Pod
 metadata:
   name: test-init-aws-uw
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-aws-init: "true"
+    uw.systems/kyverno-inject-sidecar-request-aws: "sts-credentials-file"
 spec:
   initContainers: [{ name: init, image: alpine }]
   containers: [{ name: app, image: alpine }]
@@ -66,7 +66,7 @@ kind: Pod
 metadata:
   name: test-github
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-github: "true"
+    uw.systems/kyverno-inject-sidecar-request-github: "token"
     github.uw.systems/permission-set: "uw_ro"
 spec:
   containers: [{ name: app, image: alpine }]
@@ -78,8 +78,8 @@ kind: Pod
 metadata:
   name: test-aws-and-github
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-aws: "true"
-    uw.systems/kyverno-inject-sidecar-request-github: "true"
+    uw.systems/kyverno-inject-sidecar-request-aws: "sts-http-endpoint"
+    uw.systems/kyverno-inject-sidecar-request-github: "token"
     github.uw.systems/permission-set: "uw_ro"
 spec:
   containers: [{ name: app, image: alpine }]
@@ -92,8 +92,8 @@ kind: Pod
 metadata:
   name: test-aws-and-gcp-token
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-aws: "true"
-    uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"
+    uw.systems/kyverno-inject-sidecar-request-aws: "sts-http-endpoint"
+    uw.systems/kyverno-inject-sidecar-request-gcp: "token"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -103,8 +103,8 @@ kind: Pod
 metadata:
   name: test-aws-fail-open
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-aws: "true"
-    uw.systems/kyverno-inject-sidecar-fail-open: "true"
+    uw.systems/kyverno-inject-sidecar-request-aws: "sts-http-endpoint"
+    uw.systems/kyverno-inject-sidecar-mode: "fail-open"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -122,8 +122,8 @@ kind: Pod
 metadata:
   name: test-gcp-token-fail-open
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-gcp-token: "true"
-    uw.systems/kyverno-inject-sidecar-fail-open: "true"
+    uw.systems/kyverno-inject-sidecar-request-gcp: "token"
+    uw.systems/kyverno-inject-sidecar-mode: "fail-open"
 spec:
   containers: [{ name: app, image: alpine }]
 ---

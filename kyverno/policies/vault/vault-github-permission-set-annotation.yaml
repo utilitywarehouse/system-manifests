@@ -24,7 +24,7 @@ spec:
   matchConditions:
     - name: requests-github-sidecar
       expression: >-
-        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-github'].orValue('') == 'true'
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-github'].orValue('') == 'token'
   validations:
     - expression: >-
         has(object.metadata.annotations) &&

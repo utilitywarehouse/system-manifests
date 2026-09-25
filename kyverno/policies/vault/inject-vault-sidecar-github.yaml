@@ -23,7 +23,7 @@ spec:
   matchConditions:
     - name: match-github-annotation
       expression: >-
-        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-github'].orValue('') == 'true'
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-github'].orValue('') == 'token'
     # The permission set name (unlike the AWS/GCP identity, which is derived
     # only from the pod's own namespace/serviceAccountName) comes from a
     # free-form annotation value, so it's restricted to a safe character set

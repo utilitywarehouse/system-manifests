@@ -23,7 +23,7 @@ spec:
   matchConditions:
     - name: match-gcp-key-annotation
       expression: >-
-        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-gcp-key'].orValue('') == 'true' ||
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-gcp'].orValue('') == 'key' ||
         object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-sidecar-gcp-key'
 
   variables:

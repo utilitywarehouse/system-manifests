@@ -23,7 +23,7 @@ spec:
   matchConditions:
     - name: match-init-aws-annotation
       expression: >-
-        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-aws-init'].orValue('') == 'true' ||
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request-aws'].orValue('') == 'sts-credentials-file' ||
         object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-init-container-aws'
 
   variables:

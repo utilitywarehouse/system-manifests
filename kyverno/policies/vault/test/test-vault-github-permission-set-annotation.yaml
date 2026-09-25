@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: test-github-no-permission-set
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-github: "true"
+    uw.systems/kyverno-inject-sidecar-request-github: "token"
 spec:
   containers: [{ name: app, image: alpine }]
 ---
@@ -12,7 +12,7 @@ kind: Pod
 metadata:
   name: test-github-invalid-permission-set
   annotations:
-    uw.systems/kyverno-inject-sidecar-request-github: "true"
+    uw.systems/kyverno-inject-sidecar-request-github: "token"
     github.uw.systems/permission-set: "uw_ro'''; -extra-flag"
 spec:
   containers: [{ name: app, image: alpine }]
