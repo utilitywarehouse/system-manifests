@@ -1,4 +1,4 @@
-v=v2.19.0
+v=v2.20.0
 
 .PHONY: pull-upstream clean-ns-attr
 
@@ -10,4 +10,4 @@ pull-upstream:
 	curl https://raw.githubusercontent.com/kubernetes/kube-state-metrics/$(v)/examples/standard/service.yaml > namespaced/service.yaml
 
 clean-ns-attr:
-	rg '^\s+namespace:' namespaced/ -l | xargs -r sd -A '^\s+namespace:.+\n' ''
+	rg '^\s+namespace:' namespaced/ -l | xargs -r sd '^\s+namespace:.+\n' ''
