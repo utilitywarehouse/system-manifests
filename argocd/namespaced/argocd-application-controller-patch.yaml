@@ -14,3 +14,17 @@ spec:
             limits:
               cpu: 4
               memory: 3000Mi
+          env:
+            # Per-item rate limit on the controller's refresh queue.
+            # Disabled by default (COOLDOWN=0 => fixed 1ms backoff, no limiting).
+            # COOLDOWN: reset window + throttle threshold. MAX_DELAY: backoff cap,
+            # i.e. the minimum interval between reconciles. 60s/60s caps any app
+            # re-queued more often than once a minute at 1/min; quieter apps are
+            # unaffected. Worst case: event-driven drift/health is detected up to
+            # 60s late; the periodic resync (timeout.reconciliation, 1h here) is
+            # not rate-limited and stays unchanged.
+            # https://argo-cd.readthedocs.io/en/stable/operator-manual/high_availability/#per-item-rate-limits
+            - name: WORKQUEUE_FAILURE_COOLDOWN_NS
+              value: "60000000000" # 60s
+            - name: WORKQUEUE_MAX_DELAY_NS
+              value: "60000000000" # 60s
