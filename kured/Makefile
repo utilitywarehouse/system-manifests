@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := update-upstream
 SHELL := /bin/bash
-RELEASE := 1.22.1
+RELEASE := 1.23.0
 
 .PHONY: update-upstream
 update-upstream:
