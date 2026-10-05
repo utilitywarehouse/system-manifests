@@ -37,7 +37,7 @@ spec:
     - name: sidecar_payload
       expression: |
         yaml.parse('''
-          name: vault-credentials
+          name: vault-credentials-agent-aws
           image: docker.io/hashicorp/vault:1.15.2
           command:
             - sh
