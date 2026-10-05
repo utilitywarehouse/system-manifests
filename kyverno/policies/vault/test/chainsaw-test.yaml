@@ -615,7 +615,7 @@ spec:
                   - name: vault-aws-credentials
                     emptyDir: {}
                 initContainers:
-                  - name: vault-credentials
+                  - name: vault-credentials-agent-aws
                     image: docker.io/hashicorp/vault:1.15.2
                     command:
                       - sh
@@ -732,7 +732,7 @@ spec:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
                 (length(initContainers)): 2
-                (initContainers[?name=='vault-credentials']):
+                (initContainers[?name=='vault-credentials-agent-aws']):
                   - image: docker.io/hashicorp/vault:1.15.2
                 containers:
                   - name: app
