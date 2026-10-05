@@ -1,0 +1,41 @@
+apiVersion: policies.kyverno.io/v1
+kind: MutatingPolicy
+metadata:
+  name: set-workloads-revision-history-limit
+  annotations:
+    policies.kyverno.io/title: Set workload revision history limit
+    policies.kyverno.io/category: Operations
+    policies.kyverno.io/severity: low
+    policies.kyverno.io/subject: Deployment, StatefulSet, DaemonSet
+    policies.kyverno.io/description: >-
+      Reduce old ReplicaSet retention on pod controllers to take pressure off
+      etcd, the API server watch and the Argo CD cache. Only workloads left at
+      the default of 10 are changed; any explicitly set value is treated as
+      deliberate and left alone.
+spec:
+  # To also mutate already-running workloads, add:
+  #   evaluation:
+  #     mutateExisting:
+  #       enabled: true
+  # and grant the background controller update on these resources in
+  # ../../deploy/kyverno-background-controller-clusterrole.yaml.
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets"]
+  matchConditions:
+    # revisionHistoryLimit is defaulted to 10 by the API server before the
+    # webhook runs, so check the value rather than its presence.
+    - name: revision-history-is-default
+      expression: "object.spec.?revisionHistoryLimit.orValue(10) == 10"
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: |
+          Object{
+            spec: Object.spec{
+              revisionHistoryLimit: 2
+            }
+          }

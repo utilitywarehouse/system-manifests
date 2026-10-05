@@ -1,0 +1,83 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-workloads-revision-history
+spec:
+  steps:
+    - name: setup-prerequisites
+      try:
+        - apply:
+            file: ../set-revision-history-limit.yaml
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: policies.kyverno.io/v1
+              kind: MutatingPolicy
+              metadata:
+                name: set-workloads-revision-history-limit
+              status:
+                conditionStatus:
+                  (conditions[?type == 'RBACPermissionsGranted']):
+                    - reason: Succeeded
+                      status: "True"
+                  (conditions[?type == 'WebhookConfigured']):
+                    - reason: Succeeded
+                      status: "True"
+
+    - name: test-resources
+      try:
+        - apply:
+            file: resources.yaml
+
+        # Workloads left at the default (or explicitly 10) are capped to 2.
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: without-revision-history
+                namespace: default
+              spec:
+                revisionHistoryLimit: 2
+
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: with-default-revision-history
+                namespace: default
+              spec:
+                revisionHistoryLimit: 2
+
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: StatefulSet
+              metadata:
+                name: without-revision-history
+                namespace: default
+              spec:
+                revisionHistoryLimit: 2
+
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: DaemonSet
+              metadata:
+                name: without-revision-history
+                namespace: default
+              spec:
+                revisionHistoryLimit: 2
+
+        # An explicitly set non-default value is respected.
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: with-custom-revision-history
+                namespace: default
+              spec:
+                revisionHistoryLimit: 5
