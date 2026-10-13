@@ -13,12 +13,6 @@ metadata:
       the default of 10 are changed; any explicitly set value is treated as
       deliberate and left alone.
 spec:
-  # To also mutate already-running workloads, add:
-  #   evaluation:
-  #     mutateExisting:
-  #       enabled: true
-  # and grant the background controller update on these resources in
-  # ../../deploy/kyverno-background-controller-clusterrole.yaml.
   matchConstraints:
     resourceRules:
       - apiGroups: ["apps"]
