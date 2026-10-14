@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: without-revision-history
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: without-revision-history
+  template:
+    metadata:
+      labels:
+        app: without-revision-history
+    spec:
+      containers:
+        - name: app
+          image: alpine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: with-default-revision-history
+  namespace: default
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: with-default-revision-history
+  template:
+    metadata:
+      labels:
+        app: with-default-revision-history
+    spec:
+      containers:
+        - name: app
+          image: alpine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: with-custom-revision-history
+  namespace: default
+spec:
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: with-custom-revision-history
+  template:
+    metadata:
+      labels:
+        app: with-custom-revision-history
+    spec:
+      containers:
+        - name: app
+          image: alpine
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: without-revision-history
+  namespace: default
+spec:
+  serviceName: without-revision-history
+  selector:
+    matchLabels:
+      app: without-revision-history
+  template:
+    metadata:
+      labels:
+        app: without-revision-history
+    spec:
+      containers:
+        - name: app
+          image: alpine
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: without-revision-history
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: without-revision-history
+  template:
+    metadata:
+      labels:
+        app: without-revision-history
+    spec:
+      containers:
+        - name: app
+          image: alpine
