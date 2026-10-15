@@ -1,0 +1,10 @@
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: csi-gce-pd-node
+spec:
+  template:
+    spec:
+      # Upstream excludes control-plane nodes. Our masters run workloads with
+      # persistent disks, so keep the node plugin there.
+      affinity: null
