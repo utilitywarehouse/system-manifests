@@ -91,7 +91,7 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-aws
                     <<: &aws-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                       restartPolicy: Always
                       startupProbe:
                         exec:
@@ -154,7 +154,7 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     startupProbe:
                       exec:
@@ -212,7 +212,7 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-gcp-key
                     <<: &gcp-key-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                       restartPolicy: Always
                       startupProbe:
                         exec:
@@ -273,7 +273,7 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-gcp-token
                     <<: &gcp-token-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                       restartPolicy: Always
                       startupProbe:
                         exec:
@@ -333,7 +333,7 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-github
                     <<: &github-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                       restartPolicy: Always
                       startupProbe:
                         exec:
@@ -393,7 +393,7 @@ spec:
               spec:
                 (length(initContainers)): 2
                 (initContainers[?name=='vault-credentials-agent-aws']):
-                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     args:
                       - sidecar
@@ -405,7 +405,7 @@ spec:
                         containerPort: 8499
                         protocol: TCP
                 (initContainers[?name=='vault-credentials-agent-github']):
-                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     args:
                       - sidecar
@@ -439,7 +439,7 @@ spec:
               spec:
                 (length(initContainers)): 2
                 (initContainers[?name=='vault-credentials-agent-aws']):
-                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     args:
                       - sidecar
@@ -451,7 +451,7 @@ spec:
                         containerPort: 8499
                         protocol: TCP
                 (initContainers[?name=='vault-credentials-agent-gcp-token']):
-                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     args:
                       - sidecar
@@ -492,7 +492,7 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     startupProbe:
                       exec:
@@ -753,7 +753,7 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-aws
                     <<: &aws-fail-open-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                       restartPolicy: Always
                       args:
                         - sidecar
@@ -793,7 +793,7 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-fail-open-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     args:
                       - sidecar
@@ -836,7 +836,7 @@ spec:
               spec:
                 initContainers:
                   - name: vault-credentials-agent-gcp-token
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     args:
                       - sidecar
@@ -900,7 +900,7 @@ spec:
               spec:
                 initContainers:
                   - name: vault-credentials-agent
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
                     restartPolicy: Always
                     args:
                       - sidecar

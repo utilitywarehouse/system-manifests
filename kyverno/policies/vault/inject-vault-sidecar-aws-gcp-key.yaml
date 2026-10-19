@@ -37,7 +37,7 @@ spec:
       expression: |
         yaml.parse('''
           name: vault-credentials-agent-aws
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
           restartPolicy: Always
           startupProbe:
             exec:
@@ -68,7 +68,7 @@ spec:
       expression: |
         yaml.parse('''
           name: vault-credentials-agent-gcp
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
           restartPolicy: Always
           startupProbe:
             exec:
@@ -112,29 +112,29 @@ spec:
               annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" }
             },
             spec: Object.spec{
-              initContainers: has(object.spec.initContainers) ? 
-                object.spec.initContainers.map(c, 
+              initContainers: has(object.spec.initContainers) ?
+                object.spec.initContainers.map(c,
                   Object.spec.initContainers{
                     name: c.name,
                     env: [
                       Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" },
                       Object.spec.initContainers.env{ name: "GOOGLE_APPLICATION_CREDENTIALS", value: "/gcp/sa.json" }
                     ],
-                    volumeMounts: [ 
+                    volumeMounts: [
                       Object.spec.initContainers.volumeMounts{ name: "gcp", mountPath: "/gcp" }
                     ]
                   }
                 ) : [],
-              containers: has(object.spec.containers) ? 
-                object.spec.containers.map(c, 
+              containers: has(object.spec.containers) ?
+                object.spec.containers.map(c,
                   Object.spec.containers{
                     name: c.name,
                     env: [
                       Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" },
                       Object.spec.containers.env{ name: "GOOGLE_APPLICATION_CREDENTIALS", value: "/gcp/sa.json" }
                     ],
-                    volumeMounts: [ 
-                      Object.spec.containers.volumeMounts{ name: "gcp", mountPath: "/gcp" } 
+                    volumeMounts: [
+                      Object.spec.containers.volumeMounts{ name: "gcp", mountPath: "/gcp" }
                     ]
                   }
                 ) : []
@@ -147,10 +147,10 @@ spec:
           (
             size(object.spec.?initContainers.orValue([])) > 0
             ?
-              [ 
+              [
                 JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload_gcp},
                 JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload_aws}
-              ] 
+              ]
             :
               [ JSONPatch{op: "add", path: "/spec/initContainers", value: [variables.sidecar_payload_aws, variables.sidecar_payload_gcp]} ]
           ) + (

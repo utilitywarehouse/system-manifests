@@ -37,7 +37,7 @@ spec:
       expression: |
         yaml.parse('''
           name: vault-credentials-agent
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
           restartPolicy: Always
           args:
             - sidecar
@@ -75,7 +75,7 @@ spec:
                 object.spec.initContainers.map(c,
                   Object.spec.initContainers{
                     name: c.name,
-                    env: [ 
+                    env: [
                       Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI",value: "http://127.0.0.1:8498/credentials" }
                     ]
                   }
@@ -84,7 +84,7 @@ spec:
                 object.spec.containers.map(c,
                   Object.spec.containers{
                     name: c.name,
-                    env: [ 
+                    env: [
                       Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI",value: "http://127.0.0.1:8498/credentials" }
                     ]
                   }
