@@ -37,7 +37,7 @@ spec:
       expression: |
         yaml.parse('''
           name: vault-credentials-agent
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.0
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
           restartPolicy: Always
           args:
             - sidecar
@@ -72,8 +72,8 @@ spec:
           Object{
             metadata: Object.metadata{ annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" } },
             spec: Object.spec{
-              initContainers: has(object.spec.initContainers) ? 
-                object.spec.initContainers.map(c, 
+              initContainers: has(object.spec.initContainers) ?
+                object.spec.initContainers.map(c,
                   Object.spec.initContainers{
                     name: c.name,
                     env: [
@@ -82,8 +82,8 @@ spec:
                     ]
                   }
                 ) : [],
-              containers: has(object.spec.containers) ? 
-                object.spec.containers.map(c, 
+              containers: has(object.spec.containers) ?
+                object.spec.containers.map(c,
                   Object.spec.containers{
                     name: c.name,
                     env: [
