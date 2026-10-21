@@ -48,7 +48,7 @@ spec:
       expression: |
         yaml.parse('''
           name: vault-credentials-agent-gcp-token
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
           restartPolicy: Always
         ''' + (variables.fail_open ? '' : '''
           startupProbe:

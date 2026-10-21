@@ -46,7 +46,7 @@ spec:
       expression: |
         yaml.parse('''
           name: vault-credentials-agent-github
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.1
+          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
           restartPolicy: Always
           startupProbe:
             exec:
