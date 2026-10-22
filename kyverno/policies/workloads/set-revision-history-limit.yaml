@@ -9,9 +9,11 @@ metadata:
     policies.kyverno.io/subject: Deployment, StatefulSet, DaemonSet
     policies.kyverno.io/description: >-
       Reduce old ReplicaSet retention on pod controllers to take pressure off
-      etcd, the API server watch and the Argo CD cache. Only workloads left at
-      the default of 10 are changed; any explicitly set value is treated as
-      deliberate and left alone.
+      etcd, the API server watch and the Argo CD cache. Workloads whose manifest
+      sets revisionHistoryLimit are left alone; everything else is capped to 2.
+      "Set in the manifest" is read from the kubectl last-applied annotation,
+      which only client-side apply (kubectl, Argo CD's default) writes - objects
+      created server-side or by an operator carry no such record and are capped.
 spec:
   matchConstraints:
     resourceRules:
@@ -24,6 +26,13 @@ spec:
     # webhook runs, so check the value rather than its presence.
     - name: revision-history-is-default
       expression: "object.spec.?revisionHistoryLimit.orValue(10) == 10"
+    # The last-applied annotation holds the manifest as written in Git, before
+    # defaulting. Only client-side apply writes it; SSA, helm and operators
+    # don't, so their objects are treated as unset and capped to 2.
+    - name: not-explicit-in-git
+      expression: >-
+        !object.metadata.?annotations[?'kubectl.kubernetes.io/last-applied-configuration']
+          .orValue('').contains('"revisionHistoryLimit":')
   mutations:
     - patchType: ApplyConfiguration
       applyConfiguration:
