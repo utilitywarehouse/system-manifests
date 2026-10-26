@@ -38,7 +38,12 @@ ADMIN_EXTRA ?= \
 	pods/ephemeralcontainers \
 	pods/eviction
 
-export ADMIN_EXTRA ADMIN_SKIP_RESOURCES VIEW_SKIP_RESOURCES
+# Rules the pair model cannot express, appended to admin-aggregates.yaml as
+# JSON. Keep this rare: everything else is derived from discovery.
+ADMIN_EXTRA_RULES ?= \
+	[{"apiGroups":["projectcalico.org"],"resources":["tier.networkpolicies"],"resourceNames":["default.*"],"verbs":["*"]}]
+
+export ADMIN_EXTRA ADMIN_EXTRA_RULES ADMIN_SKIP_RESOURCES VIEW_SKIP_RESOURCES
 
 .PHONY: help gen check require-contexts
 
