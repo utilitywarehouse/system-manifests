@@ -75,3 +75,7 @@ rules:
   - apiGroups: ["volumesnapshot.external-storage.k8s.io"]
     resources: [volumesnapshots]
     verbs: ["*"]
+  - apiGroups: ["projectcalico.org"]
+    resources: ["tier.networkpolicies"]
+    resourceNames: ["default.*"]
+    verbs: ["*"]
