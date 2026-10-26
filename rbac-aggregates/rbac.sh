@@ -1,30 +1,25 @@
 #!/bin/bash
 
-# Keep the `admin` and `view` aggregation roles in step with what the cluster
-# actually serves.
+# Keep the `admin` and `view` aggregate roles in step with what a cluster serves.
 #
-# `admin-aggregates` fills the gaps in the built-in `admin` role: full access to
-# every namespaced resource that role does not already grant, so a new CRD is
-# usable by admins without editing a role by hand.
+# `admin-aggregates` gives admins full access to every namespaced resource the
+# built-in `admin` role does not grant, so a new CRD works without a hand edit.
 #
-# `view-aggregates` is derived from `admin-aggregates`: its whole content, plus
-# the initial and cluster scoped reads in VIEW_EXTRAS, minus everything in
-# VIEW_SKIP_RESOURCES. That is what keeps the MCP service account, which is
-# bound to `view` and nothing else, from hitting forbidden on a resource its
-# human operator can read. Duplicating a grant the cluster's own view
-# aggregators already provide is harmless: they all land in the same role.
+# `view-aggregates` does the same for `view`, read-only and cluster scope
+# included. The MCP service account binds `view` and nothing else, so it can read
+# whatever its operator can. We write only the gaps: another aggregator may
+# already grant a resource, and listing it twice helps nobody.
 #
-# Both files are generated from discovery, so a new CRD shows up as a `check`
-# failure instead of a mystery "forbidden". Clusters do not serve the same
-# CRDs, so `gen` merges into the existing files: running against a leaner
-# cluster never drops access another cluster needs. To let them shrink, delete
-# them first and re-run gen.
+# Both files come from discovery, so a new CRD shows up as a `check` failure
+# instead of a confusing "forbidden". Clusters differ and `gen` merges into the
+# files, so running against a leaner cluster never drops access another one
+# needs. To shrink them, delete both files and run gen again.
 #
 # Usage:
 #   rbac.sh gen   [-c CONTEXT]
 #   rbac.sh check [-c CONTEXT]
 #
-# Requires: kubectl, jq, yq.
+# Needs kubectl, jq and yq.
 
 set -euo pipefail
 
@@ -35,28 +30,23 @@ readonly SCRIPT_DIR
 readonly ADMIN_FILE="${SCRIPT_DIR}/admin-aggregates.yaml"
 readonly VIEW_FILE="${SCRIPT_DIR}/view-aggregates.yaml"
 
-# The built-in role whose grants we top up and mirror.
-readonly BASELINE_ROLE="admin"
-
-# `resource.group` (group omitted for core, `*` for a whole group) as handed over
-# by the Makefile.
+# `resource.group` entries from the Makefile: group omitted for core, `*` for a
+# whole group.
 readonly ADMIN_SKIP="${ADMIN_SKIP_RESOURCES:-}"
 readonly SKIP_RESOURCES="${VIEW_SKIP_RESOURCES:-}"
-readonly EXTRA_RESOURCES="${VIEW_EXTRAS:-}"
 
-# Turn discovery output into `{group, resource}` objects, splitting `a.b.c` into
-# resource `a` and group `b.c`. Shared by every jq program here.
+# Split `a.b.c` into resource `a` and group `b.c`. Every jq program here uses it.
 # shellcheck disable=SC2016 # jq parameters, not shell expansions
 readonly PARSE_PAIRS='def parse_pairs:
   map(if test("\\.")
       then {resource: (split(".")[0]), group: (split(".")[1:] | join("."))}
       else {resource: ., group: ""} end);
 
-# The `resource.group` lines a Makefile list holds, blank lines dropped.
+# Split a Makefile list into `resource.group` entries; blank lines dropped.
 def skip_list($s): [$s | splits("\\s+")] | map(select(length > 0)) | parse_pairs;
 
-# A resource is skipped when an entry names it, or names every resource of its
-# group; an entry without a group matches any group, so `pods/exec` works.
+# An entry matches by name, by `*.group`, or across every group when it has no
+# group, so `pods/exec` works.
 def is_skipped($skips; $p):
   $skips
   | any((.group == $p.group or .group == "")
@@ -96,8 +86,8 @@ kube() {
   kubectl "${args[@]}"
 }
 
-# Everything the projection needs from the cluster, cached for one run.
-# Discovery omits subresources, and the aggregate roles do not grant any.
+# Cluster data the projection needs, fetched once. Discovery leaves out
+# subresources, and so do the aggregate roles.
 fetch() {
   kube api-resources --verbs=get -o name |
     jq -R -s "${PARSE_PAIRS} split(\"\\n\") | map(select(length > 0)) | parse_pairs" >"${TMP_DIR}/served.json"
@@ -106,75 +96,87 @@ fetch() {
   kube get clusterroles -o json >"${TMP_DIR}/roles.json"
 }
 
-# projection: `{group, resource}` pairs this cluster wants in admin-aggregates,
-# i.e. every namespaced resource it serves that the built-in admin role does not
-# already grant.
+# projection ROLE OWNED SOURCE READ_ONLY: the `{group, resource}` pairs the role
+# does not cover well enough. `admin` and `view` aggregate what we grant, so we
+# subtract OWNED from the coverage; otherwise every resource would look covered.
+# SOURCE is `namespaced` or `served`; READ_ONLY narrows what counts as a grant.
 projection() {
   # shellcheck disable=SC2016 # jq arguments, not shell expansions
   jq -n \
+    --arg role "$1" --arg owned "$2" --argjson read_only "$4" \
+    --slurpfile want "${TMP_DIR}/$3.json" \
     --slurpfile served "${TMP_DIR}/served.json" \
-    --slurpfile namespaced "${TMP_DIR}/namespaced.json" \
-    --slurpfile roles "${TMP_DIR}/roles.json" \
-    --arg baseline "${BASELINE_ROLE}" \
-    --arg owned "admin-aggregates" '
+    --slurpfile roles "${TMP_DIR}/roles.json" '
     # Rules of a role, optionally including the roles aggregated into it.
-    def rules_of($items; $role; $with_aggregates):
+    def rules_of($items; $name; $with_aggregates):
         [ $items[]
-          | select(.metadata.name == $role
+          | select(.metadata.name == $name
                    or ($with_aggregates
-                       and .metadata.labels["rbac.authorization.k8s.io/aggregate-to-" + $role] == "true"))
+                       and .metadata.labels["rbac.authorization.k8s.io/aggregate-to-" + $name] == "true"))
           | .rules[]? ];
 
-    # {group, resource} pairs a role grants, with `*` expanded against discovery.
-    # $read_only keeps only rules carrying at least one of get/list/watch.
-    def pairs_of($items; $role; $with_aggregates; $read_only; $by_group; $groups):
-        [ rules_of($items; $role; $with_aggregates)[]
-          | select(if $read_only
-                   then ([.verbs[]? | select(. == "*" or . == "get" or . == "list" or . == "watch")] | length > 0)
-                   else ((.verbs // []) | length > 0) end)
+    # Rules expanded against discovery: `*` groups and `*` resources become the
+    # served pairs, `*` verbs become the standard verb set.
+    def expand($rules; $by_group; $groups; $std):
+        [ $rules[]
+          | (.verbs // []) as $v
+          | select(($v | length) > 0)
           | (.apiGroups // [""])[] as $ag
           | (if $ag == "*" then $groups[] else $ag end) as $g
           | (.resources // [])[] as $r
           | (if $r == "*" then ($by_group[$g] // [])[] else $r end) as $res
-          | {group: $g, resource: $res} ]
-        | unique;
+          | {group: $g, resource: $res,
+             verbs: ([ $v[] | if . == "*" then $std[] else . end ] | unique)} ];
 
-    ($served[0]) as $all
-    | ($namespaced[0]) as $ns
+    # Pairs with the verbs they grant, `*` expanded.
+    def verb_map($rules; $by_group; $groups; $std):
+        expand($rules; $by_group; $groups; $std)
+        | group_by([.group, .resource])
+        | map({key: "\(.[0].group)|\(.[0].resource)",
+               value: (map(.verbs) | add | unique)})
+        | from_entries;
+
+    # Verbs a pair must keep. A pair the old aggregate never granted only needs
+    # to be reachable; one it did grant keeps every verb, so replacing the role
+    # never turns write access into read-only.
+    def wanted($old; $read_only):
+        if ((($old // []) | length) == 0) then ["get"]
+        elif $read_only then
+            ([ $old[] | select(. != "create" and . != "update" and . != "patch"
+                               and . != "delete" and . != "deletecollection") ]
+             | if length == 0 then ["get"] else . end)
+        else $old end;
+
+    ["get", "list", "watch", "create", "update", "patch", "delete", "deletecollection"] as $std
+    | ($served[0]) as $all
     | ($all | group_by(.group) | map({key: .[0].group, value: (map(.resource) | unique)}) | from_entries) as $by_group
     | ($all | map(.group) | unique) as $groups
     | ($roles[0].items) as $items
-    # Ours is subtracted so this file is judged as if it were not applied yet:
-    # otherwise a rule we delete would count as covered by the stale copy.
-    | (pairs_of($items; $baseline; true; false; $by_group; $groups)
-       - pairs_of($items; $owned; false; false; $by_group; $groups)
-       | map("\(.group)|\(.resource)")) as $admin_keys
-    # Core is left alone: the built-in role already grants what admins need
-    # there, and the only gap is podtemplates, which stays out.
-    | ($ns | map(select(. as $p | ($admin_keys | index("\($p.group)|\($p.resource)")) | not))
-       | map(select(.group != "")))
+    # Subtract our role from the coverage: `admin` and `view` aggregate what we
+    # grant, so leaving it in would make every resource look covered.
+    | (rules_of($items; $role; true) - rules_of($items; $owned; false)) as $base_rules
+    | (rules_of($items; $owned; false)) as $old_rules
+    | (verb_map($base_rules; $by_group; $groups; $std)) as $base
+    | (verb_map($old_rules; $by_group; $groups; $std)) as $old
+    | [ $want[0][]
+        | "\(.group)|\(.resource)" as $k
+        | select((wanted($old[$k]; $read_only) - ($base[$k] // [])) | length > 0) ]
     | unique
   '
 }
 
-# render MODE EXISTING PROJECTION: the final `{group, resource}` list for one
-# file, merged with what is already committed and stripped of everything that
-# must never be aggregated.
+# render MODE EXISTING PROJECTION: the final pairs for one file: what is already
+# committed plus the projection, minus what must never be aggregated.
 render() {
   # shellcheck disable=SC2016 # jq arguments, not shell expansions
   jq -cn \
     --arg mode "$1" --argjson existing "$2" --argjson new "$3" \
-    --slurpfile served "${TMP_DIR}/served.json" \
+    --arg admin_extra "${ADMIN_EXTRA}" \
     --arg admin_skip "${ADMIN_SKIP}" --arg skip "${SKIP_RESOURCES}" \
-    --arg extras "${EXTRA_RESOURCES}" \
     "${PARSE_PAIRS}"'
-    ($served[0]) as $all
-    | (if $mode == "admin" then skip_list($admin_skip) else skip_list($skip) end) as $skips
-    | ([ skip_list($extras)[] as $e
-         | if $e.resource == "*"
-           then $all[] | select(.group == $e.group) | {group, resource}
-           else $e end ]) as $extra_pairs
-    | ($existing + $new + (if $mode == "view" then $extra_pairs else [] end))
+    (if $mode == "admin" then skip_list($admin_skip) else skip_list($skip) end) as $skips
+    | ($existing + $new
+       + (if $mode == "admin" then skip_list($admin_extra) else [] end))
     | unique
     | map(select(.resource | endswith("/finalizers") | not))
     | map(select(. as $p | is_skipped($skips; $p) | not))
@@ -182,7 +184,7 @@ render() {
   '
 }
 
-# existing_rules FILE: `{group, resource}` pairs from a committed file.
+# The `{group, resource}` pairs a committed file already lists.
 existing_rules() {
   if [[ ! -f "$1" ]]; then
     echo "[]"
@@ -197,8 +199,7 @@ emit() {
   local pairs="$1" verbs="$2" name="$3" label="$4" header="$5"
 
   cat <<EOF
-# Generated by rbac.sh. Do not edit by hand: re-run \`make gen\` and review the
-# diff.
+# Generated by rbac.sh. Do not edit: run \`make gen\` and review the diff.
 #
 ${header}
 apiVersion: rbac.authorization.k8s.io/v1
@@ -223,8 +224,15 @@ write_file() {
   printf '%s\n' "$2" >"$1"
 }
 
-# A projection that shrank to nothing means the role or the impersonation is
-# broken; write no file rather than an empty role.
+# No built-in role means no coverage, so every resource would look missing. Stop
+# instead of guessing.
+require_baseline() {
+  jq -e --arg role "$1" 'any(.items[]; .metadata.name == $role)' "${TMP_DIR}/roles.json" >/dev/null ||
+    die "cluster does not serve ClusterRole $1"
+}
+
+# An empty projection means discovery or the role lookup broke. Write nothing
+# rather than an empty role.
 require_projection() {
   local count
   count="$(jq 'length' <<<"$2")"
@@ -232,42 +240,44 @@ require_projection() {
 }
 
 do_gen() {
-  local gaps admin view
+  local gaps admin view gaps_view
 
-  gaps="$(projection)"
+  require_baseline admin
+  require_baseline view
+  gaps="$(projection admin admin-aggregates namespaced false)"
   require_projection admin "${gaps}"
   admin="$(render admin "$(existing_rules "${ADMIN_FILE}")" "${gaps}")"
 
-  # view is derived from the file, not from the cluster: the role is not applied
-  # yet, so the cluster would only tell us what other aggregators already grant.
-  view="$(render view "$(existing_rules "${VIEW_FILE}")" "${admin}")"
-  require_projection view "${view}"
+  gaps_view="$(projection view view-aggregates served true)"
+  require_projection view "${gaps_view}"
+  view="$(render view "$(existing_rules "${VIEW_FILE}")" "${gaps_view}")"
 
   write_file "${ADMIN_FILE}" "$(
     emit "${admin}" '["*"]' admin-aggregates admin \
-      "# Fills the gaps in the built-in \`admin\` role: full access to every namespaced
-# API group it does not already grant, so new CRDs need no manual role edit. The
-# core group is left alone; its only gap is podtemplates, which we do not want."
+      "# The namespaced access the built-in \`admin\` role lacks, read/write.
+# New CRDs need no hand edit; ADMIN_SKIP_RESOURCES lists what stays out."
   )"
   write_file "${VIEW_FILE}" "$(
     emit "${view}" '["get", "list", "watch"]' view-aggregates view \
-      "# Read side of \`admin-aggregates\`, plus the initial and cluster scoped reads
-# in VIEW_EXTRAS. Never secrets, exec/attach/portforward/proxy."
+      "# The reads the built-in \`view\` role lacks, cluster scope included.
+# Never secrets, exec, attach, portforward or proxy (VIEW_SKIP_RESOURCES)."
   )"
 
   printf '%s: %s resources\n' "${ADMIN_FILE}" "$(jq 'length' <<<"${admin}")"
   printf '%s: %s resources\n' "${VIEW_FILE}" "$(jq 'length' <<<"${view}")"
 }
 
-# Fail when a file is missing something this cluster needs, or when either file
-# grants something it must not.
+# Fail when a file misses something this cluster needs, or grants something it
+# must not.
 do_check() {
   local status=0 admin_now view_now
 
-  admin_now="$(render admin '[]' "$(projection)")"
+  require_baseline admin
+  require_baseline view
+  admin_now="$(render admin '[]' "$(projection admin admin-aggregates namespaced false)")"
   missing_report "${ADMIN_FILE}" "${admin_now}" "$(existing_rules "${ADMIN_FILE}")" || status=1
 
-  view_now="$(render view '[]' "$(existing_rules "${ADMIN_FILE}")")"
+  view_now="$(render view '[]' "$(projection view view-aggregates served true)")"
   missing_report "${VIEW_FILE}" "${view_now}" "$(existing_rules "${VIEW_FILE}")" || status=1
   require_read_only "${VIEW_FILE}" || status=1
   require_no_skips "${ADMIN_FILE}" "${ADMIN_SKIP}" || status=1
@@ -298,7 +308,7 @@ missing_report() {
   echo "${file##*/}: nothing missing"
 }
 
-# The SKIPLIST entries FILE grants, one per line, core group unqualified.
+# The `resource.group` entries FILE grants that the skip list forbids.
 forbidden_entries() {
   yq -o=json '.rules // []' "$1" |
     jq -r --arg skip "$2" "${PARSE_PAIRS}"'
@@ -308,7 +318,7 @@ forbidden_entries() {
       | ($rule.resources // [])[] as $r
       | {group: $g, resource: $r}
       | select(. as $p | is_skipped($sk; $p))
-      | if .group == "" then .resource else "\(.group)|\(.resource)" end'
+      | if .group == "" then .resource else "\(.resource).\(.group)" end'
 }
 
 require_no_skips() {
@@ -321,8 +331,8 @@ require_no_skips() {
   fi
 }
 
-# The view role is written by this script, so `check` is where its promises are
-# enforced: read verbs only, no wildcard, nothing from the skip list.
+# The view role is ours, so `check` enforces its promises: read verbs only, no
+# wildcards, nothing from the skip list.
 require_read_only() {
   local file="$1" verbs wild
 
@@ -335,7 +345,8 @@ require_read_only() {
 
   wild="$(yq -o=json '.' "$file" | jq -r '
     [ .rules[] | (.apiGroups // [""])[] as $g | (.resources // [])[] as $r
-      | select($g == "*" or $r == "*") | "\($g)|\($r)" ]
+      | select($g == "*" or $r == "*")
+      | if $g == "" then $r else "\($r).\($g)" end ]
     | unique | join(", ")')"
   if [[ -n "${wild}" ]]; then
     echo "== $file grants a wildcard: ${wild} =="
