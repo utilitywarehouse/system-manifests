@@ -37,6 +37,7 @@ ADMIN_SKIP_RESOURCES ?= \
 # `resource.group`. Use it for grants discovery cannot see: subresources,
 # cluster-scoped resources, and writes the built-in role only reads.
 ADMIN_EXTRA ?= \
+	certificates/status.cert-manager.io \
 	limitranges \
 	pods/ephemeralcontainers \
 	pods/eviction
