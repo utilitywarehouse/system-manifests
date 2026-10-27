@@ -20,7 +20,8 @@ VIEW_SKIP_RESOURCES ?= \
 
 # Not added to admin-aggregates: these skip the operator's own API and
 # validation, or act outside the namespace that writes them. `*.group` covers the
-# whole group. View still reads them.
+# whole group. View still reads them. Staged Calico policies are tiered, so
+# granting them makes kube-applier try to prune them and Calico refuses.
 ADMIN_SKIP_RESOURCES ?= \
 	*.actions.github.com \
 	*.crd.projectcalico.org \
@@ -28,7 +29,9 @@ ADMIN_SKIP_RESOURCES ?= \
 	*.metallb.io \
 	*.trident.netapp.io \
 	endpointslices.discovery.k8s.io \
-	leases.coordination.k8s.io
+	leases.coordination.k8s.io \
+	stagedkubernetesnetworkpolicies.projectcalico.org \
+	stagednetworkpolicies.projectcalico.org
 
 # Added on top of what the built-in `admin` role covers, one per line as
 # `resource.group`. Use it for grants discovery cannot see: subresources,
@@ -38,12 +41,7 @@ ADMIN_EXTRA ?= \
 	pods/ephemeralcontainers \
 	pods/eviction
 
-# Rules the pair model cannot express, appended to admin-aggregates.yaml as
-# JSON. Keep this rare: everything else is derived from discovery.
-ADMIN_EXTRA_RULES ?= \
-	[{"apiGroups":["projectcalico.org"],"resources":["tier.networkpolicies"],"resourceNames":["default.*"],"verbs":["*"]}]
-
-export ADMIN_EXTRA ADMIN_EXTRA_RULES ADMIN_SKIP_RESOURCES VIEW_SKIP_RESOURCES
+export ADMIN_EXTRA ADMIN_SKIP_RESOURCES VIEW_SKIP_RESOURCES
 
 .PHONY: help gen check require-contexts
 
