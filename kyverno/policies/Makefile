@@ -14,6 +14,8 @@ INSTALL_MANIFESTS ?= kyverno/e2e-deploy
 INSTALL_NAMESPACE ?= kube-system
 # Leave blank to use the image's baked-in default
 CHAINSAW_CONFIG ?= kyverno/policies/.chainsaw.yaml
+# Kubernetes version under test (kindest/node image).
+KIND_NODE_IMAGE ?= kindest/node:v1.36.4
 
 .PHONY: help
 help:
@@ -61,6 +63,7 @@ test-all: setup-network
 		-e INSTALL_MANIFESTS="$(INSTALL_MANIFESTS)" \
 		-e INSTALL_NAMESPACE="$(INSTALL_NAMESPACE)" \
 		-e CHAINSAW_CONFIG="$(CHAINSAW_CONFIG)" \
+		-e KIND_NODE_IMAGE="$(KIND_NODE_IMAGE)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(REPO_DIR):/repo \
 		$(IMAGE_NAME) "."
@@ -80,6 +83,7 @@ test-target: setup-network
 		-e INSTALL_MANIFESTS="$(INSTALL_MANIFESTS)" \
 		-e INSTALL_NAMESPACE="$(INSTALL_NAMESPACE)" \
 		-e CHAINSAW_CONFIG="$(CHAINSAW_CONFIG)" \
+		-e KIND_NODE_IMAGE="$(KIND_NODE_IMAGE)" \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v $(REPO_DIR):/repo \
 		$(IMAGE_NAME) "$(TEST_DIR)"
