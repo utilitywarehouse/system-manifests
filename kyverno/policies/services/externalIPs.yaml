@@ -14,6 +14,10 @@ metadata:
       See: https://github.com/kyverno/kyverno/issues/1367. This policy validates
       that the `externalIPs` field is not set on a Service.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:

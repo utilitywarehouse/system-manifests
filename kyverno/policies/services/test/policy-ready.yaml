@@ -3,11 +3,9 @@ kind: ValidatingPolicy
 metadata:
   name: restrict-external-ips
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -16,11 +14,9 @@ kind: ValidatingPolicy
 metadata:
   name: no-localhost-service
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -29,11 +25,9 @@ kind: ValidatingPolicy
 metadata:
   name: restrict-load-balancer-ip
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -42,11 +36,9 @@ kind: ValidatingPolicy
 metadata:
   name: restrict-nodeport
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -55,10 +47,8 @@ kind: ValidatingPolicy
 metadata:
   name: mirror-name-length
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"

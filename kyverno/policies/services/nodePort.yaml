@@ -14,6 +14,10 @@ metadata:
       with additional upstream security checks. This policy validates that any new Services
       do not use the `NodePort` type.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:

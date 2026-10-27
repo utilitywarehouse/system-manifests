@@ -12,6 +12,10 @@ metadata:
       generate the mirrored service names, respecting the char limit of 63 for
       service names.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:
