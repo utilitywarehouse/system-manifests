@@ -1,0 +1,14 @@
+# Calico checks the policy's tier as well as its kind, so networkpolicies in the
+# default tier need this on top of the generated admin-aggregates.
+# https://docs.tigera.io/calico-cloud/network-policy/policy-tiers/rbac-tiered-policies
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: calico-tier-aggregates
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+  - apiGroups: ["projectcalico.org"]
+    resources: ["tier.networkpolicies"]
+    resourceNames: ["default.*"]
+    verbs: ["*"]
