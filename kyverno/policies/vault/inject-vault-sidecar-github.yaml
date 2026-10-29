@@ -34,6 +34,10 @@ spec:
     - name: valid-permission-set-annotation
       expression: >-
         object.metadata.?annotations['github.uw.systems/permission-set'].orValue('').matches('^[a-zA-Z0-9_-]+$')
+    # Skip already-injected pods so re-invocation can't add a duplicate.
+    - name: not-already-injected
+      expression: >-
+        !object.spec.?initContainers.orValue([]).exists(c, c.?name.orValue('') == 'vault-credentials-agent-github')
 
   variables:
     - name: vkac_env
