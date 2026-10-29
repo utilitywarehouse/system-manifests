@@ -187,3 +187,34 @@ metadata:
     uw.systems/kyverno-inject-sidecar-request: vault-sidecar-gcp-token-fail-open
 spec:
   containers: [{ name: app, image: alpine }]
+---
+# Pods that already carry the container(s) the policies inject.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-preinjected
+  annotations:
+    vault.uw.systems/aws-credentials: "sts-http"
+spec:
+  initContainers:
+    - name: vault-credentials-agent-aws
+      image: alpine
+      restartPolicy: Never
+  containers: [{ name: app, image: alpine }]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-gcp-key-preinjected
+  annotations:
+    vault.uw.systems/aws-credentials: "sts-http"
+    vault.uw.systems/gcp-credentials: "key-file"
+spec:
+  initContainers:
+    - name: vault-credentials-agent-aws
+      image: alpine
+      restartPolicy: Never
+    - name: vault-credentials-agent-gcp-key
+      image: alpine
+      restartPolicy: Never
+  containers: [{ name: app, image: alpine }]

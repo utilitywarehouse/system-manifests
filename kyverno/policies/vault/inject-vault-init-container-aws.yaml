@@ -25,6 +25,10 @@ spec:
       expression: >-
         object.metadata.?annotations['vault.uw.systems/aws-credentials'].orValue('') == 'sts-file' ||
         object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-init-container-aws'
+    # Skip already-injected pods so re-invocation can't add a duplicate.
+    - name: not-already-injected
+      expression: >-
+        !object.spec.?initContainers.orValue([]).exists(c, c.?name.orValue('') == 'vault-credentials-agent-aws')
 
   variables:
     - name: vkac_env
@@ -118,26 +122,26 @@ spec:
               annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" }
             },
             spec: Object.spec{
-              initContainers: has(object.spec.initContainers) ? 
-                object.spec.initContainers.map(c, 
+              initContainers: has(object.spec.initContainers) ?
+                object.spec.initContainers.map(c,
                   Object.spec.initContainers{
                     name: c.name,
-                    env: [ 
+                    env: [
                       Object.spec.initContainers.env{ name: "AWS_SHARED_CREDENTIALS_FILE", value: "/etc/aws/credentials" }
                     ],
-                    volumeMounts: [ 
+                    volumeMounts: [
                       Object.spec.initContainers.volumeMounts{ name: "vault-aws-credentials",  mountPath: "/etc/aws" }
                     ]
                   }
                 ) : [],
-              containers: has(object.spec.containers) ? 
-                object.spec.containers.map(c, 
+              containers: has(object.spec.containers) ?
+                object.spec.containers.map(c,
                   Object.spec.containers{
                     name: c.name,
-                    env: [ 
+                    env: [
                       Object.spec.containers.env{ name: "AWS_SHARED_CREDENTIALS_FILE", value: "/etc/aws/credentials" }
                     ],
-                    volumeMounts: [ 
+                    volumeMounts: [
                       Object.spec.containers.volumeMounts{ name: "vault-aws-credentials", mountPath: "/etc/aws" }
                     ]
                   }

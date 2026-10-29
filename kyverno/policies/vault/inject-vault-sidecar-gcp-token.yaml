@@ -25,6 +25,10 @@ spec:
       expression: >-
         object.metadata.?annotations['vault.uw.systems/gcp-credentials'].orValue('') == 'token-http' ||
         object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-sidecar-gcp-token'
+    # Skip already-injected pods so re-invocation can't add a duplicate.
+    - name: not-already-injected
+      expression: >-
+        !object.spec.?initContainers.orValue([]).exists(c, c.?name.orValue('') == 'vault-credentials-agent-gcp-token')
 
   variables:
     - name: vkac_env

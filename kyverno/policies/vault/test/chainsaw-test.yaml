@@ -3,6 +3,10 @@ kind: Test
 metadata:
   name: test-service-accounts-policies
 spec:
+  # Every pod deletion costs a 5s grace period (forceTerminationGracePeriod), so
+  # the test's ~20 pods take longer to clean up than the default deadline allows.
+  timeouts:
+    cleanup: 5m
   steps:
     - name: apply-policies
       try:
@@ -932,3 +936,25 @@ spec:
                         value: "127.0.0.1:8098"
                       - name: GCE_METADATA_ROOT
                         value: "127.0.0.1:8098"
+
+    # Each policy must skip a pod that already carries its container.
+    - name: not-already-injected
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-preinjected
+              spec:
+                (length(initContainers)): 1
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-gcp-key-preinjected
+              spec:
+                (length(initContainers)): 2
