@@ -26,6 +26,12 @@ spec:
             timeout: 30s
             file: policy-ready.yaml
 
+    - name: assert-vap-generated
+      try:
+        - assert:
+            timeout: 60s
+            file: vap-ready.yaml
+
     - name: test-external-ips
       try:
         - apply:

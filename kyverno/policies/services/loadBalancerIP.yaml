@@ -13,6 +13,10 @@ metadata:
       addresses, in order to avoid someone hijacking an external service IP
       from their service.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:

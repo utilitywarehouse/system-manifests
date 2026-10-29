@@ -12,6 +12,10 @@ metadata:
       vulnerabilities in some Ingress controllers. This policy audits Services of type ExternalName
       if the externalName field refers to localhost.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:

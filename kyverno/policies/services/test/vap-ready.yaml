@@ -1,0 +1,116 @@
+# Kyverno generates a ValidatingAdmissionPolicy and a binding for every
+# ValidatingPolicy that opts in with spec.autogen.validatingAdmissionPolicy.
+# The assertions below pin the parts of the generated spec that encode the
+# policy's intent (what it matches, what it checks, and any compiled-in
+# PolicyException), without asserting API server defaults.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-restrict-external-ips
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [services]
+  (validations[*].message): ["externalIPs are not allowed."]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-restrict-external-ips-binding
+spec:
+  policyName: vpol-restrict-external-ips
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-no-localhost-service
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [services]
+  # the PolicyException is compiled into the policy's matchConditions
+  (matchConditions[*].name): [allow-sys-ingress-certs-namespace]
+  (matchConditions[*].expression): ["!(object.metadata.namespace == 'sys-ingress-certs')"]
+  (validations[*].message): ["Service of type ExternalName cannot point to localhost."]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-no-localhost-service-binding
+spec:
+  policyName: vpol-no-localhost-service
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-restrict-load-balancer-ip
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [services]
+  (validations[*].message): ["loadBalancerIP is not allowed."]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-restrict-load-balancer-ip-binding
+spec:
+  policyName: vpol-restrict-load-balancer-ip
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-restrict-nodeport
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [services]
+  (validations[*].message): ["Services of type NodePort are not allowed."]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-restrict-nodeport-binding
+spec:
+  policyName: vpol-restrict-nodeport
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-mirror-name-length
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [services]
+    objectSelector:
+      matchLabels:
+        uw.systems/mirror: "true"
+  (validations[*].message):
+    - "Mirror service controller should be able to generate 63 chars long mirrored names with prefixes [aws|gcp|merit] and pattern <prefix>-<namespace>-73736d-<service-name>"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-mirror-name-length-binding
+spec:
+  policyName: vpol-mirror-name-length
+  validationActions: [Deny]
