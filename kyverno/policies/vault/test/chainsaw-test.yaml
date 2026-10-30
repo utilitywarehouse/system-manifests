@@ -95,20 +95,19 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-aws
                     <<: &aws-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                       restartPolicy: Always
                       startupProbe:
-                        exec:
-                          command:
-                            - /bin/sh
-                            - -c
-                            - while ! nc -w 1 127.0.0.1 8498; do sleep 1; done
-                      args:
-                        - sidecar
-                        - (join('', ['-vault-role=test-env_aws_', $namespace, '_default']))
-                        - -listen-address=127.0.0.1:8498
-                        - -operational-address=:8499
+                        httpGet:
+                          path: /__/ready
+                          port: 8499
                       env:
+                        - name: VKCC_VAULT_ROLE
+                          value: (join('', ['test-env_aws_', $namespace, '_default']))
+                        - name: VKCC_LISTEN_ADDRESS
+                          value: "127.0.0.1:8498"
+                        - name: VKCC_OPERATIONAL_ADDRESS
+                          value: ":8499"
                         - &vault-caurl
                           name: VAULT_CAURL
                           value: "http://vault-ca-cert.sys-vault:8100"
@@ -158,38 +157,39 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
-                    restartPolicy: Always
-                    startupProbe:
-                      exec:
-                        command:
-                          - /bin/sh
-                          - -c
-                          - while ! nc -w 1 127.0.0.1 8198; do sleep 1; done
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
-                      - -secret-type=access_token
-                      - -listen-address=127.0.0.1:8198
-                      - -operational-address=:8199
-                    env:
-                      - name: GCE_METADATA_HOST
-                        value: "127.0.0.1:8198"
-                      - name: GCE_METADATA_ROOT
-                        value: "127.0.0.1:8198"
-                      - *vault-caurl
-                      - *vault-addr
-                    ports:
-                      - name: metrics
-                        containerPort: 8199
-                        protocol: TCP
-                    resources:
-                      requests:
-                        cpu: "0"
-                        memory: 25Mi
-                      limits:
-                        cpu: "1"
-                        memory: 100Mi
+                    <<: &gcp-token-agent-base
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
+                      restartPolicy: Always
+                      startupProbe:
+                        httpGet:
+                          path: /__/ready
+                          port: 8199
+                      env:
+                        - name: VKCC_VAULT_STATIC_ACCOUNT
+                          value: (join('', ['test-env_gcp_', $namespace, '_default']))
+                        - name: VKCC_SECRET_TYPE
+                          value: "access_token"
+                        - name: VKCC_LISTEN_ADDRESS
+                          value: "127.0.0.1:8198"
+                        - name: VKCC_OPERATIONAL_ADDRESS
+                          value: ":8199"
+                        - name: GCE_METADATA_HOST
+                          value: "127.0.0.1:8198"
+                        - name: GCE_METADATA_ROOT
+                          value: "127.0.0.1:8198"
+                        - *vault-caurl
+                        - *vault-addr
+                      ports:
+                        - name: metrics
+                          containerPort: 8199
+                          protocol: TCP
+                      resources:
+                        requests:
+                          cpu: "0"
+                          memory: 25Mi
+                        limits:
+                          cpu: "1"
+                          memory: 100Mi
                 containers:
                   - name: app
                     env: *app-aws-gcp-env
@@ -216,25 +216,23 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-gcp-key
                     <<: &gcp-key-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                       restartPolicy: Always
                       startupProbe:
-                        exec:
-                          command:
-                            - test
-                            - -e
-                            - /gcp/sa.json
-                        failureThreshold: 5
-                        periodSeconds: 15
-                      args:
-                        - sidecar
-                        - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
-                        - -secret-type=service_account_key
-                        - -listen-address=127.0.0.1:8298
-                        - -operational-address=:8299
+                        httpGet:
+                          path: /__/ready
+                          port: 8299
                       env:
                         - name: GOOGLE_APPLICATION_CREDENTIALS
                           value: "/gcp/sa.json"
+                        - name: VKCC_VAULT_STATIC_ACCOUNT
+                          value: (join('', ['test-env_gcp_', $namespace, '_default']))
+                        - name: VKCC_SECRET_TYPE
+                          value: "service_account_key"
+                        - name: VKCC_LISTEN_ADDRESS
+                          value: "127.0.0.1:8298"
+                        - name: VKCC_OPERATIONAL_ADDRESS
+                          value: ":8299"
                         - *vault-caurl
                         - *vault-addr
                       ports:
@@ -276,39 +274,7 @@ spec:
               spec:
                 initContainers:
                   - name: vault-credentials-agent-gcp-token
-                    <<: &gcp-token-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
-                      restartPolicy: Always
-                      startupProbe:
-                        exec:
-                          command:
-                            - /bin/sh
-                            - -c
-                            - while ! nc -w 1 127.0.0.1 8198; do sleep 1; done
-                      args:
-                        - sidecar
-                        - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
-                        - -secret-type=access_token
-                        - -listen-address=127.0.0.1:8198
-                        - -operational-address=:8199
-                      env:
-                        - name: GCE_METADATA_HOST
-                          value: "127.0.0.1:8198"
-                        - name: GCE_METADATA_ROOT
-                          value: "127.0.0.1:8198"
-                        - *vault-caurl
-                        - *vault-addr
-                      ports:
-                        - name: metrics
-                          containerPort: 8199
-                          protocol: TCP
-                      resources:
-                        requests:
-                          cpu: "0"
-                          memory: 25Mi
-                        limits:
-                          cpu: "1"
-                          memory: 100Mi
+                    <<: *gcp-token-agent-base
                 containers:
                   - name: app
                     env: &app-gcp-token-env
@@ -337,23 +303,21 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-github
                     <<: &github-agent-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                       restartPolicy: Always
                       startupProbe:
-                        exec:
-                          command:
-                            - test
-                            - -e
-                            - /var/run/secrets/github/token
-                        failureThreshold: 5
-                        periodSeconds: 15
-                      args:
-                        - sidecar
-                        - -vault-role=k8s_github_uw_ro
-                        - -github-permission-set=uw_ro
-                        - -listen-address=127.0.0.1:8398
-                        - -operational-address=:8399
+                        httpGet:
+                          path: /__/ready
+                          port: 8399
                       env:
+                        - name: VKCC_VAULT_ROLE
+                          value: "k8s_github_uw_ro"
+                        - name: VKCC_GITHUB_PERMISSION_SET
+                          value: "uw_ro"
+                        - name: VKCC_LISTEN_ADDRESS
+                          value: "127.0.0.1:8398"
+                        - name: VKCC_OPERATIONAL_ADDRESS
+                          value: ":8399"
                         - name: GITSYNC_PASSWORD_FILE
                           value: "/var/run/secrets/github/token"
                         - *vault-caurl
@@ -397,26 +361,28 @@ spec:
               spec:
                 (length(initContainers)): 2
                 (initContainers[?name=='vault-credentials-agent-aws']):
-                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                     restartPolicy: Always
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-role=test-env_aws_', $namespace, '_default']))
-                      - -listen-address=127.0.0.1:8498
-                      - -operational-address=:8499
+                    env:
+                      - name: VKCC_VAULT_ROLE
+                        value: (join('', ['test-env_aws_', $namespace, '_default']))
+                      - name: VKCC_LISTEN_ADDRESS
+                        value: "127.0.0.1:8498"
+                      - name: VKCC_OPERATIONAL_ADDRESS
+                        value: ":8499"
+                      - name: VAULT_CAURL
+                        value: "http://vault-ca-cert.sys-vault:8100"
+                      - name: VAULT_ADDR
+                        value: "https://vault.sys-vault:8200"
+                      - name: GITSYNC_PASSWORD_FILE
+                        value: "/var/run/secrets/github/token"
                     ports:
                       - name: metrics
                         containerPort: 8499
                         protocol: TCP
                 (initContainers[?name=='vault-credentials-agent-github']):
-                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                     restartPolicy: Always
-                    args:
-                      - sidecar
-                      - -vault-role=k8s_github_uw_ro
-                      - -github-permission-set=uw_ro
-                      - -listen-address=127.0.0.1:8398
-                      - -operational-address=:8399
                     ports:
                       - name: metrics
                         containerPort: 8399
@@ -443,26 +409,30 @@ spec:
               spec:
                 (length(initContainers)): 2
                 (initContainers[?name=='vault-credentials-agent-aws']):
-                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                     restartPolicy: Always
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-role=test-env_aws_', $namespace, '_default']))
-                      - -listen-address=127.0.0.1:8498
-                      - -operational-address=:8499
+                    env:
+                      - name: VKCC_VAULT_ROLE
+                        value: (join('', ['test-env_aws_', $namespace, '_default']))
+                      - name: VKCC_LISTEN_ADDRESS
+                        value: "127.0.0.1:8498"
+                      - name: VKCC_OPERATIONAL_ADDRESS
+                        value: ":8499"
+                      - name: VAULT_CAURL
+                        value: "http://vault-ca-cert.sys-vault:8100"
+                      - name: VAULT_ADDR
+                        value: "https://vault.sys-vault:8200"
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8198"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8198"
                     ports:
                       - name: metrics
                         containerPort: 8499
                         protocol: TCP
                 (initContainers[?name=='vault-credentials-agent-gcp-token']):
-                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                     restartPolicy: Always
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
-                      - -secret-type=access_token
-                      - -listen-address=127.0.0.1:8198
-                      - -operational-address=:8199
                     ports:
                       - name: metrics
                         containerPort: 8199
@@ -496,42 +466,41 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
-                    restartPolicy: Always
-                    startupProbe:
-                      exec:
-                        command:
-                          - test
-                          - -e
-                          - /gcp/sa.json
-                      failureThreshold: 5
-                      periodSeconds: 15
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
-                      - -secret-type=service_account_key
-                      - -listen-address=127.0.0.1:8198
-                      - -operational-address=:8199
-                    env:
-                      - name: GOOGLE_APPLICATION_CREDENTIALS
-                        value: "/gcp/sa.json"
-                      - *vault-caurl
-                      - *vault-addr
-                    ports:
-                      - name: metrics
-                        containerPort: 8199
-                        protocol: TCP
-                    resources:
-                      requests:
-                        cpu: "0"
-                        memory: 25Mi
-                      limits:
-                        cpu: "1"
-                        memory: 100Mi
-                    volumeMounts:
-                      - name: gcp
-                        mountPath: /gcp
-                      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+                    <<: &aws-gcp-key-agent-base
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
+                      restartPolicy: Always
+                      startupProbe:
+                        httpGet:
+                          path: /__/ready
+                          port: 8199
+                      env:
+                        - name: GOOGLE_APPLICATION_CREDENTIALS
+                          value: "/gcp/sa.json"
+                        - name: VKCC_VAULT_STATIC_ACCOUNT
+                          value: (join('', ['test-env_gcp_', $namespace, '_default']))
+                        - name: VKCC_SECRET_TYPE
+                          value: "service_account_key"
+                        - name: VKCC_LISTEN_ADDRESS
+                          value: "127.0.0.1:8198"
+                        - name: VKCC_OPERATIONAL_ADDRESS
+                          value: ":8199"
+                        - *vault-caurl
+                        - *vault-addr
+                      ports:
+                        - name: metrics
+                          containerPort: 8199
+                          protocol: TCP
+                      resources:
+                        requests:
+                          cpu: "0"
+                          memory: 25Mi
+                        limits:
+                          cpu: "1"
+                          memory: 100Mi
+                      volumeMounts:
+                        - name: gcp
+                          mountPath: /gcp
+                        - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
                 containers:
                   - name: app
                     env:
@@ -757,14 +726,15 @@ spec:
                 initContainers:
                   - name: vault-credentials-agent-aws
                     <<: &aws-fail-open-base
-                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                      image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                       restartPolicy: Always
-                      args:
-                        - sidecar
-                        - (join('', ['-vault-role=test-env_aws_', $namespace, '_default']))
-                        - -listen-address=127.0.0.1:8498
-                        - -operational-address=:8499
                       env:
+                        - name: VKCC_VAULT_ROLE
+                          value: (join('', ['test-env_aws_', $namespace, '_default']))
+                        - name: VKCC_LISTEN_ADDRESS
+                          value: "127.0.0.1:8498"
+                        - name: VKCC_OPERATIONAL_ADDRESS
+                          value: ":8499"
                         - *vault-caurl
                         - *vault-addr
                       ports:
@@ -797,15 +767,17 @@ spec:
                   - name: vault-credentials-agent-aws
                     <<: *aws-fail-open-base
                   - name: vault-credentials-agent-gcp
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                     restartPolicy: Always
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
-                      - -secret-type=access_token
-                      - -listen-address=127.0.0.1:8198
-                      - -operational-address=:8199
                     env:
+                      - name: VKCC_VAULT_STATIC_ACCOUNT
+                        value: (join('', ['test-env_gcp_', $namespace, '_default']))
+                      - name: VKCC_SECRET_TYPE
+                        value: "access_token"
+                      - name: VKCC_LISTEN_ADDRESS
+                        value: "127.0.0.1:8198"
+                      - name: VKCC_OPERATIONAL_ADDRESS
+                        value: ":8199"
                       - name: GCE_METADATA_HOST
                         value: "127.0.0.1:8198"
                       - name: GCE_METADATA_ROOT
@@ -840,15 +812,17 @@ spec:
               spec:
                 initContainers:
                   - name: vault-credentials-agent-gcp-token
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                     restartPolicy: Always
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
-                      - -secret-type=access_token
-                      - -listen-address=127.0.0.1:8198
-                      - -operational-address=:8199
                     env:
+                      - name: VKCC_VAULT_STATIC_ACCOUNT
+                        value: (join('', ['test-env_gcp_', $namespace, '_default']))
+                      - name: VKCC_SECRET_TYPE
+                        value: "access_token"
+                      - name: VKCC_LISTEN_ADDRESS
+                        value: "127.0.0.1:8198"
+                      - name: VKCC_OPERATIONAL_ADDRESS
+                        value: ":8199"
                       - name: GCE_METADATA_HOST
                         value: "127.0.0.1:8198"
                       - name: GCE_METADATA_ROOT
@@ -904,13 +878,17 @@ spec:
               spec:
                 initContainers:
                   - name: vault-credentials-agent
-                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
+                    image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3
                     restartPolicy: Always
-                    args:
-                      - sidecar
-                      - (join('', ['-vault-static-account=test-env_gcp_', $namespace, '_default']))
-                      - -secret-type=access_token
                     env:
+                      - name: VKCC_VAULT_STATIC_ACCOUNT
+                        value: (join('', ['test-env_gcp_', $namespace, '_default']))
+                      - name: VKCC_SECRET_TYPE
+                        value: "access_token"
+                      - name: VKCC_LISTEN_ADDRESS
+                        value: "127.0.0.1:8098"
+                      - name: VKCC_OPERATIONAL_ADDRESS
+                        value: ":8099"
                       - name: GCE_METADATA_HOST
                         value: "127.0.0.1:8098"
                       - name: GCE_METADATA_ROOT
