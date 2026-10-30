@@ -36,99 +36,92 @@ spec:
       expression: "object.metadata.?namespace.orValue('default')"
     - name: pod_sa
       expression: "object.spec.?serviceAccountName.orValue('default')"
-
-    - name: sidecar_payload_aws
-      expression: |
-        yaml.parse('''
-          name: vault-credentials-agent-aws
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
-          restartPolicy: Always
-          startupProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - "while ! nc -w 1 127.0.0.1 8498; do sleep 1; done"
-          args:
-            - sidecar
-            - -vault-role=''' + variables.vkac_env + '''_aws_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
-            - -listen-address=127.0.0.1:8498
-            - -operational-address=:8499
-          env:
-            - name: VAULT_CAURL
-              value: "http://vault-ca-cert.sys-vault:8100"
-            - name: VAULT_ADDR
-              value: "https://vault.sys-vault:8200"
-          ports:
-            - name: metrics
-              containerPort: 8499
-              protocol: TCP
-          resources:
-            requests: { cpu: 0m, memory: 25Mi }
-            limits: { cpu: 1000m, memory: 100Mi }
-        ''')
-
-    - name: sidecar_payload_gcp
-      expression: |
-        yaml.parse('''
-          name: vault-credentials-agent-gcp
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
-          restartPolicy: Always
-          startupProbe:
-            exec:
-              command:
-                - test
-                - -e
-                - /gcp/sa.json
-            failureThreshold: 5
-            periodSeconds: 15
-          args:
-            - sidecar
-            - -vault-static-account=''' + variables.vkac_env + '''_gcp_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
-            - -secret-type=service_account_key
-            - -listen-address=127.0.0.1:8198
-            - -operational-address=:8199
-          env:
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: "/gcp/sa.json"
-            - name: VAULT_CAURL
-              value: "http://vault-ca-cert.sys-vault:8100"
-            - name: VAULT_ADDR
-              value: "https://vault.sys-vault:8200"
-          ports:
-            - name: metrics
-              containerPort: 8199
-              protocol: TCP
-          resources:
-            requests: { cpu: 0m, memory: 25Mi }
-            limits: { cpu: 1000m, memory: 100Mi }
-          volumeMounts:
-            - name: gcp
-              mountPath: /gcp
-        ''')
+    - name: vault_role
+      expression: >-
+        variables.vkac_env + "_aws_" + variables.pod_namespace + "_" + variables.pod_sa
+    - name: vault_static_account
+      expression: >-
+        variables.vkac_env + "_gcp_" + variables.pod_namespace + "_" + variables.pod_sa
 
   mutations:
     - patchType: ApplyConfiguration
       applyConfiguration:
-        expression: >-
+        expression: |
           Object{
             metadata: Object.metadata{
               annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" }
             },
             spec: Object.spec{
-              initContainers: has(object.spec.initContainers) ?
-                object.spec.initContainers.map(c,
+              // Point existing initContainers at the credentials endpoint.
+              initContainers: (has(object.spec.initContainers) ?
+                  object.spec.initContainers.map(c,
+                    Object.spec.initContainers{
+                      name: c.name,
+                      env: [
+                        Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" },
+                        Object.spec.initContainers.env{ name: "GOOGLE_APPLICATION_CREDENTIALS", value: "/gcp/sa.json" }
+                      ],
+                      volumeMounts: [
+                        Object.spec.initContainers.volumeMounts{ name: "gcp", mountPath: "/gcp" }
+                      ]
+                    }
+                  ) : []) +
+                [
+                  // Append the AWS credentials sidecar.
                   Object.spec.initContainers{
-                    name: c.name,
+                    name: "vault-credentials-agent-aws",
+                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3",
+                    restartPolicy: "Always",
                     env: [
-                      Object.spec.initContainers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" },
-                      Object.spec.initContainers.env{ name: "GOOGLE_APPLICATION_CREDENTIALS", value: "/gcp/sa.json" }
+                      Object.spec.initContainers.env{ name: "VKCC_VAULT_ROLE", value: variables.vault_role },
+                      Object.spec.initContainers.env{ name: "VKCC_LISTEN_ADDRESS", value: "127.0.0.1:8498" },
+                      Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8499" },
+                      Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
+                      Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
+                    ],
+                    ports: [
+                      Object.spec.initContainers.ports{ name: "metrics", containerPort: 8499, protocol: "TCP" }
+                    ],
+                    startupProbe: Object.spec.initContainers.startupProbe{
+                      httpGet: Object.spec.initContainers.startupProbe.httpGet{ path: "/__/ready", port: 8499 }
+                    },
+                    resources: Object.spec.initContainers.resources{
+                      requests: {"cpu": "0m", "memory": "25Mi"},
+                      limits: {"cpu": "1000m", "memory": "100Mi"}
+                    }
+                  },
+                  // Append the GCP credentials sidecar.
+                  Object.spec.initContainers{
+                    name: "vault-credentials-agent-gcp",
+                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3",
+                    restartPolicy: "Always",
+                    env: [
+                      Object.spec.initContainers.env{ name: "GOOGLE_APPLICATION_CREDENTIALS", value: "/gcp/sa.json" },
+                      Object.spec.initContainers.env{ name: "VKCC_VAULT_STATIC_ACCOUNT", value: variables.vault_static_account },
+                      Object.spec.initContainers.env{ name: "VKCC_SECRET_TYPE", value: "service_account_key" },
+                      Object.spec.initContainers.env{ name: "VKCC_LISTEN_ADDRESS", value: "127.0.0.1:8198" },
+                      Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8199" },
+                      Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
+                      Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
                     ],
                     volumeMounts: [
                       Object.spec.initContainers.volumeMounts{ name: "gcp", mountPath: "/gcp" }
-                    ]
+                    ],
+                    ports: [
+                      Object.spec.initContainers.ports{ name: "metrics", containerPort: 8199, protocol: "TCP" }
+                    ],
+                    startupProbe: Object.spec.initContainers.startupProbe{
+                      httpGet: Object.spec.initContainers.startupProbe.httpGet{ path: "/__/ready", port: 8199 },
+                      failureThreshold: 5,
+                      periodSeconds: 15
+                    },
+                    resources: Object.spec.initContainers.resources{
+                      requests: {"cpu": "0m", "memory": "25Mi"},
+                      limits: {"cpu": "1000m", "memory": "100Mi"}
+                    }
                   }
-                ) : [],
+                ],
+              // Point existing containers at the credentials endpoint too.
               containers: has(object.spec.containers) ?
                 object.spec.containers.map(c,
                   Object.spec.containers{
@@ -141,24 +134,9 @@ spec:
                       Object.spec.containers.volumeMounts{ name: "gcp", mountPath: "/gcp" }
                     ]
                   }
-                ) : []
+                ) : [],
+              volumes: [
+                Object.spec.volumes{ name: "gcp", emptyDir: Object.spec.volumes.emptyDir{} }
+              ]
             }
           }
-
-    - patchType: JSONPatch
-      jsonPatch:
-        expression: >-
-          (
-            size(object.spec.?initContainers.orValue([])) > 0
-            ?
-              [
-                JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload_gcp},
-                JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload_aws}
-              ]
-            :
-              [ JSONPatch{op: "add", path: "/spec/initContainers", value: [variables.sidecar_payload_aws, variables.sidecar_payload_gcp]} ]
-          ) + (
-            size(object.spec.?volumes.orValue([])) > 0
-            ? [ JSONPatch{op: "add", path: "/spec/volumes/-", value: yaml.parse('{"name": "gcp", "emptyDir": {}}') }]
-            : [ JSONPatch{op: "add", path: "/spec/volumes", value: [yaml.parse('{"name": "gcp", "emptyDir": {}}')] }]
-          )
