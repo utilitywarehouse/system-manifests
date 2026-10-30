@@ -9,12 +9,15 @@
 # the kernel gates both calls behind CAP_BPF before invoking them, so a
 # container reaching either hook has a capability Kyverno should have blocked.
 #
-# Binary exclusions use exact path matching only (no followChildren).
-# Tetragon allows at most one matchBinaries entry per selector, making it
-# impossible to apply followChildren selectively (e.g. calico but not runc).
-# Keeping followChildren off preserves visibility into container workloads
-# (all children of runc) at the cost of some noise from calico child
-# processes (felix, bird) that legitimately create BPF maps.
+# Both hooks watch container PID namespaces only. Host processes load BPF
+# routinely (runc attaches a cgroup device program to every new container,
+# systemd attaches its own), and binary exclusions failed to filter them.
+# Agents running in their own PID namespace (calico-node and tetragon use
+# hostNetwork but not hostPID) stay excluded by binary; hostPID agents such
+# as arc-harden-runner already drop out with the host namespace.
+# Trade-off: BPF loaded by an attacker already root on the host, or from a
+# hostPID pod, goes unseen here; Kyverno restricts hostPID to exception
+# namespaces, and the ssh, kernel-module and privilege policies watch the host.
 apiVersion: cilium.io/v1alpha1
 kind: TracingPolicy
 metadata:
@@ -37,15 +40,17 @@ spec:
               operator: "Equal"
               values:
                 - "0" # 0 means the verifier accepted the BPF program
+          matchNamespaces:
+            - namespace: Pid
+              operator: NotIn
+              values:
+                - "host_ns"
           matchBinaries:
             - operator: "NotIn"
               values:
                 - /usr/bin/bpftool
                 - /usr/bin/calico-node
-                - /usr/bin/falco
-                - /usr/bin/runc
                 - /usr/bin/tetragon
-                - /usr/lib/systemd/systemd
           matchActions:
             - action: Post
               rateLimit: "1s"
@@ -81,7 +86,6 @@ spec:
           matchBinaries:
             - operator: "NotIn"
               values:
-                - /usr/bin/falco
                 - /usr/bin/tetragon
                 - /usr/local/bin/arc-harden-runner
           matchActions:
@@ -104,13 +108,16 @@ spec:
               operator: "Equal"
               values:
                 - "0" # 0 means the map was successfully created
+          matchNamespaces:
+            - namespace: Pid
+              operator: NotIn
+              values:
+                - "host_ns"
           matchBinaries:
             - operator: "NotIn"
               values:
                 - /usr/bin/bpftool
                 - /usr/bin/calico-node
-                - /usr/bin/falco
-                - /usr/bin/runc
                 - /usr/bin/tetragon
                 - /usr/local/bin/arc-harden-runner
           matchActions:
