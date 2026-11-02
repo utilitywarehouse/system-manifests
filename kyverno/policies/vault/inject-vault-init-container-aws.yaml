@@ -38,82 +38,96 @@ spec:
     - name: pod_sa
       expression: "object.spec.?serviceAccountName.orValue('default')"
 
-    - name: sidecar_payload
+    - name: vault_role
+      expression: variables.vkac_env + "_aws_" + variables.pod_namespace + "_" + variables.pod_sa
+
+    # The script is left-aligned so the generated HCL and credentials file carry
+    # no leading whitespace.
+    - name: init_script
       expression: |
-        yaml.parse('''
-          name: vault-credentials-agent-aws
-          image: docker.io/hashicorp/vault:1.15.2
-          command:
-            - sh
-            - -c
-            - |
-              echo '
-              exit_after_auth = true
-              auto_auth {
-                      method "kubernetes" {
-                          mount_path = "auth/kubernetes"
-                          config = {
-                              role = "''' + variables.vkac_env + '''_aws_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''"
-                          }
-                          exit_on_err = true
-                      }
+        '''echo '
+        exit_after_auth = true
+        auto_auth {
+                method "kubernetes" {
+                    mount_path = "auth/kubernetes"
+                    config = {
+                        role = "''' + variables.vault_role + '''"
+                    }
+                    exit_on_err = true
+                }
 
-                      sink "file" {
-                          config = {
-                              path = "/home/vault/.vault-token"
-                          }
-                      }
-              }
-              template {
-                  destination = "/etc/aws/credentials"
-                  contents = <<EOT
-              {{ with secret "aws/sts/''' + variables.vkac_env + '''_aws_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''" -}}
-              [default]
-              aws_access_key_id={{ .Data.access_key }}
-              aws_secret_access_key={{ .Data.secret_key }}
-              aws_session_token={{ .Data.security_token }}
+                sink "file" {
+                    config = {
+                        path = "/home/vault/.vault-token"
+                    }
+                }
+        }
+        template {
+            destination = "/etc/aws/credentials"
+            contents = <<EOT
+        {{ with secret "aws/sts/''' + variables.vault_role + '''" -}}
+        [default]
+        aws_access_key_id={{ .Data.access_key }}
+        aws_secret_access_key={{ .Data.secret_key }}
+        aws_session_token={{ .Data.security_token }}
 
-              ; debug info
-              ; request_id={{ .RequestID }}
-              ; lease_id={{ .LeaseID }}
-              ; renewable={{ .Renewable }}
-              ; lease_duration={{ .LeaseDuration }}
-              ; arn={{ .Data.arn }}
-              ; warnings={{ .Warnings }}
+        ; debug info
+        ; request_id={{ .RequestID }}
+        ; lease_id={{ .LeaseID }}
+        ; renewable={{ .Renewable }}
+        ; lease_duration={{ .LeaseDuration }}
+        ; arn={{ .Data.arn }}
+        ; warnings={{ .Warnings }}
 
-              {{ end -}}
-              EOT
-              }
-              ' > config.hcl
+        {{ end -}}
+        EOT
+        }
+        ' > config.hcl
 
-              # The first DNS lookup from a fresh pod can transiently fail
-              # (kubernetes "first query" conntrack race). Retry with a backoff
-              # so a single dropped lookup does not fail the one-shot init
-              # container.
-              attempts=0
-              until wget -qO ca.crt $VAULT_CAURL; do
-                attempts=$((attempts+1))
-                if [ "$attempts" -ge 5 ]; then
-                  echo "failed to fetch vault CA after $attempts attempts" >&2
-                  exit 1
-                fi
-                echo "vault CA fetch attempt $attempts failed, retrying" >&2
-                sleep 5
-              done
-              vault agent -ca-cert ca.crt -config=config.hcl
-          env:
-            - name: AWS_SHARED_CREDENTIALS_FILE
-              value: "/etc/aws/credentials"
-            - name: VAULT_CAURL
-              value: "http://vault-ca-cert.sys-vault:8100"
-            - name: VAULT_ADDR
-              value: "https://vault.sys-vault:8200"
-          volumeMounts:
-            - name: vault-aws-credentials
-              mountPath: /etc/aws
-        ''')
+        # The first DNS lookup from a fresh pod can transiently fail
+        # (kubernetes "first query" conntrack race). Retry with a backoff
+        # so a single dropped lookup does not fail the one-shot init
+        # container.
+        attempts=0
+        until wget -qO ca.crt $VAULT_CAURL; do
+          attempts=$((attempts+1))
+          if [ "$attempts" -ge 5 ]; then
+            echo "failed to fetch vault CA after $attempts attempts" >&2
+            exit 1
+          fi
+          echo "vault CA fetch attempt $attempts failed, retrying" >&2
+          sleep 5
+        done
+        vault agent -ca-cert ca.crt -config=config.hcl
+        '''
 
   mutations:
+    # The vault agent needs a command, which is atomic, so the container cannot
+    # be added by ApplyConfiguration. It is inserted first so credentials exist
+    # before any other init container runs. It precedes the ApplyConfiguration
+    # so it patches the pod as submitted rather than the merged result.
+    - patchType: JSONPatch
+      jsonPatch:
+        expression: >-
+          (has(object.spec.initContainers) ? [] : [JSONPatch{op: "add", path: "/spec/initContainers", value: []}]) +
+          [JSONPatch{
+            op: "add",
+            path: "/spec/initContainers/0",
+            value: Object.spec.initContainers{
+              name: "vault-credentials-agent-aws",
+              image: "docker.io/hashicorp/vault:1.15.2",
+              command: ["sh", "-c", variables.init_script],
+              env: [
+                Object.spec.initContainers.env{ name: "AWS_SHARED_CREDENTIALS_FILE", value: "/etc/aws/credentials" },
+                Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
+                Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
+              ],
+              volumeMounts: [
+                Object.spec.initContainers.volumeMounts{ name: "vault-aws-credentials", mountPath: "/etc/aws" }
+              ]
+            }
+          }]
+
     - patchType: ApplyConfiguration
       applyConfiguration:
         expression: >-
@@ -145,19 +159,9 @@ spec:
                       Object.spec.containers.volumeMounts{ name: "vault-aws-credentials", mountPath: "/etc/aws" }
                     ]
                   }
-                ) : []
+                ) : [],
+              volumes: [
+                Object.spec.volumes{ name: "vault-aws-credentials", emptyDir: Object.spec.volumes.emptyDir{} }
+              ]
             }
           }
-
-    - patchType: JSONPatch
-      jsonPatch:
-        expression: >-
-          (
-            size(object.spec.?initContainers.orValue([])) > 0
-              ? [ JSONPatch{op: "add", path: "/spec/initContainers/0", value: variables.sidecar_payload} ]
-              : [ JSONPatch{op: "add", path: "/spec/initContainers", value: [variables.sidecar_payload]} ]
-          ) + (
-            size(object.spec.?volumes.orValue([])) > 0
-              ? [ JSONPatch{op: "add", path: "/spec/volumes/-", value: yaml.parse('{"name": "vault-aws-credentials", "emptyDir": {}}')} ]
-              : [ JSONPatch{op: "add", path: "/spec/volumes", value: [yaml.parse('{"name": "vault-aws-credentials", "emptyDir": {}}')]} ]
-          )

@@ -37,76 +37,70 @@ spec:
       expression: "object.metadata.?namespace.orValue('default')"
     - name: pod_sa
       expression: "object.spec.?serviceAccountName.orValue('default')"
+    - name: vault_static_account
+      expression: >-
+        variables.vkac_env + "_gcp_" + variables.pod_namespace + "_" + variables.pod_sa
 
     # Fail-open is a pod-wide toggle (vault.uw.systems/credentials-inject-failure-policy: fail-open)
-    # rather than a separate annotation/policy - it just decides which of the
-    # two payloads below gets injected. This is only honoured for pods on the
-    # new annotation; old-annotation pods use the dedicated, untouched
-    # inject-vault-sidecar-gcp-token-fail-open policy instead, which this
-    # policy never matches or overlaps with.
+    # that only decides whether the sidecar waits for credentials before the pod
+    # starts. It is honoured only for pods on the new annotation; old-annotation
+    # pods use the dedicated inject-vault-sidecar-gcp-token-fail-open policy
+    # instead, which this policy never matches or overlaps with.
     - name: fail_open
       expression: >-
         object.metadata.?annotations['vault.uw.systems/credentials-inject-failure-policy'].orValue('') == 'fail-open'
 
-    - name: sidecar_payload
-      expression: |
-        yaml.parse('''
-          name: vault-credentials-agent-gcp-token
-          image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.2
-          restartPolicy: Always
-        ''' + (variables.fail_open ? '' : '''
-          startupProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - "while ! nc -w 1 127.0.0.1 8198; do sleep 1; done"
-        ''') + '''
-          args:
-            - sidecar
-            - -vault-static-account=''' + variables.vkac_env + '''_gcp_''' + variables.pod_namespace + '''_''' + variables.pod_sa + '''
-            - -secret-type=access_token
-            - -listen-address=127.0.0.1:8198
-            - -operational-address=:8199
-          env:
-            - name: GCE_METADATA_HOST
-              value: "127.0.0.1:8198"
-            - name: GCE_METADATA_ROOT
-              value: "127.0.0.1:8198"
-            - name: VAULT_CAURL
-              value: "http://vault-ca-cert.sys-vault:8100"
-            - name: VAULT_ADDR
-              value: "https://vault.sys-vault:8200"
-          ports:
-            - name: metrics
-              containerPort: 8199
-              protocol: TCP
-          resources:
-            requests:
-              cpu: 0m
-              memory: 25Mi
-            limits:
-              cpu: 1000m
-              memory: 100Mi
-        ''')
-
   mutations:
     - patchType: ApplyConfiguration
       applyConfiguration:
-        expression: >-
+        expression: |
           Object{
-            metadata: Object.metadata{ annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" } },
+            metadata: Object.metadata{
+              annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" }
+            },
             spec: Object.spec{
-              initContainers: has(object.spec.initContainers) ?
-                object.spec.initContainers.map(c,
+              // Point existing initContainers at the credentials endpoint.
+              initContainers: (has(object.spec.initContainers) ?
+                  object.spec.initContainers.map(c,
+                    Object.spec.initContainers{
+                      name: c.name,
+                      env: [
+                        Object.spec.initContainers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
+                        Object.spec.initContainers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
+                      ]
+                    }
+                  ) : []) +
+                [
+                  // Append the vault credentials sidecar.
                   Object.spec.initContainers{
-                    name: c.name,
+                    name: "vault-credentials-agent-gcp-token",
+                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3",
+                    restartPolicy: "Always",
                     env: [
+                      Object.spec.initContainers.env{ name: "VKCC_VAULT_STATIC_ACCOUNT", value: variables.vault_static_account },
+                      Object.spec.initContainers.env{ name: "VKCC_SECRET_TYPE", value: "access_token" },
+                      Object.spec.initContainers.env{ name: "VKCC_LISTEN_ADDRESS", value: "127.0.0.1:8198" },
+                      Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8199" },
                       Object.spec.initContainers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
-                      Object.spec.initContainers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
-                    ]
+                      Object.spec.initContainers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" },
+                      Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
+                      Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
+                    ],
+                    ports: [
+                      Object.spec.initContainers.ports{ name: "metrics", containerPort: 8199, protocol: "TCP" }
+                    ],
+                    ?startupProbe: variables.fail_open ? optional.none() : optional.of(
+                      Object.spec.initContainers.startupProbe{
+                        httpGet: Object.spec.initContainers.startupProbe.httpGet{ path: "/__/ready", port: 8199 }
+                      }
+                    ),
+                    resources: Object.spec.initContainers.resources{
+                      requests: {"cpu": "0m", "memory": "25Mi"},
+                      limits: {"cpu": "1000m", "memory": "100Mi"}
+                    }
                   }
-                ) : [],
+                ],
+              // Point existing containers at the credentials endpoint too.
               containers: has(object.spec.containers) ?
                 object.spec.containers.map(c,
                   Object.spec.containers{
@@ -119,10 +113,3 @@ spec:
                 ) : []
             }
           }
-
-    - patchType: JSONPatch
-      jsonPatch:
-        expression: >-
-          size(object.spec.?initContainers.orValue([])) > 0
-            ? [ JSONPatch{op: "add", path: "/spec/initContainers/-", value: variables.sidecar_payload} ]
-            : [ JSONPatch{op: "add", path: "/spec/initContainers", value: [variables.sidecar_payload]} ]
