@@ -1,0 +1,32 @@
+# Kyverno generates a MutatingAdmissionPolicy and a binding for every
+# MutatingPolicy that opts in with spec.autogen.mutatingAdmissionPolicy.
+# The assertions below pin the parts of the generated spec that encode the
+# policy's intent, without asserting API server defaults.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: mpol-ensure-ns-name-label
+spec:
+  reinvocationPolicy: Never
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [namespaces]
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: mpol-ensure-ns-name-label-binding
+spec:
+  policyName: mpol-ensure-ns-name-label
+---
+# Once the policy is generated the Kyverno webhook must stop handling it.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: kyverno-resource-mutating-webhook-cfg
+(length((webhooks || `[]`)[?contains(name, 'ensure-ns-name-label')])): 0

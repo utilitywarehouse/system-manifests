@@ -25,6 +25,12 @@ spec:
             timeout: 60s
             file: vap-ready.yaml
 
+    - name: assert-map-generated
+      try:
+        - assert:
+            timeout: 60s
+            file: map-ready.yaml
+
     - name: test-require-ns-owner-label
       try:
         - apply:
