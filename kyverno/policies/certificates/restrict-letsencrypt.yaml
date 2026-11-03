@@ -11,6 +11,9 @@ metadata:
       This policy helps us track issuer usage. To ensure the Infra team has visibility
       into certificates issued by Let's Encrypt under the 'uw.systems' domain.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
   validationActions:
     - Deny
   matchConstraints:

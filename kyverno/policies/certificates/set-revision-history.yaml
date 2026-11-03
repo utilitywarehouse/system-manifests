@@ -3,6 +3,9 @@ kind: MutatingPolicy
 metadata:
   name: set-certificates-revision-history-limit
 spec:
+  autogen:
+    mutatingAdmissionPolicy:
+      enabled: true
   matchConstraints:
     resourceRules:
       - apiGroups: ["cert-manager.io"]

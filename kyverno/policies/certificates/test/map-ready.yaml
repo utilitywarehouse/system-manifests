@@ -1,0 +1,30 @@
+# Kyverno generates a MutatingAdmissionPolicy and a binding for every
+# MutatingPolicy that opts in with spec.autogen.mutatingAdmissionPolicy.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: mpol-set-certificates-revision-history-limit
+spec:
+  reinvocationPolicy: Never
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [cert-manager.io]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [certificates]
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: mpol-set-certificates-revision-history-limit-binding
+spec:
+  policyName: mpol-set-certificates-revision-history-limit
+---
+# Once the policy is generated the Kyverno webhook must stop handling it.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: kyverno-resource-mutating-webhook-cfg
+(length((webhooks || `[]`)[?contains(name, 'set-certificates-revision-history-limit')])): 0

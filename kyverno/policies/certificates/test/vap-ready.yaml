@@ -1,0 +1,30 @@
+# Kyverno generates a ValidatingAdmissionPolicy and a binding for every
+# ValidatingPolicy that opts in with spec.autogen.validatingAdmissionPolicy.
+# The policy exception is compiled into the generated policy as a negated
+# match condition, so the assertions below also prove it survives generation.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-restrict-letsencrypt-cluster-issuer
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [cert-manager.io]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [certificates]
+  (matchConditions[*].name):
+    - is-uw-systems-domain
+    - approved-domains-for-team-c
+  (length(matchConditions[?starts_with(expression, '!(')])): 1
+  (validations[*].message):
+    - |-
+      Direct use of 'letsencrypt' for *.uw.systems is restricted for visibility. Please create a 'PolicyException' in kube-system and reach out to us on #infra.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-restrict-letsencrypt-cluster-issuer-binding
+spec:
+  policyName: vpol-restrict-letsencrypt-cluster-issuer
+  validationActions: [Deny]
