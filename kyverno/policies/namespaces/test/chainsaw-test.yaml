@@ -15,6 +15,16 @@ spec:
         - apply:
             file: ../require-ns-owner-label.yaml
 
+        - assert:
+            timeout: 30s
+            file: policy-ready.yaml
+
+    - name: assert-vap-generated
+      try:
+        - assert:
+            timeout: 60s
+            file: vap-ready.yaml
+
     - name: test-require-ns-owner-label
       try:
         - apply:
@@ -27,7 +37,6 @@ spec:
               - check:
                   ($error != null): true
                   "(contains(to_string($error), 'The label `uw.systems/owner` is required'))": true
-
         - apply:
             resource:
               apiVersion: v1
@@ -223,11 +232,23 @@ spec:
               - check:
                   ($error == null): true
 
-    # Tear down delete policy to allow Chainsaw cleanup
+    # The delete policy also blocks chainsaw's cleanup of the test namespaces.
+    # Remove the policy once the denial tests are done, wait for the generated
+    # policy to be collected, then give admission a moment to observe it.
     - name: remove-delete-policy
       try:
-        - delete:
-            ref:
-              apiVersion: policies.kyverno.io/v1
-              kind: ValidatingPolicy
-              name: require-delete-annotation-ns-label
+        - script:
+            timeout: 90s
+            content: |
+              kubectl delete validatingpolicy require-delete-annotation-ns-label --ignore-not-found
+              for i in $(seq 1 30); do
+                kubectl get validatingpolicy require-delete-annotation-ns-label >/dev/null 2>&1 || break
+                sleep 1
+              done
+              kubectl delete validatingadmissionpolicybinding vpol-require-delete-annotation-ns-label-binding --ignore-not-found
+              kubectl delete validatingadmissionpolicy vpol-require-delete-annotation-ns-label --ignore-not-found
+              for i in $(seq 1 30); do
+                kubectl get validatingadmissionpolicy vpol-require-delete-annotation-ns-label >/dev/null 2>&1 || break
+                sleep 1
+              done
+              sleep 5

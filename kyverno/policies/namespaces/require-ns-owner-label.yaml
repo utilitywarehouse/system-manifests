@@ -10,6 +10,10 @@ metadata:
     policies.kyverno.io/description: >-
       Require all namespaces to mark ownership via uw.systems/owner label.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:
