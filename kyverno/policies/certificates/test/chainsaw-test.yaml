@@ -33,35 +33,16 @@ spec:
 
         - assert:
             timeout: 30s
-            resource:
-              apiVersion: policies.kyverno.io/v1
-              kind: ValidatingPolicy
-              metadata:
-                name: restrict-letsencrypt-cluster-issuer
-              status:
-                conditionStatus:
-                  (conditions[?type == 'RBACPermissionsGranted']):
-                    - reason: Succeeded
-                      status: "True"
-                  (conditions[?type == 'WebhookConfigured']):
-                    - reason: Succeeded
-                      status: "True"
+            file: policy-ready.yaml
 
+    - name: assert-generated-policies
+      try:
         - assert:
-            timeout: 30s
-            resource:
-              apiVersion: policies.kyverno.io/v1
-              kind: MutatingPolicy
-              metadata:
-                name: set-certificates-revision-history-limit
-              status:
-                conditionStatus:
-                  (conditions[?type == 'RBACPermissionsGranted']):
-                    - reason: Succeeded
-                      status: "True"
-                  (conditions[?type == 'WebhookConfigured']):
-                    - reason: Succeeded
-                      status: "True"
+            timeout: 60s
+            file: vap-ready.yaml
+        - assert:
+            timeout: 60s
+            file: map-ready.yaml
 
     - name: test-resources
       try:
