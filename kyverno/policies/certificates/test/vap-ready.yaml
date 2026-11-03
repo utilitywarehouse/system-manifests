@@ -16,7 +16,8 @@ spec:
   (matchConditions[*].name):
     - is-uw-systems-domain
     - approved-domains-for-team-c
-  (length(matchConditions[?starts_with(expression, '!(')])): 1
+    - approved-domains-for-team-d
+  (length(matchConditions[?starts_with(expression, '!(')])): 2
   (validations[*].message):
     - |-
       Direct use of 'letsencrypt' for *.uw.systems is restricted for visibility. Please create a 'PolicyException' in kube-system and reach out to us on #infra.

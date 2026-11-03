@@ -1,0 +1,34 @@
+# Two exceptions on the same policy, as happens in real clusters: each one
+# carries a single condition named after the exception, so the generated VAP
+# keeps unique condition names.
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-nodeport-exception-one
+  namespace: kube-system
+spec:
+  policyRefs:
+    - name: restrict-nodeport
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: test-nodeport-exception-one
+      expression: >-
+        object.metadata.namespace == 'default' &&
+        object.metadata.name == 'test-nodeport-exception-allowed' &&
+        object.spec.ports.all(p, !has(p.nodePort) || p.nodePort == 30961)
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-nodeport-exception-two
+  namespace: kube-system
+spec:
+  policyRefs:
+    - name: restrict-nodeport
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: test-nodeport-exception-two
+      expression: >-
+        object.metadata.namespace == 'default' &&
+        object.metadata.name == 'test-nodeport-exception-allowed-two' &&
+        object.spec.ports.all(p, !has(p.nodePort) || p.nodePort == 30962)

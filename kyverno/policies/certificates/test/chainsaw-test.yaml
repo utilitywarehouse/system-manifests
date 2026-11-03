@@ -68,6 +68,15 @@ spec:
                   ($error != null): true
                   "(contains(to_string($error), 'is restricted for visibility'))": true
 
+              - match:
+                  apiVersion: cert-manager.io/v1
+                  kind: Certificate
+                  metadata:
+                    name: letsencrypt-cert-team-d-not-approved
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'is restricted for visibility'))": true
+
         # assert mutations
         - assert:
             resource:

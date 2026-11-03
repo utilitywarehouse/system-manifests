@@ -26,6 +26,11 @@ spec:
             timeout: 30s
             file: policy-ready.yaml
 
+    - name: apply-exceptions
+      try:
+        - apply:
+            file: exceptions.yaml
+
     - name: assert-vap-generated
       try:
         - assert:
