@@ -1,0 +1,142 @@
+# Kyverno generates a ValidatingAdmissionPolicy and a binding for every
+# ValidatingPolicy that opts in with spec.autogen.validatingAdmissionPolicy.
+# The assertions below pin the parts of the generated spec that encode the
+# policy's intent (what it matches, what it checks, and any compiled-in
+# PolicyException), without asserting API server defaults.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-disallow-default-tlsoptions
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [traefik.io]
+        apiVersions: ["*"]
+        operations: [CREATE, UPDATE]
+        resources: [tlsoptions]
+  (matchConditions[*].name): [is-default]
+  (matchConditions[*].expression): ["object.metadata.name == 'default'"]
+  (validations[*].message):
+    - "Only cluster administrators are allowed to set default TLSOptions."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-disallow-default-tlsoptions-binding
+spec:
+  policyName: vpol-disallow-default-tlsoptions
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-disallow-or-operator
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [traefik.io]
+        apiVersions: ["*"]
+        operations: [CREATE, UPDATE]
+        resources: [ingressroutes, ingressroutetcps]
+  (validations[*].message): ["Route matches must not contain ||"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-disallow-or-operator-binding
+spec:
+  policyName: vpol-disallow-or-operator
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-disallow-wildcard-hostsni
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [traefik.io]
+        apiVersions: ["*"]
+        operations: [CREATE, UPDATE]
+        resources: [ingressroutetcps]
+  (validations[*].message):
+    - "HostSNI rules must not contain a wildcard host '*'"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-disallow-wildcard-hostsni-binding
+spec:
+  policyName: vpol-disallow-wildcard-hostsni
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-external-dns-domain-label-length
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [networking.k8s.io]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [ingresses]
+  (matchConditions[*].name): [has-external-dns-target]
+  (matchConditions[*].expression):
+    - "'external-dns.alpha.kubernetes.io/target' in object.metadata.?annotations.orValue({})"
+  # variables are copied into the policy so validations can use them
+  (variables[*].name): [prefix]
+  (variables[*].expression): ["'infra'"]
+  (validations[*].message):
+    - "External-DNS TXT record domain label must be <= 63 chars"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-external-dns-domain-label-length-binding
+spec:
+  policyName: vpol-external-dns-domain-label-length
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-require-ingress-host
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [networking.k8s.io]
+        apiVersions: ["*"]
+        operations: [CREATE, UPDATE]
+        resources: [ingresses]
+  (validations[*].message): ["Ingresses must specify a host"]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-require-ingress-host-binding
+spec:
+  policyName: vpol-require-ingress-host
+  validationActions: [Deny]
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vpol-require-ingressroute-host
+spec:
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [traefik.io]
+        apiVersions: ["*"]
+        operations: [CREATE, UPDATE]
+        resources: [ingressroutes]
+  (validations[*].message):
+    - "All route matches must contain a Host rule with valid hostnames as defined by RFC 1123"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: vpol-require-ingressroute-host-binding
+spec:
+  policyName: vpol-require-ingressroute-host
+  validationActions: [Deny]

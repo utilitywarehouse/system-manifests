@@ -16,6 +16,10 @@ metadata:
       let's only check the one edited via external-DNS since the rest should be
       problematic regardless.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:

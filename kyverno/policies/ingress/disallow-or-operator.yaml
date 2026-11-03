@@ -11,6 +11,10 @@ metadata:
       Using || can allow you to subvert other restrictions and hijack traffic
       with non-specific rules that match generic paths or headers
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:
