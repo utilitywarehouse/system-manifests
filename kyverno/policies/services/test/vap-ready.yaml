@@ -80,6 +80,11 @@ spec:
         apiVersions: [v1]
         operations: [CREATE, UPDATE]
         resources: [services]
+  # both exceptions are compiled into the policy's matchConditions
+  (matchConditions[*].name):
+    - test-nodeport-exception-one
+    - test-nodeport-exception-two
+  (length(matchConditions[?starts_with(expression, '!(')])): 2
   (validations[*].message): ["Services of type NodePort are not allowed."]
 ---
 apiVersion: admissionregistration.k8s.io/v1

@@ -18,3 +18,10 @@ metadata:
   name: team-c
   labels:
     uw.systems/owner: system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-d
+  labels:
+    uw.systems/owner: system

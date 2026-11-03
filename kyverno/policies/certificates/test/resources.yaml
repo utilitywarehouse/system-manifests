@@ -89,3 +89,29 @@ spec:
     name: "selfsigned"
     kind: ClusterIssuer
   secretName: not-important
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-cert-team-d-approved
+  namespace: team-d # has an exception
+spec:
+  dnsNames:
+    - "*.one.team-d.uw.systems"
+  issuerRef:
+    name: "letsencrypt"
+    kind: ClusterIssuer
+  secretName: not-important
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: letsencrypt-cert-team-d-not-approved
+  namespace: team-d
+spec:
+  dnsNames:
+    - "*.two.team-d.uw.systems"
+  issuerRef:
+    name: "letsencrypt"
+    kind: ClusterIssuer
+  secretName: not-important

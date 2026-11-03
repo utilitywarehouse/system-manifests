@@ -23,22 +23,6 @@ spec:
       protocol: TCP
       targetPort: 30001
 ---
-apiVersion: policies.kyverno.io/v1
-kind: PolicyException
-metadata:
-  name: homer-heplify-server-restrict-nodeport
-  namespace: kube-system
-spec:
-  policyRefs:
-    - name: restrict-nodeport
-      kind: ValidatingPolicy
-  matchConditions:
-    - name: allow-specific-nodeport
-      expression: >-
-        object.metadata.namespace == 'default' &&
-        object.metadata.name == 'test-nodeport-exception-allowed' &&
-        object.spec.ports.all(p, !has(p.nodePort) || p.nodePort == 30961)
----
 apiVersion: v1
 kind: Service
 metadata:
@@ -52,3 +36,17 @@ spec:
       port: 9060
       protocol: UDP
       targetPort: 9060
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-nodeport-exception-allowed-two
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - name: udp
+      nodePort: 30962
+      port: 9061
+      protocol: UDP
+      targetPort: 9061

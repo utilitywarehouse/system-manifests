@@ -16,3 +16,21 @@ spec:
           '*.one.team-c.uw.systems',
           '*.api.uw.systems'
         ])
+---
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: allow-letsencrypt-team-d
+  namespace: kube-system
+spec:
+  policyRefs:
+    - name: restrict-letsencrypt-cluster-issuer
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: approved-domains-for-team-d
+      expression: >-
+        object.metadata.namespace == 'team-d' &&
+        has(object.spec.dnsNames) &&
+        object.spec.dnsNames.all(domain, domain in [
+          '*.one.team-d.uw.systems'
+        ])
