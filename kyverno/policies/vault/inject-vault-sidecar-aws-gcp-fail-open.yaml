@@ -68,7 +68,7 @@ spec:
                   // Append the AWS credentials sidecar.
                   Object.spec.initContainers{
                     name: "vault-credentials-agent-aws",
-                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3",
+                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.4",
                     restartPolicy: "Always",
                     env: [
                       Object.spec.initContainers.env{ name: "VKCC_VAULT_ROLE", value: variables.vault_role },
@@ -89,7 +89,7 @@ spec:
                   // Append the GCP credentials sidecar.
                   Object.spec.initContainers{
                     name: "vault-credentials-agent-gcp",
-                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.3",
+                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.4",
                     restartPolicy: "Always",
                     env: [
                       Object.spec.initContainers.env{ name: "VKCC_VAULT_STATIC_ACCOUNT", value: variables.vault_static_account },
