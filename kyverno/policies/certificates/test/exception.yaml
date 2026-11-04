@@ -8,7 +8,7 @@ spec:
     - name: restrict-letsencrypt-cluster-issuer
       kind: ValidatingPolicy
   matchConditions:
-    - name: approved-domains-for-team-c
+    - name: allow-letsencrypt-team-c
       expression: >-
         object.metadata.namespace == 'team-c' &&
         has(object.spec.dnsNames) &&
@@ -27,7 +27,7 @@ spec:
     - name: restrict-letsencrypt-cluster-issuer
       kind: ValidatingPolicy
   matchConditions:
-    - name: approved-domains-for-team-d
+    - name: allow-letsencrypt-team-d
       expression: >-
         object.metadata.namespace == 'team-d' &&
         has(object.spec.dnsNames) &&

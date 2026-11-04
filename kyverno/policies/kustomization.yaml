@@ -5,6 +5,7 @@ resources:
   - canary/
   - certificates/
   - ingress/
+  - kyverno/
   - namespaces/
   - pods/
   - services/

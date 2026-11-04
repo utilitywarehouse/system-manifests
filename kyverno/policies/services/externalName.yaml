@@ -44,5 +44,5 @@ spec:
   matchConditions:
     # Allow sys-ingress-certs services to use this for the definition of
     # dummy cert loader services.
-    - name: allow-sys-ingress-certs-namespace
+    - name: no-localhost-service-exception
       expression: "object.metadata.namespace == 'sys-ingress-certs'"

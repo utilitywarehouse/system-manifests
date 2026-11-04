@@ -35,10 +35,10 @@ spec:
     - name: disallow-host-network-pods
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'sys-log'"
-    - name: for-given-pod
-      expression: "object.metadata.name == 'test-user-ns-hostnetwork-pod'"
+    - name: test-user-ns-hostnetwork-exception
+      expression: >-
+        object.metadata.?namespace.orValue('') == 'sys-log' &&
+        object.metadata.name == 'test-user-ns-hostnetwork-pod'
 ---
 apiVersion: v1
 kind: Pod
@@ -61,10 +61,10 @@ spec:
     - name: disallow-host-pid-pods
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'sys-log'"
-    - name: for-given-pod
-      expression: "object.metadata.name == 'test-user-ns-hostpid-pod'"
+    - name: test-user-ns-hostpid-exception
+      expression: >-
+        object.metadata.?namespace.orValue('') == 'sys-log' &&
+        object.metadata.name == 'test-user-ns-hostpid-pod'
 ---
 apiVersion: v1
 kind: Pod
@@ -87,10 +87,10 @@ spec:
     - name: disallow-host-ipc-pods
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'sys-log'"
-    - name: for-given-pod
-      expression: "object.metadata.name == 'test-user-ns-hostipc-pod'"
+    - name: test-user-ns-hostipc-exception
+      expression: >-
+        object.metadata.?namespace.orValue('') == 'sys-log' &&
+        object.metadata.name == 'test-user-ns-hostipc-pod'
 ---
 apiVersion: v1
 kind: Pod
@@ -113,10 +113,10 @@ spec:
     - name: hostpath-vols
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'sys-log'"
-    - name: for-given-pod
-      expression: "object.metadata.name == 'test-user-ns-hostpath-pod'"
+    - name: test-user-ns-hostpath-pod-exception
+      expression: >-
+        object.metadata.?namespace.orValue('') == 'sys-log' &&
+        object.metadata.name == 'test-user-ns-hostpath-pod'
 ---
 apiVersion: v1
 kind: Pod

@@ -43,14 +43,10 @@ spec:
     - name: hostpath-vols
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'kube-system'"
-
-    - name: for-given-app
-      expression: "object.metadata.name.startsWith('test-hostpath-exception')"
-
-    - name: allow-given-hostpath
+    - name: calico-node-hostpath-vols
       expression: >-
+        object.metadata.?namespace.orValue('') == 'kube-system' &&
+        object.metadata.name.startsWith('test-hostpath-exception') &&
         object.spec.?volumes.orValue([]).all(v,
           !has(v.hostPath) || !has(v.hostPath.path) || v.hostPath.path in ['/usr/share/ca-certificates', '/lib/modules', '/var/run/calico']
         )

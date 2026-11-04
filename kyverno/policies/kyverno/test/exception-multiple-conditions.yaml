@@ -1,0 +1,13 @@
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-multiple-conditions
+spec:
+  policyRefs:
+    - name: hostpath-vols
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: for-given-namespace
+      expression: "object.metadata.?namespace.orValue('') == 'default'"
+    - name: for-given-app
+      expression: "object.metadata.name.startsWith('test-')"

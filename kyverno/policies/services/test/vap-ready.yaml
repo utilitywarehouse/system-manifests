@@ -36,7 +36,7 @@ spec:
         operations: [CREATE, UPDATE]
         resources: [services]
   # the PolicyException is compiled into the policy's matchConditions
-  (matchConditions[*].name): [allow-sys-ingress-certs-namespace]
+  (matchConditions[*].name): [no-localhost-service-exception]
   (matchConditions[*].expression): ["!(object.metadata.namespace == 'sys-ingress-certs')"]
   (validations[*].message): ["Service of type ExternalName cannot point to localhost."]
 ---

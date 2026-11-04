@@ -1,0 +1,13 @@
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-single-condition
+spec:
+  policyRefs:
+    - name: hostpath-vols
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: test-single-condition
+      expression: >-
+        object.metadata.?namespace.orValue('') == 'default' &&
+        object.metadata.name.startsWith('test-')

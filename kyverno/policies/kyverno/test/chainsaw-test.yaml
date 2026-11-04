@@ -1,0 +1,36 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-policyexception-single-condition
+spec:
+  steps:
+    - name: apply-policy
+      try:
+        - apply:
+            file: ../policyexception-single-condition.yaml
+        - assert:
+            timeout: 30s
+            file: policy-ready.yaml
+
+    - name: accept-single-condition
+      try:
+        - apply:
+            file: exception-valid.yaml
+
+    - name: reject-multiple-conditions
+      try:
+        - apply:
+            file: exception-multiple-conditions.yaml
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'exactly one matchCondition'))": true
+
+    - name: reject-mismatched-name
+      try:
+        - apply:
+            file: exception-mismatched-name.yaml
+            expect:
+              - check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'named after the PolicyException'))": true

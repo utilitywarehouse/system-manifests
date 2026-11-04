@@ -29,12 +29,10 @@ spec:
     - name: disallow-host-pid-pods
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'default'"
-
-    - name: for-given-app
-      expression: "object.metadata.name.startsWith('test-hostpid-true-exceptions')"
-
+    - name: kured-disallow-host-pid-pods
+      expression: >-
+        object.metadata.?namespace.orValue('') == 'default' &&
+        object.metadata.name.startsWith('test-hostpid-true-exceptions')
 ---
 apiVersion: v1
 kind: Pod
@@ -82,14 +80,10 @@ spec:
     - name: disallow-host-ports
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'kube-system'"
-
-    - name: for-given-app
-      expression: "object.metadata.name.startsWith('test-hostport-exception')"
-
-    - name: allow-given-host-ports
+    - name: csi-gce-pd-disallow-host-ports
       expression: >-
+        object.metadata.?namespace.orValue('') == 'kube-system' &&
+        object.metadata.name.startsWith('test-hostport-exception') &&
         object.spec.?containers.orValue([]).all(c, 
           c.?ports.orValue([]).all(p, !has(p.hostPort) || p.hostPort in [22011, 22012, 22013])
         )
