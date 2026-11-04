@@ -10,6 +10,10 @@ metadata:
       Restricts LimitRange max and default CPU to 6 cores and memory to 24Gi.
 
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
 

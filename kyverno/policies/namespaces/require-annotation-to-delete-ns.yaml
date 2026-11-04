@@ -11,6 +11,10 @@ metadata:
       Require namespaces to be annotated with 'uw.systems/delete-allowed: "true"'
       in order to allow deletion.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:
