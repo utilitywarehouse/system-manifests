@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - csi-nodeplugin-rbac.yaml
+  - csi-provisioner-rbac.yaml
+  - csi-rbdplugin-provisioner.yaml
+  - csi-rbdplugin.yaml
