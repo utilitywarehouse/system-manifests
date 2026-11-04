@@ -1,0 +1,10 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: argocd-application-field-validation
+status:
+  generated: true
+  conditionStatus:
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"

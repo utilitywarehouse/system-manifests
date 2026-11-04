@@ -36,8 +36,14 @@ spec:
             file: ../vault-github-permission-set-annotation.yaml
 
         - assert:
-            timeout: 30s
+            timeout: 120s
             file: policy-ready.yaml
+
+    - name: assert-vap-generated
+      try:
+        - assert:
+            timeout: 60s
+            file: vap-ready.yaml
 
     - name: test-vault-annotation
       try:
