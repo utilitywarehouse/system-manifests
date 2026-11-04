@@ -411,7 +411,7 @@ spec:
                   optional: true
             - name: KUBECACHEDIR
               value: /tmp/kubecache
-          image: quay.io/argoproj/argocd:v3.6.0-rc3
+          image: quay.io/argoproj/argocd:v3.6.1
           imagePullPolicy: Always
           name: argocd-application-controller
           ports:
@@ -440,6 +440,8 @@ spec:
               name: argocd-home
             - mountPath: /home/argocd/params
               name: argocd-cmd-params-cm
+            - mountPath: /app/config/tls
+              name: tls-certs
             - mountPath: /tmp
               name: argocd-application-controller-tmp
           workingDir: /home/argocd
@@ -449,6 +451,9 @@ spec:
       volumes:
         - emptyDir: {}
           name: argocd-home
+        - configMap:
+            name: argocd-tls-certs-cm
+          name: tls-certs
         - emptyDir: {}
           name: argocd-application-controller-tmp
         - name: argocd-repo-server-tls
