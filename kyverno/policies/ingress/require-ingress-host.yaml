@@ -11,6 +11,10 @@ metadata:
       prevent ingresses from hijacking the default traefik route by requiring an
       explicit host value
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:

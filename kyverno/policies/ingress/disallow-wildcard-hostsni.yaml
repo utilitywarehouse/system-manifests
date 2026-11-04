@@ -11,6 +11,10 @@ metadata:
       Prevent IngressRouteTCP from hijacking all traffic by preventing wildcard
       HostSNIs.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+
   validationActions:
     - Deny
   matchConstraints:
