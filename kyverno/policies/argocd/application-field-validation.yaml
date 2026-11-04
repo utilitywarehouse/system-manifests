@@ -13,6 +13,9 @@ metadata:
       ensures source paths are used instead of Helm charts, and enforces 
       destination fields.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
   validationActions:
     - Deny
   matchConstraints:

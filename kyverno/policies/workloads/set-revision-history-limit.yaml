@@ -15,6 +15,9 @@ metadata:
       which only client-side apply (kubectl, Argo CD's default) writes - objects
       created server-side or by an operator carry no such record and are capped.
 spec:
+  autogen:
+    mutatingAdmissionPolicy:
+      enabled: true
   matchConstraints:
     resourceRules:
       - apiGroups: ["apps"]

@@ -11,19 +11,34 @@ spec:
 
         - assert:
             timeout: 30s
-            resource:
-              apiVersion: policies.kyverno.io/v1
-              kind: MutatingPolicy
-              metadata:
-                name: set-workloads-revision-history-limit
-              status:
-                conditionStatus:
-                  (conditions[?type == 'RBACPermissionsGranted']):
-                    - reason: Succeeded
-                      status: "True"
-                  (conditions[?type == 'WebhookConfigured']):
-                    - reason: Succeeded
-                      status: "True"
+            file: policy-ready.yaml
+
+    - name: assert-map-generated
+      try:
+        - assert:
+            timeout: 60s
+            file: map-ready.yaml
+
+    # The API server can take a moment to load a freshly generated policy, so
+    # prove it mutates before asserting on the real fixtures.
+    - name: wait-for-generated-policy
+      try:
+        - script:
+            timeout: 120s
+            content: |
+              set -eu
+              for i in $(seq 1 60); do
+                name="policy-canary-$i"
+                kubectl create deployment "$name" --image=nginx >/dev/null
+                value=$(kubectl get deployment "$name" -o jsonpath='{.spec.revisionHistoryLimit}')
+                kubectl delete deployment "$name" --wait=false >/dev/null 2>&1 || true
+                if [ "$value" = "2" ]; then
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "the generated policy did not mutate a canary deployment" >&2
+              exit 1
 
     - name: test-resources
       try:
