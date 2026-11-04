@@ -33,7 +33,7 @@ spec:
     - name: restrict-load-balancer-ip
       kind: ValidatingPolicy
   matchConditions:
-    - name: allow-specific-ip
+    - name: restrict-load-balancer-ip-exception
       expression: >-
         object.metadata.namespace == 'default' &&
         object.metadata.name == 'test-loadbalancerip-exception-allowed' &&

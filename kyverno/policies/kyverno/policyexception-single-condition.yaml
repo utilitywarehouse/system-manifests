@@ -1,0 +1,38 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: policyexception-single-condition
+  annotations:
+    policies.kyverno.io/title: Require one well-named condition per PolicyException
+    policies.kyverno.io/category: Best Practices
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: PolicyException
+    policies.kyverno.io/description: >-
+      Kyverno copies every PolicyException match condition into the generated
+      ValidatingAdmissionPolicy under the condition's own name and negates it
+      separately. Exceptions sharing a condition name make the generated policy
+      invalid, and separate conditions turn the exception's AND into an OR.
+      Require exactly one condition per exception, named after the exception.
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["policies.kyverno.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["policyexceptions"]
+  validations:
+    - expression: >-
+        object.spec.?matchConditions.orValue([]).size() == 1
+      message: >-
+        A PolicyException must have exactly one matchCondition. Kyverno copies
+        each condition into the generated ValidatingAdmissionPolicy and negates
+        it separately, so several conditions turn the exception's AND into an OR.
+    - expression: >-
+        object.spec.?matchConditions.orValue([]).all(c, c.?name.orValue('') == object.metadata.name)
+      message: >-
+        The matchCondition must be named after the PolicyException. Kyverno
+        copies the name into the generated ValidatingAdmissionPolicy, so two
+        exceptions reusing a name make the policy invalid and stop it being
+        generated.

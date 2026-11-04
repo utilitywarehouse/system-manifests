@@ -43,11 +43,10 @@ spec:
     - name: disallow-host-network-pods
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'default'"
-
-    - name: for-given-app
-      expression: "object.metadata.name.startsWith('test-host-network-set-to-true-exception')"
+    - name: etcd-backup-disallow-host-network-pods
+      expression: >-
+        object.metadata.?namespace.orValue('') == 'default' &&
+        object.metadata.name.startsWith('test-host-network-set-to-true-exception')
 ---
 apiVersion: v1
 kind: Pod

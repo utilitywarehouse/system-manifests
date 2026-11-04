@@ -1,0 +1,10 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: policyexception-single-condition
+status:
+  conditionStatus:
+    ready: true
+    (conditions[?type == 'RBACPermissionsGranted']):
+      - reason: Succeeded
+        status: "True"

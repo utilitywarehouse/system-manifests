@@ -39,11 +39,10 @@ spec:
     - name: disallow-privilege-escalation
       kind: ValidatingPolicy
   matchConditions:
-    - name: for-given-namespace
-      expression: "object.metadata.?namespace.orValue('') == 'default'"
-
-    - name: for-given-app
-      expression: "object.metadata.name.startsWith('test-privilege-escalation-set-to-true-exception')"
+    - name: trident-disallow-privilege-escalation
+      expression: >-
+        object.metadata.?namespace.orValue('') == 'default' &&
+        object.metadata.name.startsWith('test-privilege-escalation-set-to-true-exception')
 ---
 apiVersion: v1
 kind: Pod

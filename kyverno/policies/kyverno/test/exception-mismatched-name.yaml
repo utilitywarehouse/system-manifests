@@ -1,0 +1,11 @@
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: test-mismatched-name
+spec:
+  policyRefs:
+    - name: hostpath-vols
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: allow-test-pods
+      expression: "object.metadata.?namespace.orValue('') == 'default'"
