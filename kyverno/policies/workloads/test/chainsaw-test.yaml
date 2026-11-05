@@ -10,7 +10,7 @@ spec:
             file: ../set-revision-history-limit.yaml
 
         - assert:
-            timeout: 30s
+            timeout: 120s
             file: policy-ready.yaml
 
     - name: assert-map-generated

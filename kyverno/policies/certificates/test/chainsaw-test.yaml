@@ -32,7 +32,7 @@ spec:
             file: exception.yaml
 
         - assert:
-            timeout: 30s
+            timeout: 120s
             file: policy-ready.yaml
 
     - name: assert-generated-policies

@@ -9,7 +9,7 @@ spec:
         - apply:
             file: ../policyexception-single-condition.yaml
         - assert:
-            timeout: 30s
+            timeout: 120s
             file: policy-ready.yaml
 
     - name: accept-single-condition

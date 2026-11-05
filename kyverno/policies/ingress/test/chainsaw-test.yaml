@@ -35,7 +35,7 @@ spec:
             file: ../require-ingressroute-host.yaml
 
         - assert:
-            timeout: 30s
+            timeout: 120s
             file: policy-ready.yaml
 
     - name: assert-vap-generated

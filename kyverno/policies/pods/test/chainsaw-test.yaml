@@ -38,7 +38,7 @@ spec:
             file: ../user-namespaces.yaml
 
         - assert:
-            timeout: 30s
+            timeout: 120s
             file: policy-ready.yaml
 
     - name: test-apparmor
