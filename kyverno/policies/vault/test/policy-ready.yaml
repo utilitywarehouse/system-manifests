@@ -3,11 +3,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-init-container-aws
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -16,11 +14,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-aws
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -29,11 +25,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-aws-fail-open
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -42,11 +36,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-aws-gcp
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -55,11 +47,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-aws-gcp-fail-open
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -68,11 +58,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-aws-gcp-key
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -81,11 +69,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-gcp-key
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -94,11 +80,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-gcp-token
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -107,11 +91,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-gcp-token-fail-open
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
@@ -120,11 +102,9 @@ kind: MutatingPolicy
 metadata:
   name: inject-vault-sidecar-github
 status:
+  generated: true
   conditionStatus:
     (conditions[?type == 'RBACPermissionsGranted']):
-      - reason: Succeeded
-        status: "True"
-    (conditions[?type == 'WebhookConfigured']):
       - reason: Succeeded
         status: "True"
 ---
