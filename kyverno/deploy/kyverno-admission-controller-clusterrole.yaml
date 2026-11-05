@@ -1,0 +1,27 @@
+# The admission controller resolves resource.Get() calls made by policies. The
+# upstream role only covers namespaced resources via the `view` binding, so
+# cluster-scoped objects need an explicit grant. Aggregated into
+# `kyverno:admission-controller` through the label below.
+# Used by enforce-user-namespaces (pods/user-namespaces.yaml) to detect SMB
+# volumes via the StorageClass provisioner and the PV CSI driver.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kyverno:admission-controller:manual
+  labels:
+    rbac.kyverno.io/aggregate-to-admission-controller: "true"
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumes
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - storageclasses
+    verbs:
+      - get
+      - list
