@@ -4,6 +4,7 @@ namespace: kube-system
 
 resources:
   - ../upstream/
+  - kyverno-admission-controller-clusterrole.yaml
   - kyverno-admission-controller-pdb.yaml
   - kyverno-background-controller-clusterrole.yaml
 
