@@ -1,5 +1,5 @@
 # version managed by `make runner-image-version`.
-FROM ghcr.io/actions/actions-runner:2.336.0
+FROM ghcr.io/actions/actions-runner:2.338.2
 
 USER root
 
