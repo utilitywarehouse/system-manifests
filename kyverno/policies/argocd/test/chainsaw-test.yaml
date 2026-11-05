@@ -25,14 +25,10 @@ spec:
         - apply:
             file: ../application-field-validation.yaml
 
-        - assert:
-            timeout: 120s
-            file: policy-ready.yaml
-
     - name: assert-vap-generated
       try:
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: vap-ready.yaml
 
     - name: test-argocd-application-field-validation

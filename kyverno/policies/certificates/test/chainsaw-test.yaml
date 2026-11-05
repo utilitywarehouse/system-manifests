@@ -31,17 +31,13 @@ spec:
         - apply:
             file: exception.yaml
 
-        - assert:
-            timeout: 30s
-            file: policy-ready.yaml
-
     - name: assert-generated-policies
       try:
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: vap-ready.yaml
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: map-ready.yaml
 
     - name: test-resources

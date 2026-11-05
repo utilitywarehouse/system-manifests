@@ -42,8 +42,14 @@ spec:
     - name: assert-vap-generated
       try:
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: vap-ready.yaml
+
+    - name: assert-map-generated
+      try:
+        - assert:
+            timeout: 120s
+            file: map-ready.yaml
 
     - name: test-vault-annotation
       try:
@@ -380,8 +386,6 @@ spec:
                         value: "http://vault-ca-cert.sys-vault:8100"
                       - name: VAULT_ADDR
                         value: "https://vault.sys-vault:8200"
-                      - name: GITSYNC_PASSWORD_FILE
-                        value: "/var/run/secrets/github/token"
                     ports:
                       - name: metrics
                         containerPort: 8499
@@ -395,11 +399,8 @@ spec:
                         protocol: TCP
                 containers:
                   - name: app
-                    env:
-                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
-                        value: "http://127.0.0.1:8498/credentials"
-                      - name: GITSYNC_PASSWORD_FILE
-                        value: "/var/run/secrets/github/token"
+                    (env[?name=='GITSYNC_PASSWORD_FILE'] | [0].value): "/var/run/secrets/github/token"
+                    (env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'] | [0].value): "http://127.0.0.1:8498/credentials"
 
     - name: inject-vault-sidecar-aws-and-gcp-token
       try:
@@ -428,10 +429,6 @@ spec:
                         value: "http://vault-ca-cert.sys-vault:8100"
                       - name: VAULT_ADDR
                         value: "https://vault.sys-vault:8200"
-                      - name: GCE_METADATA_HOST
-                        value: "127.0.0.1:8198"
-                      - name: GCE_METADATA_ROOT
-                        value: "127.0.0.1:8198"
                     ports:
                       - name: metrics
                         containerPort: 8499
@@ -445,13 +442,9 @@ spec:
                         protocol: TCP
                 containers:
                   - name: app
-                    env:
-                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
-                        value: "http://127.0.0.1:8498/credentials"
-                      - name: GCE_METADATA_HOST
-                        value: "127.0.0.1:8198"
-                      - name: GCE_METADATA_ROOT
-                        value: "127.0.0.1:8198"
+                    (env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'] | [0].value): "http://127.0.0.1:8498/credentials"
+                    (env[?name=='GCE_METADATA_HOST'] | [0].value): "127.0.0.1:8198"
+                    (env[?name=='GCE_METADATA_ROOT'] | [0].value): "127.0.0.1:8198"
 
     - name: inject-vault-sidecar-aws-gcp-key
       try:

@@ -9,7 +9,7 @@ metadata:
 spec:
   autogen:
     mutatingAdmissionPolicy:
-      enabled: false
+      enabled: true
     podControllers:
       controllers: [] # disable autogen for other resources
 
@@ -52,7 +52,7 @@ spec:
             spec: Object.spec{
               // Point existing initContainers at the credentials endpoint.
               initContainers: (has(object.spec.initContainers) ?
-                  object.spec.initContainers.map(c,
+                  object.spec.initContainers.filter(c, !c.name.startsWith("vault-credentials-agent")).map(c,
                     Object.spec.initContainers{
                       name: c.name,
                       env: [
