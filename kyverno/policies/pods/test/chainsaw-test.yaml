@@ -458,6 +458,100 @@ spec:
               apiVersion: v1
               kind: Pod
               metadata:
+                name: test-user-ns-smb-pvc-pod
+                namespace: sys-log
+              spec:
+                volumes:
+                  - name: data
+                    persistentVolumeClaim:
+                      claimName: test-user-ns-smb-pvc
+        # SMB pods must NOT be mutated: `error` passes when the pod does not match
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-smb-pvc-pod
+                namespace: sys-log
+              spec:
+                hostUsers: false
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-smb-static-pvc-pod
+                namespace: sys-log
+              spec:
+                volumes:
+                  - name: data
+                    persistentVolumeClaim:
+                      claimName: test-user-ns-smb-static-pvc
+        # SMB pods must NOT be mutated: `error` passes when the pod does not match
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-smb-static-pvc-pod
+                namespace: sys-log
+              spec:
+                hostUsers: false
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-smb-inline-pod
+                namespace: sys-log
+              spec:
+                volumes:
+                  - name: data
+                    csi:
+                      driver: smb.csi.k8s.io
+        # SMB pods must NOT be mutated: `error` passes when the pod does not match
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-smb-inline-pod
+                namespace: sys-log
+              spec:
+                hostUsers: false
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-smb-ephemeral-pod
+                namespace: sys-log
+              spec:
+                volumes:
+                  - name: data
+                    ephemeral:
+                      volumeClaimTemplate:
+                        spec:
+                          storageClassName: test-user-ns-smb
+        # SMB pods must NOT be mutated: `error` passes when the pod does not match
+        - error:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-user-ns-smb-ephemeral-pod
+                namespace: sys-log
+              spec:
+                hostUsers: false
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
                 name: test-user-ns-standard-pvc-pod
                 namespace: sys-log
               spec:

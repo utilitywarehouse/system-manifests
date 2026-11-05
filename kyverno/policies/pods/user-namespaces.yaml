@@ -44,6 +44,51 @@ spec:
           resource.Get("v1", "persistentvolumeclaims", object.metadata.namespace, v.persistentVolumeClaim.claimName)
             .?spec.storageClassName.orValue("") == ""
         )
+    # SMB volumes (csi-driver-smb) cannot be mounted in a user-namespace pod
+    # because the Linux CIFS client doesn't support idmap mounts:
+    # failed to set MOUNT_ATTR_IDMAP ... invalid argument
+    # Excluding all pods that mount a PVC that is either:
+    #  - on a StorageClass provisioned by smb.csi.k8s.io (dynamic provisioning,
+    #    works while the PVC is still unbound), or
+    #  - bound (volumeName set) to a PV served by the SMB CSI driver (static
+    #    PVs, whose PVC may name a StorageClass that does not exist).
+    # Each PVC is fetched once (map), then at most one StorageClass and one PV
+    # lookup per PVC.
+    # Pods that reference a PVC that does not exist yet are excluded by
+    # exclude-pods-with-nfs-volumes above (a missing PVC has no StorageClass), so
+    # this condition only evaluates existing PVCs (see #762).
+    - name: exclude-pods-with-smb-volumes
+      expression: >-
+        !object.spec.?volumes.orValue([])
+          .filter(v, has(v.persistentVolumeClaim))
+          .map(v, resource.Get("v1", "persistentvolumeclaims", object.metadata.namespace, v.persistentVolumeClaim.claimName))
+          .exists(pvc,
+            (
+              pvc.?spec.storageClassName.orValue("") != "" &&
+              resource.Get("storage.k8s.io/v1", "storageclasses", "", pvc.spec.storageClassName)
+                .?provisioner.orValue("") == "smb.csi.k8s.io"
+            ) || (
+              pvc.?spec.volumeName.orValue("") != "" &&
+              resource.Get("v1", "persistentvolumes", "", pvc.spec.volumeName)
+                .?spec.csi.driver.orValue("") == "smb.csi.k8s.io"
+            )
+          )
+    # Inline (pod-level) csi volumes: the SMB CSIDriver declares the Ephemeral
+    # lifecycle mode, so `volumes[].csi` with this driver is accepted. No lookup.
+    - name: exclude-pods-with-smb-inline-volumes
+      expression: >-
+        !object.spec.?volumes.orValue([]).exists(v,
+          has(v.csi) && v.csi.driver == "smb.csi.k8s.io"
+        )
+    # Generic ephemeral volumes whose claim template uses an SMB StorageClass.
+    - name: exclude-pods-with-smb-ephemeral-volumes
+      expression: >-
+        !object.spec.?volumes.orValue([]).exists(v,
+          has(v.ephemeral) &&
+          v.ephemeral.volumeClaimTemplate.spec.?storageClassName.orValue("") != "" &&
+          resource.Get("storage.k8s.io/v1", "storageclasses", "", v.ephemeral.volumeClaimTemplate.spec.storageClassName)
+            .?provisioner.orValue("") == "smb.csi.k8s.io"
+        )
 
   mutations:
     - patchType: ApplyConfiguration
