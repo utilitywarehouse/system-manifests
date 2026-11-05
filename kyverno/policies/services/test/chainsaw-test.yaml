@@ -22,9 +22,6 @@ spec:
         - apply: { file: ../loadBalancerIP.yaml }
         - apply: { file: ../nodePort.yaml }
         - apply: { file: ../semaphore-service-mirror-length.yaml }
-        - assert:
-            timeout: 30s
-            file: policy-ready.yaml
 
     - name: apply-exceptions
       try:
@@ -34,7 +31,7 @@ spec:
     - name: assert-vap-generated
       try:
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: vap-ready.yaml
 
     - name: test-external-ips

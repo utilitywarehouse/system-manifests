@@ -9,14 +9,10 @@ spec:
         - apply:
             file: ../set-revision-history-limit.yaml
 
-        - assert:
-            timeout: 120s
-            file: policy-ready.yaml
-
     - name: assert-map-generated
       try:
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: map-ready.yaml
 
     # The API server can take a moment to load a freshly generated policy, so

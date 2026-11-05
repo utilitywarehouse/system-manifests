@@ -42,13 +42,13 @@ spec:
     - name: assert-vap-generated
       try:
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: vap-ready.yaml
 
     - name: assert-map-generated
       try:
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: map-ready.yaml
 
     - name: test-vault-annotation

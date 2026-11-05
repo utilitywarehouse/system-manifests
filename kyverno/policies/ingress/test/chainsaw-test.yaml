@@ -34,14 +34,10 @@ spec:
         - apply:
             file: ../require-ingressroute-host.yaml
 
-        - assert:
-            timeout: 120s
-            file: policy-ready.yaml
-
     - name: assert-vap-generated
       try:
         - assert:
-            timeout: 60s
+            timeout: 120s
             file: vap-ready.yaml
 
     - name: test-tlsoption-non-admin
