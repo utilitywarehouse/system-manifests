@@ -4,12 +4,20 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   check-for-kyverno:
     runs-on: ubuntu-latest
     outputs:
       kyverno-found: ${{ steps.kyverno-check.outputs.found }}
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -30,6 +38,9 @@ jobs:
           echo "::set-output name=found::false"
 
   compare-with-upstream:
+    permissions:
+      contents: read  # for actions/checkout to fetch code
+      pull-requests: write  # for marocchino/sticky-pull-request-comment to create or update PR comment
     needs: check-for-kyverno
     if: needs.check-for-kyverno.outputs.kyverno-found == 'true'
     runs-on: ubuntu-latest
@@ -37,6 +48,11 @@ jobs:
       run:
         working-directory: ./kyverno/
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
