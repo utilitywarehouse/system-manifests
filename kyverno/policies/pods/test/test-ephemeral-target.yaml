@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ephemeral-target
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-ephemeral-target
+  template:
+    metadata:
+      labels:
+        app: test-ephemeral-target
+    spec:
+      containers:
+        - name: target
+          image: alpine
+          command: ["sleep", "3600"]

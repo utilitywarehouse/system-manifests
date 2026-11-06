@@ -12,19 +12,37 @@ metadata:
       with exeptions for particular workloads must be added here. Default rule
       maps Kubernetes restricted pod security standard
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions: [Deny]
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
-        resources: ["pods"]
+        resources: ["pods", "pods/ephemeralcontainers"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
   variables:
+    - name: podSpec
+      expression: >-
+        has(object.spec.template) ? object.spec.template.spec :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+        object.spec
     - name: allContainers
       expression: >-
-        object.spec.?containers.orValue([]) + 
-        object.spec.?initContainers.orValue([]) + 
-        object.spec.?ephemeralContainers.orValue([])
+        variables.podSpec.?containers.orValue([]) + 
+        variables.podSpec.?initContainers.orValue([]) + 
+        variables.podSpec.?ephemeralContainers.orValue([])
 
   validations:
     - message: Any capabilities added other than NET_BIND_SERVICE are disallowed.

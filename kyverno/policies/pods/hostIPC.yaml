@@ -10,6 +10,11 @@ metadata:
     policies.kyverno.io/description: >-
       This policy ensures Pods do not use the host's IPC namespace
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions: [Deny]
   matchConstraints:
     resourceRules:
@@ -17,9 +22,24 @@ spec:
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
+  variables:
+    - name: podSpec
+      expression: >-
+        has(object.spec.template) ? object.spec.template.spec :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+        object.spec
+
   validations:
     - message: >-
         HostIPC pods are disallowed. The field spec.hostIPC must be unset or
         set to `false`.
       expression: >-
-        !has(object.spec.hostIPC) || object.spec.hostIPC == false
+        !has(variables.podSpec.hostIPC) || variables.podSpec.hostIPC == false

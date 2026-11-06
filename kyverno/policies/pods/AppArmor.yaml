@@ -14,6 +14,11 @@ metadata:
       overrides to an allowed set of profiles. This policy ensures Pods do not
       specify any other AppArmor profiles than `runtime/default` or `localhost/*`.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions:
     - Deny
   matchConstraints:
@@ -22,15 +27,30 @@ spec:
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
+  variables:
+    - name: podMetadata
+      expression: >-
+        has(object.spec.template) ? object.spec.template.metadata :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.metadata :
+        object.metadata
+
   validations:
     - message: >-
         Specifying other AppArmor profiles is disallowed. The annotation
         `container.apparmor.security.beta.kubernetes.io` if defined
         must not be set to anything other than `runtime/default` or `localhost/*`.
       expression: >-
-        !has(object.metadata.annotations) ||
-        object.metadata.annotations.all(k, 
+        !has(variables.podMetadata.annotations) ||
+        variables.podMetadata.annotations.all(k, 
           !k.startsWith('container.apparmor.security.beta.kubernetes.io/') || 
-          object.metadata.annotations[k] == 'runtime/default' || 
-          object.metadata.annotations[k].startsWith('localhost/')
+          variables.podMetadata.annotations[k] == 'runtime/default' || 
+          variables.podMetadata.annotations[k].startsWith('localhost/')
         )
