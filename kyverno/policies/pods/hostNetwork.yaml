@@ -10,6 +10,11 @@ metadata:
     policies.kyverno.io/description: >-
       This policy ensures Pods do not use the host's network interfaces.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions: [Deny]
   matchConstraints:
     resourceRules:
@@ -17,9 +22,24 @@ spec:
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
+  variables:
+    - name: podSpec
+      expression: >-
+        has(object.spec.template) ? object.spec.template.spec :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+        object.spec
+
   validations:
     - message: >-
         HostNetwork pods are disallowed. The field spec.hostNetwork must be
         unset or set to `false`.
       expression: >-
-        !has(object.spec.hostNetwork) || object.spec.hostNetwork == false
+        !has(variables.podSpec.hostNetwork) || variables.podSpec.hostNetwork == false

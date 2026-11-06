@@ -12,6 +12,11 @@ metadata:
       in a Pod spec which allows running on control plane nodes
       with the taint key `node-role.kubernetes.io/master` or `node-role.kubernetes.io/control-plane`.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions: [Deny]
   matchConstraints:
     resourceRules:
@@ -19,6 +24,14 @@ spec:
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
   matchConditions:
     - name: exclude-system-namespaces
       expression: >-
@@ -26,10 +39,17 @@ spec:
           request.namespace == 'kube-system' ||
           request.namespace.startsWith('sys-')
         )
+  variables:
+    - name: podSpec
+      expression: >-
+        has(object.spec.template) ? object.spec.template.spec :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+        object.spec
+
   validations:
     - message: Pods may not use tolerations which schedule on control plane nodes.
       expression: >-
-        object.spec.?tolerations.orValue([]).all(t, 
+        variables.podSpec.?tolerations.orValue([]).all(t, 
             t.?key.orValue('') != 'node-role.kubernetes.io/master' && 
             t.?key.orValue('') != 'node-role.kubernetes.io/control-plane'
           )

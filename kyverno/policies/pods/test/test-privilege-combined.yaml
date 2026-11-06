@@ -78,3 +78,24 @@ spec:
       image: alpine
       securityContext:
         privileged: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-privileged-deployment-fail
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-privileged-deployment-fail
+  template:
+    metadata:
+      labels:
+        app: test-privileged-deployment-fail
+    spec:
+      containers:
+        - name: test
+          image: alpine
+          securityContext:
+            privileged: true

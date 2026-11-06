@@ -47,7 +47,11 @@ spec:
       expression: >-
         object.metadata.?namespace.orValue('') == 'kube-system' &&
         object.metadata.name.startsWith('test-hostpath-exception') &&
-        object.spec.?volumes.orValue([]).all(v,
+        (
+          has(object.spec.template) ? object.spec.template.spec :
+          has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+          object.spec
+        ).?volumes.orValue([]).all(v,
           !has(v.hostPath) || !has(v.hostPath.path) || v.hostPath.path in ['/usr/share/ca-certificates', '/lib/modules', '/var/run/calico']
         )
 ---
@@ -105,3 +109,46 @@ spec:
             path: /var/run/calico
             type: DirectoryOrCreate
           name: var-run-calico
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-hostpath-deployment-allow
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-hostpath-deployment-allow
+  template:
+    metadata:
+      labels:
+        app: test-hostpath-deployment-allow
+    spec:
+      containers:
+        - name: test
+          image: alpine
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: test-hostpath-cronjob-fail
+  namespace: default
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: test
+              image: alpine
+              volumeMounts:
+                - name: host
+                  mountPath: /host
+          volumes:
+            - name: host
+              hostPath:
+                path: /data
+                type: Directory

@@ -47,8 +47,20 @@ spec:
     - name: shared-sys-ptrace-pod-capabilities
       expression: >-
         object.metadata.?namespace.orValue('') == 'default' &&
-        object.spec.?containers.orValue([]).all(c, 
-          c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap in ['SYS_PTRACE', 'NET_BIND_SERVICE', ''])
+        [
+        (
+          has(object.spec.template) ? object.spec.template.spec :
+          has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+          object.spec
+        )
+        ].all(spec,
+          [
+            spec.?containers.orValue([]),
+            spec.?initContainers.orValue([]),
+            spec.?ephemeralContainers.orValue([])
+          ].all(list,
+            list.all(c, c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap in ['SYS_PTRACE', 'NET_BIND_SERVICE', '']))
+          )
         )
 ---
 apiVersion: v1
