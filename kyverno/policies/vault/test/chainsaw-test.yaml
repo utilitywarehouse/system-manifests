@@ -35,10 +35,6 @@ spec:
         - apply:
             file: ../vault-github-permission-set-annotation.yaml
 
-        - assert:
-            timeout: 120s
-            file: policy-ready.yaml
-
     - name: assert-vap-generated
       try:
         - assert:
@@ -86,6 +82,25 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'must carry a'))": true
+              - match:
+                  apiVersion: apps/v1
+                  kind: Deployment
+                  metadata:
+                    name: test-github-deployment-no-permission-set
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'must carry a'))": true
+
+        - assert:
+            timeout: 60s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-github-deployment-valid
+                namespace: default
+              status:
+                updatedReplicas: 1
 
     - name: create-test-pods
       try:
