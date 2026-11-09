@@ -16,3 +16,46 @@ metadata:
     github.uw.systems/permission-set: "uw_ro'''; -extra-flag"
 spec:
   containers: [{ name: app, image: alpine }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-github-deployment-no-permission-set
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-github-deployment-no-permission-set
+  template:
+    metadata:
+      labels:
+        app: test-github-deployment-no-permission-set
+      annotations:
+        vault.uw.systems/github-credentials: "token-file"
+    spec:
+      containers:
+        - name: app
+          image: alpine
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-github-deployment-valid
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-github-deployment-valid
+  template:
+    metadata:
+      labels:
+        app: test-github-deployment-valid
+      annotations:
+        vault.uw.systems/github-credentials: "token-file"
+        github.uw.systems/permission-set: "uw_ro"
+    spec:
+      containers:
+        - name: app
+          image: alpine

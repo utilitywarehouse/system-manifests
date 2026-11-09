@@ -13,23 +13,46 @@ metadata:
       `github.uw.systems/permission-set` annotation naming which
       vault-plugin-secrets-github permission set to fetch a token for.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions:
     - Deny
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
         apiVersions: ["v1"]
-        operations: ["CREATE"]
+        operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
+  variables:
+    - name: podMetadata
+      expression: >-
+        has(object.spec.template) ? object.spec.template.metadata :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.metadata :
+        object.metadata
   matchConditions:
     - name: requests-github-sidecar
       expression: >-
-        object.metadata.?annotations['vault.uw.systems/github-credentials'].orValue('') == 'token-file'
+        (
+          has(object.spec.template) ? object.spec.template.metadata :
+          has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.metadata :
+          object.metadata
+        ).?annotations['vault.uw.systems/github-credentials'].orValue('') == 'token-file'
   validations:
     - expression: >-
-        has(object.metadata.annotations) &&
-        'github.uw.systems/permission-set' in object.metadata.annotations &&
-        object.metadata.annotations['github.uw.systems/permission-set'].matches('^[a-zA-Z0-9_-]+$')
+        has(variables.podMetadata.annotations) &&
+        'github.uw.systems/permission-set' in variables.podMetadata.annotations &&
+        variables.podMetadata.annotations['github.uw.systems/permission-set'].matches('^[a-zA-Z0-9_-]+$')
       message: >-
         Pods requesting the github vault sidecar must carry a
         `github.uw.systems/permission-set` annotation matching ^[a-zA-Z0-9_-]+$
