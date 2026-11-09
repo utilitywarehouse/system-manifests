@@ -12,6 +12,11 @@ metadata:
       hostPath volumes consume the underlying node's file system. Mounting host
       paths should be disabled by default, except for specific cases
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions: [Deny]
   matchConstraints:
     resourceRules:
@@ -19,8 +24,23 @@ spec:
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
+  variables:
+    - name: podSpec
+      expression: >-
+        has(object.spec.template) ? object.spec.template.spec :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+        object.spec
+
   validations:
     - message: HostPath volumes are not allowed.
       expression: >-
-        !has(object.spec.volumes) ||
-        object.spec.volumes.all(v, !has(v.hostPath))
+        !has(variables.podSpec.volumes) ||
+        variables.podSpec.volumes.all(v, !has(v.hostPath))

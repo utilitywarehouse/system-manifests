@@ -13,19 +13,37 @@ metadata:
       to deviate from the `Default` procMount requires setting a feature gate at the API
       server.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions: [Deny]
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
-        resources: ["pods"]
+        resources: ["pods", "pods/ephemeralcontainers"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
   variables:
+    - name: podSpec
+      expression: >-
+        has(object.spec.template) ? object.spec.template.spec :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+        object.spec
     - name: allContainers
       expression: >-
-        object.spec.?containers.orValue([]) + 
-        object.spec.?initContainers.orValue([]) + 
-        object.spec.?ephemeralContainers.orValue([])
+        variables.podSpec.?containers.orValue([]) + 
+        variables.podSpec.?initContainers.orValue([]) + 
+        variables.podSpec.?ephemeralContainers.orValue([])
   validations:
     - expression: >-
         variables.allContainers.all(c, 

@@ -15,6 +15,11 @@ metadata:
       This policy ensures that only those "safe" subsets can be specified in
       a Pod.
 spec:
+  autogen:
+    validatingAdmissionPolicy:
+      enabled: true
+    podControllers:
+      controllers: []
   validationActions: [Deny]
   matchConstraints:
     resourceRules:
@@ -22,9 +27,24 @@ spec:
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["pods"]
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+      - apiGroups: ["batch"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["jobs", "cronjobs"]
+  variables:
+    - name: podSpec
+      expression: >-
+        has(object.spec.template) ? object.spec.template.spec :
+        has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+        object.spec
+
   validations:
     - expression: >-
-        object.spec.?securityContext.?sysctls.orValue([]).all(s, 
+        variables.podSpec.?securityContext.?sysctls.orValue([]).all(s, 
           s.name in [
             'kernel.shm_rmid_forced', 
             'net.ipv4.ip_local_port_range', 
@@ -35,7 +55,7 @@ spec:
         )
       messageExpression: >-
         'Setting additional sysctls above the allowed type is disallowed. Invalid sysctls found: ' + 
-        object.spec.?securityContext.?sysctls.orValue([]).filter(s, !(s.name in [
+        variables.podSpec.?securityContext.?sysctls.orValue([]).filter(s, !(s.name in [
           'kernel.shm_rmid_forced', 
           'net.ipv4.ip_local_port_range', 
           'net.ipv4.ip_unprivileged_port_start', 

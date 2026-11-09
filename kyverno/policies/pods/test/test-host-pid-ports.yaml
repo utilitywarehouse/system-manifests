@@ -84,8 +84,20 @@ spec:
       expression: >-
         object.metadata.?namespace.orValue('') == 'kube-system' &&
         object.metadata.name.startsWith('test-hostport-exception') &&
-        object.spec.?containers.orValue([]).all(c, 
-          c.?ports.orValue([]).all(p, !has(p.hostPort) || p.hostPort in [22011, 22012, 22013])
+        [
+        (
+          has(object.spec.template) ? object.spec.template.spec :
+          has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
+          object.spec
+        )
+        ].all(spec,
+          [
+            spec.?containers.orValue([]),
+            spec.?initContainers.orValue([]),
+            spec.?ephemeralContainers.orValue([])
+          ].all(list,
+            list.all(c, c.?ports.orValue([]).all(p, !has(p.hostPort) || p.hostPort in [22011, 22012, 22013]))
+          )
         )
 ---
 apiVersion: v1

@@ -41,6 +41,43 @@ spec:
             timeout: 120s
             file: policy-ready.yaml
 
+    - name: assert-vap-generated
+      try:
+        - assert:
+            timeout: 120s
+            file: vap-ready.yaml
+
+    - name: test-ephemeral-container
+      try:
+        - apply:
+            file: test-ephemeral-target.yaml
+        - assert:
+            timeout: 60s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-ephemeral-target
+                namespace: default
+              status:
+                updatedReplicas: 1
+        - script:
+            timeout: 120s
+            content: |
+              set -e
+              pod=$(kubectl get pods -l app=test-ephemeral-target -o jsonpath='{.items[0].metadata.name}')
+              if kubectl patch pod "$pod" --subresource=ephemeralcontainers --type=merge \
+                -p '{"spec":{"ephemeralContainers":[{"name":"dbg","image":"alpine","targetContainerName":"target","securityContext":{"privileged":true}}]}}' \
+                2>&1 | grep -q 'Privileged mode is disallowed'; then
+                echo "privileged ephemeral container denied"
+              else
+                echo "expected the privileged ephemeral container to be denied"
+                exit 1
+              fi
+              kubectl patch pod "$pod" --subresource=ephemeralcontainers --type=merge \
+                -p '{"spec":{"ephemeralContainers":[{"name":"dbg","image":"alpine","targetContainerName":"target"}]}}' >/dev/null
+              echo "plain ephemeral container allowed"
+
     - name: test-apparmor
       try:
         - apply:
@@ -147,6 +184,25 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'HostPath volumes are not allowed.'))": true
+              - match:
+                  apiVersion: batch/v1
+                  kind: CronJob
+                  metadata:
+                    name: test-hostpath-cronjob-fail
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'HostPath volumes are not allowed.'))": true
+
+        - assert:
+            timeout: 60s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: test-hostpath-deployment-allow
+                namespace: default
+              status:
+                updatedReplicas: 1
 
         - assert:
             timeout: 30s
@@ -243,6 +299,14 @@ spec:
                   kind: Pod
                   metadata:
                     name: test-privileged-container-fail
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'Privileged mode is disallowed'))": true
+              - match:
+                  apiVersion: apps/v1
+                  kind: Deployment
+                  metadata:
+                    name: test-privileged-deployment-fail
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'Privileged mode is disallowed'))": true
