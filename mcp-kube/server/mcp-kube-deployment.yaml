@@ -67,14 +67,9 @@ spec:
               mountPath: /certs
       containers:
         - name: mcp-kube
-          image: ghcr.io/containers/kubernetes-mcp-server:v0.0.66
+          image: ghcr.io/containers/kubernetes-mcp-server:v0.1.2
+          # Runtime settings live in the TOML; v0.1 only accepts --config here.
           args:
-            - --port=8000
-            - --bind-address=0.0.0.0
-            - --read-only
-            - --stateless # no tool/prompt change notifications; proxy friendly
-            - --kubeconfig=/etc/mcp-kube/kubeconfig
-            - --cluster-provider=kubeconfig
             - --config=/etc/mcp-kube/config.toml
           ports:
             - name: mcp

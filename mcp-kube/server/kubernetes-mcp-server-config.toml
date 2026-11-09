@@ -2,8 +2,16 @@
 # Server-side access control: applies globally to every configured cluster
 # (local and remote), independent of the per-cluster RBAC.
 #
-# read_only is also set via --read-only on the container args;
-# exec/run/portforward tools aren't even advertised.
+# Runtime settings moved here in v0.1; the server no longer accepts CLI flags
+# for them.
+port = "8000"
+bind_address = "0.0.0.0"
+stateless = true # no tool/prompt change notifications; proxy friendly
+kubeconfig = "/etc/mcp-kube/kubeconfig"
+cluster_provider_strategy = "kubeconfig"
+
+# read_only exposes only tools annotated read-only; exec/run/portforward
+# tools aren't even advertised.
 read_only = true
 
 # Tools removed from tools/list entirely (cannot be called).
