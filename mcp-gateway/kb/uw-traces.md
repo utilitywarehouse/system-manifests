@@ -20,35 +20,41 @@ backend exposes tempo tools with `find_tools` before promising results.
   `telemetry.sdk.language`.
 
 Span-scoped attributes vary per instrumentation library - check
-per-service with `grafana__tempo_get-attribute-names` (`datasourceUid`,
-optional `scope`) / `get-attribute-values` (`datasourceUid`, `name`).
+per-service with `grafana__list_tempo_attribute_names` (`datasourceUid`,
+optional `scope`; set it, unscoped results can be very large) /
+`grafana__list_tempo_attribute_values` (`datasourceUid`, `name`).
 
 ## Querying
 
-`grafana__tempo_traceql-search`: `datasourceUid`, `query` (required);
-`start`/`end` RFC3339 (defaults to past hour).
-`grafana__tempo_get-trace`: `datasourceUid`, `trace_id`.
-Metrics from spans: `grafana__tempo_traceql-metrics-instant` / `-range`
-(same args). Syntax help: `grafana__tempo_docs-traceql`.
+`grafana__search_tempo_traces`: `datasourceUid`, `query` (required);
+optional `start`/`end` in RFC3339 (defaults to the past hour), `limit`
+(default 20) and `spss` (default 3).
+`grafana__get_tempo_trace`: `datasourceUid`, `trace_id`; optional
+`start`/`end` narrow the lookup and `focus_span_id` selects an initial span.
+Metrics from spans: `grafana__query_tempo_metrics` with `datasourceUid`,
+`query`, optional `start`/`end` in RFC3339, and `type` (`instant` or
+`range`; default `range`).
+Trace diffs: `grafana__diff_tempo_traces` with `datasourceUid`,
+`base_trace_id` and `compare_trace_id`.
+Syntax help: `grafana__get_tempo_traceql_docs` with `topic` (`basic`,
+`aggregates`, `structural` or `metrics`).
 
 Examples:
 
 ```
-call_tool(name="grafana__tempo_traceql-search",
+call_tool(name="grafana__search_tempo_traces",
   arguments={datasourceUid="tempo",
-    query="{ resource.service.name = \"<team>/<service>\" && status = error }",
-    start="now-1h", end="now"})
+    query="{ resource.service.name = \"<team>/<service>\" && status = error }"})
 ```
 
 ```
-call_tool(name="grafana__tempo_traceql-search",
+call_tool(name="grafana__search_tempo_traces",
   arguments={datasourceUid="tempo",
-    query="{ resource.service.name = \"<team>/<service>\" && duration > 500ms }",
-    start="now-1h", end="now"})
+    query="{ resource.service.name = \"<team>/<service>\" && duration > 500ms }"})
 ```
 
 ## Cross-reference
 
-Log line with `trace_id`: go straight to `grafana__tempo_get-trace`.
+Log line with `trace_id`: go straight to `grafana__get_tempo_trace`.
 Trace to logs: filter Loki on `kubernetes_namespace` + `trace_id=<id>`
 line filter. Tempo `serviceMap` points at `globalthanos` for metrics.
