@@ -1,4 +1,4 @@
-version=v1.21.2
+version=v1.21.3
 aws_pca_version=v1.12.0
 
 # replace all namespace references with "kube-system", this works since we
