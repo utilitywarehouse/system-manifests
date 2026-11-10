@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: awspcaclusterissuers.awspca.cert-manager.io
 spec:
   group: awspca.cert-manager.io
@@ -43,6 +43,13 @@ spec:
               arn:
                 description: Specifies the ARN of the PCA resource
                 type: string
+              notBeforeOffset:
+                description: |-
+                  Specifies how far before the issuance time to set NotBefore on issued
+                  certificates, up to a maximum of 24h. Defaults to 15m.
+                maxLength: 32
+                pattern: ^([0-9]{1,5}(s|m|h))+$
+                type: string
               pcaTemplate:
                 description: Specifies PCA template configuration for this issuer.
                 properties:
@@ -59,8 +66,9 @@ spec:
                 description: Specifies the ARN of role to assume when issuing certificates.
                 type: string
               secretRef:
-                description: Needs to be specified if you want to authorize with AWS
-                  using an access and secret key
+                description: |-
+                  Needs to be specified if you want to authorize with AWS using an access and secret key.
+                  An AWSPCAIssuer can only use a Secret in its own namespace; an AWSPCAClusterIssuer must specify the Secret's namespace.
                 properties:
                   accessKeyIDSelector:
                     description: Specifies the secret key where the AWS Access Key
@@ -122,6 +130,24 @@ spec:
                     x-kubernetes-map-type: atomic
                 type: object
                 x-kubernetes-map-type: atomic
+              serviceAccountRef:
+                description: |-
+                  Names a ServiceAccount whose bound token (also known as "projected token")
+                  the controller exchanges for role, so role must also be set. The controller
+                  needs RBAC to create tokens for the ServiceAccount; the chart grants this
+                  only for the controller's own ServiceAccount. Cannot be set with secretRef.
+                properties:
+                  name:
+                    description: Name of the ServiceAccount used to request a token.
+                    type: string
+                  namespace:
+                    description: |-
+                      Namespace of the ServiceAccount. Required for an AWSPCAClusterIssuer. For an
+                      AWSPCAIssuer it must be the Issuer's namespace.
+                    type: string
+                required:
+                - name
+                type: object
             type: object
           status:
             description: AWSPCAIssuerStatus defines the observed state of AWSPCAIssuer
@@ -194,7 +220,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.20.1
+    controller-gen.kubebuilder.io/version: v0.23.0
   name: awspcaissuers.awspca.cert-manager.io
 spec:
   group: awspca.cert-manager.io
@@ -233,6 +259,13 @@ spec:
               arn:
                 description: Specifies the ARN of the PCA resource
                 type: string
+              notBeforeOffset:
+                description: |-
+                  Specifies how far before the issuance time to set NotBefore on issued
+                  certificates, up to a maximum of 24h. Defaults to 15m.
+                maxLength: 32
+                pattern: ^([0-9]{1,5}(s|m|h))+$
+                type: string
               pcaTemplate:
                 description: Specifies PCA template configuration for this issuer.
                 properties:
@@ -249,8 +282,9 @@ spec:
                 description: Specifies the ARN of role to assume when issuing certificates.
                 type: string
               secretRef:
-                description: Needs to be specified if you want to authorize with AWS
-                  using an access and secret key
+                description: |-
+                  Needs to be specified if you want to authorize with AWS using an access and secret key.
+                  An AWSPCAIssuer can only use a Secret in its own namespace; an AWSPCAClusterIssuer must specify the Secret's namespace.
                 properties:
                   accessKeyIDSelector:
                     description: Specifies the secret key where the AWS Access Key
@@ -312,6 +346,24 @@ spec:
                     x-kubernetes-map-type: atomic
                 type: object
                 x-kubernetes-map-type: atomic
+              serviceAccountRef:
+                description: |-
+                  Names a ServiceAccount whose bound token (also known as "projected token")
+                  the controller exchanges for role, so role must also be set. The controller
+                  needs RBAC to create tokens for the ServiceAccount; the chart grants this
+                  only for the controller's own ServiceAccount. Cannot be set with secretRef.
+                properties:
+                  name:
+                    description: Name of the ServiceAccount used to request a token.
+                    type: string
+                  namespace:
+                    description: |-
+                      Namespace of the ServiceAccount. Required for an AWSPCAClusterIssuer. For an
+                      AWSPCAIssuer it must be the Issuer's namespace.
+                    type: string
+                required:
+                - name
+                type: object
             type: object
           status:
             description: AWSPCAIssuerStatus defines the observed state of AWSPCAIssuer

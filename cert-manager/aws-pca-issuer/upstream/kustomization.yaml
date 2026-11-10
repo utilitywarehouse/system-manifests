@@ -33,6 +33,12 @@ patches:
   - patch: |-
       - op: remove
         path: /spec/selector/matchLabels/app.kubernetes.io~1instance
+    target:
+      version: v1
+      kind: PodDisruptionBudget
+  - patch: |-
+      - op: remove
+        path: /spec/selector/matchLabels/app.kubernetes.io~1instance
       - op: remove
         path: /spec/template/metadata/labels/app.kubernetes.io~1instance
     target:
