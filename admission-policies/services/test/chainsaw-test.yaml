@@ -1,7 +1,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: test-service-policies
+  name: test-service-admission-policies
 spec:
   steps:
     - name: setup-prerequisites
@@ -15,23 +15,21 @@ spec:
                 labels:
                   uw.systems/owner: system
 
-    - name: apply-policies
+    # What a cluster does: render the shared base with that cluster's exception
+    # patches and apply the result. No Kyverno involved.
+    - name: apply-admission-policies
       try:
-        - apply: { file: ../externalIPs.yaml }
-        - apply: { file: ../externalName.yaml }
-        - apply: { file: ../loadBalancerIP.yaml }
-        - apply: { file: ../nodePort.yaml }
-        - apply: { file: ../semaphore-service-mirror-length.yaml }
+        - script:
+            timeout: 120s
+            content: |
+              set -eu
+              kubectl kustomize --load-restrictor LoadRestrictionsNone . \
+                | kubectl apply -f -
 
-    - name: apply-exceptions
-      try:
-        - apply:
-            file: exceptions.yaml
-
-    - name: assert-vap-generated
+    - name: assert-admission-policies
       try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: vap-ready.yaml
 
     - name: test-external-ips

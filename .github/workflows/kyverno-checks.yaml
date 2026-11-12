@@ -1,14 +1,15 @@
-name: Check Kyverno manifests
+name: Check policy manifests
 on:
   pull_request:
     branches:
       - master
 
 jobs:
-  check-for-kyverno:
+  check-for-changes:
     runs-on: ubuntu-latest
     outputs:
-      kyverno-found: ${{ steps.kyverno-check.outputs.found }}
+      kyverno-found: ${{ steps.check.outputs.kyverno-found }}
+      admission-policies-found: ${{ steps.check.outputs.admission-policies-found }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,22 +17,26 @@ jobs:
           # Fetch both the merge commit GitHub generates for the pull request
           # and both its parents, i.e. the tip of the branch and the tip of master
           fetch-depth: 2
-      - name: Check for kyverno in changed files
-        id: kyverno-check
+      - name: Check for changed policy files
+        id: check
         run: |
           changed_files="$(git diff --name-only --diff-filter=d HEAD^1 HEAD)"
-          # Look for any files changed in `kyverno` directory
+          kyverno_found=false
+          admission_policies_found=false
           while IFS= read -r file; do
             if [[ "${file}" == "kyverno"* ]]; then
-              echo "::set-output name=found::true"
-              exit 0
+              kyverno_found=true
+            fi
+            if [[ "${file}" == "admission-policies"* ]]; then
+              admission_policies_found=true
             fi
           done <<< "${changed_files}"
-          echo "::set-output name=found::false"
+          echo "kyverno-found=${kyverno_found}" >> "$GITHUB_OUTPUT"
+          echo "admission-policies-found=${admission_policies_found}" >> "$GITHUB_OUTPUT"
 
   compare-with-upstream:
-    needs: check-for-kyverno
-    if: needs.check-for-kyverno.outputs.kyverno-found == 'true'
+    needs: check-for-changes
+    if: needs.check-for-changes.outputs.kyverno-found == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -103,14 +108,21 @@ jobs:
             ```
 
   run-kyverno-tests:
-    needs: check-for-kyverno
-    if: needs.check-for-kyverno.outputs.kyverno-found == 'true'
+    needs: check-for-changes
+    if: needs.check-for-changes.outputs.kyverno-found == 'true'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./kyverno/policies
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Run Kyverno chainsaw tests
-        run: make test-all
+        run: make -C kyverno/policies test-target TEST_DIR=kyverno/policies
+
+  run-admission-policy-tests:
+    needs: check-for-changes
+    if: needs.check-for-changes.outputs.admission-policies-found == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run admission policy chainsaw tests
+        run: make -C admission-policies test-all

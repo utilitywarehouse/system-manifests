@@ -1,0 +1,30 @@
+# Restrict LoadBalancer IP
+#
+# We use Service loadBalancerIP to pin external IPs for external load
+# balancer services. We should only allow specific services to specific
+# addresses, in order to avoid someone hijacking an external service IP
+# from their service.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: restrict-load-balancer-ip
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["services"]
+  validations:
+    - expression: >-
+        !has(object.spec.loadBalancerIP)
+      message: loadBalancerIP is not allowed.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: restrict-load-balancer-ip-binding
+spec:
+  policyName: restrict-load-balancer-ip
+  validationActions: ["Deny"]

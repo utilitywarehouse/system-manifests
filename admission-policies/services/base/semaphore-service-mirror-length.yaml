@@ -1,0 +1,38 @@
+# Ensure mirror name can fit Kubernetes Service Name
+#
+# Ensure that the semaphore-service-mirror controller will be able to
+# generate the mirrored service names, respecting the char limit of 63 for
+# service names.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: mirror-name-length
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["services"]
+    objectSelector:
+      matchLabels:
+        uw.systems/mirror: "true"
+  validations:
+    # The prefixes we use based on our clusters configuration are aws, gcp and
+    # merit. Since merit-<name> is the most expensive transformation we want
+    # this rule to allow service names up to 63-6=57 chars long, in order to be
+    # gracefully mirrored to all other clusters.
+    # The mirrored service name follows the pattern
+    # <prefix>-<namespace>-<separator>-<service-name>, where separator is 73736d.
+    - expression: >-
+        size(object.metadata.namespace + '-73736d-' + object.metadata.name) <= 57
+      message: Mirror service controller should be able to generate 63 chars long mirrored names with prefixes [aws|gcp|merit] and pattern <prefix>-<namespace>-73736d-<service-name>
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: mirror-name-length-binding
+spec:
+  policyName: mirror-name-length
+  validationActions: ["Deny"]

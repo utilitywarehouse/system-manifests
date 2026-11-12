@@ -8,6 +8,5 @@ resources:
   - kyverno/
   - namespaces/
   - pods/
-  - services/
   - vault/
   - workloads/
