@@ -1,0 +1,39 @@
+# Disallow Localhost ExternalName Services
+#
+# A Service of type ExternalName which points back to localhost can
+# potentially be used to exploit vulnerabilities in some Ingress
+# controllers. This policy audits Services of type ExternalName if the
+# externalName field refers to localhost.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: no-localhost-service
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["services"]
+  # sys-ingress-certs services use this for the definition of dummy cert
+  # loader services.
+  matchConditions:
+    - name: allow-sys-ingress-certs
+      expression: >-
+        !(object.metadata.namespace == 'sys-ingress-certs')
+  validations:
+    - expression: |-
+        !(
+          has(object.spec.type) && object.spec.type == 'ExternalName' &&
+          has(object.spec.externalName) && object.spec.externalName in ['localhost', '127.0.0.1']
+        )
+      message: Service of type ExternalName cannot point to localhost.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: no-localhost-service-binding
+spec:
+  policyName: no-localhost-service
+  validationActions: ["Deny"]
