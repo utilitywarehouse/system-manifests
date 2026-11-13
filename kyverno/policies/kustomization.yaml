@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
   - argocd/
   - canary/
-  - certificates/
   - kyverno/
   - namespaces/
   - pods/

@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Mirrors a cluster overlay: the shared cluster-agnostic base plus one negated
+# match condition per exception that this "cluster" needs.
+resources:
+  - ../base
+patches:
+  - path: patches/letsencrypt-exceptions.yaml
+    target:
+      group: admissionregistration.k8s.io
+      version: v1
+      kind: ValidatingAdmissionPolicy
+      name: restrict-letsencrypt-cluster-issuer

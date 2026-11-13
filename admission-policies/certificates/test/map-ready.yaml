@@ -1,0 +1,17 @@
+# MutatingAdmissionPolicy reports no status today; pin the parts of the spec
+# that carry the policy's intent.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: set-certificates-revision-history-limit
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: set-certificates-revision-history-limit-binding
+spec:
+  policyName: set-certificates-revision-history-limit

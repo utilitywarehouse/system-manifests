@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - services/base
   - ingress/base
+  - certificates/base
