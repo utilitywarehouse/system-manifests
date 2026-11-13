@@ -1,0 +1,30 @@
+# Require delete annotation to be present before deleting namespace
+#
+# Require namespaces to be annotated with 'uw.systems/delete-allowed: "true"'
+# in order to allow deletion.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: require-delete-annotation-ns-label
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["DELETE"]
+        resources: ["namespaces"]
+  validations:
+    - expression: >-
+        'uw.systems/delete-allowed' in oldObject.metadata.?annotations.orValue({}) &&
+        oldObject.metadata.annotations['uw.systems/delete-allowed'] == 'true'
+      messageExpression: >-
+        'Namespace "' + oldObject.metadata.name + '" must be annotated with: uw.systems/delete-allowed: "true" to be deleted'
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: require-delete-annotation-ns-label-binding
+spec:
+  policyName: require-delete-annotation-ns-label
+  validationActions: ["Deny"]

@@ -1,23 +1,14 @@
-# https://main.kyverno.io/policies/argo/application-field-validation/application-field-validation/
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Application Field Validation
+#
+# Validates ArgoCD Application fields: prevents empty projects/namespaces,
+# ensures source paths are used instead of Helm charts, and enforces
+# destination fields.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: argocd-application-field-validation
-  annotations:
-    policies.kyverno.io/title: Application Field Validation
-    policies.kyverno.io/category: Argo
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/subject: Application
-    policies.kyverno.io/description: >-
-      Validates ArgoCD Application fields: prevents empty projects/namespaces,
-      ensures source paths are used instead of Helm charts, and enforces 
-      destination fields.
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-  validationActions:
-    - Deny
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["argoproj.io"]
@@ -48,3 +39,11 @@ spec:
 
     - expression: "has(object.spec.destination.namespace) && object.spec.destination.namespace != ''"
       message: "`spec.destination.namespace` should not be empty."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: argocd-application-field-validation-binding
+spec:
+  policyName: argocd-application-field-validation
+  validationActions: ["Deny"]

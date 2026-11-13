@@ -1,0 +1,22 @@
+# MutatingAdmissionPolicies have no status; assert the compiled spec instead.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: set-workloads-revision-history-limit
+spec:
+  reinvocationPolicy: Never
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [apps]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [deployments, statefulsets, daemonsets]
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: set-workloads-revision-history-limit-binding
+spec:
+  policyName: set-workloads-revision-history-limit

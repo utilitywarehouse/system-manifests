@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - ensure-ns-name-label.yaml
   - restrict-limitrange-values.yaml
-  - require-annotation-to-delete-ns.yaml
+  - require-delete-annotation-ns-label.yaml
   - require-ns-owner-label.yaml

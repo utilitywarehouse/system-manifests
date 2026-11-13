@@ -1,23 +1,29 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: test-workloads-revision-history
+  name: test-workloads-admission-policies
 spec:
   steps:
-    - name: setup-prerequisites
+    # What a cluster does: render the shared base with that cluster's exception
+    # patches and apply the result. No Kyverno involved.
+    - name: apply-admission-policies
       try:
-        - apply:
-            file: ../set-revision-history-limit.yaml
+        - script:
+            timeout: 120s
+            content: |
+              set -eu
+              kubectl kustomize --load-restrictor LoadRestrictionsNone . \
+                | kubectl apply -f -
 
-    - name: assert-map-generated
+    - name: assert-admission-policies
       try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: map-ready.yaml
 
-    # The API server can take a moment to load a freshly generated policy, so
-    # prove it mutates before asserting on the real fixtures.
-    - name: wait-for-generated-policy
+    # The binding can take a moment to reach the API server, so prove the
+    # policy mutates before asserting on the real fixtures.
+    - name: wait-for-policy
       try:
         - script:
             timeout: 120s
@@ -33,7 +39,7 @@ spec:
                 fi
                 sleep 1
               done
-              echo "the generated policy did not mutate a canary deployment" >&2
+              echo "the policy did not mutate a canary deployment" >&2
               exit 1
 
     - name: test-resources
