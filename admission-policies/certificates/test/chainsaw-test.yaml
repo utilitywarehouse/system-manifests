@@ -1,48 +1,47 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: test-certificates-policies
+  name: test-certificates-admission-policies
 spec:
   steps:
+    # These tests do not install Kyverno, so bring the Certificate CRD the
+    # fixtures need.
     - name: setup-prerequisites
       try:
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl apply -f /repo/kyverno/e2e-deploy/certificates-crd.yaml
+              kubectl wait --for=condition=Established --timeout=60s \
+                crd/certificates.cert-manager.io
         - apply:
             file: prerequisite-resources.yaml
 
-        - apply:
-            resource:
-              apiVersion: rbac.authorization.k8s.io/v1
-              kind: ClusterRole
-              metadata:
-                name: kyverno-role
-                labels:
-                  rbac.authorization.k8s.io/aggregate-to-view: "true"
-              rules:
-                - apiGroups: ["cert-manager.io"]
-                  resources: ["certificates"]
-                  verbs: ["get", "list", "watch"]
-
-    - name: apply-policies-and-exceptions
+    # What a cluster does: render the shared base with that cluster's exception
+    # patches and apply the result. No Kyverno involved.
+    - name: apply-admission-policies
       try:
-        - apply:
-            file: ../restrict-letsencrypt.yaml
-        - apply:
-            file: ../set-revision-history.yaml
-        - apply:
-            file: exception.yaml
+        - script:
+            timeout: 120s
+            content: |
+              set -eu
+              kubectl kustomize --load-restrictor LoadRestrictionsNone . \
+                | kubectl apply -f -
 
-    - name: assert-generated-policies
+    - name: assert-admission-policies
       try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: vap-ready.yaml
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: map-ready.yaml
 
     - name: test-resources
       try:
         - apply:
+            timeout: 2m
             file: resources.yaml
             expect:
               # confirm validation failures

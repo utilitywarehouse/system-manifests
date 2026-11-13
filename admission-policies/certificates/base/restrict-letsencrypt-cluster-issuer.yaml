@@ -1,21 +1,14 @@
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Restrict Let's Encrypt ClusterIssuer
+#
+# This policy helps us track issuer usage. To ensure the Infra team has
+# visibility into certificates issued by Let's Encrypt under the 'uw.systems'
+# domain.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: restrict-letsencrypt-cluster-issuer
-  annotations:
-    policies.proximity.io/title: Restrict Let's Encrypt ClusterIssuer
-    policies.kyverno.io/category: Cert-Manager
-    policies.rules.io/severity: info
-    policies.kyverno.io/subject: Certificate
-    policies.kyverno.io/description: >-
-      This policy helps us track issuer usage. To ensure the Infra team has visibility
-      into certificates issued by Let's Encrypt under the 'uw.systems' domain.
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-  validationActions:
-    - Deny
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["cert-manager.io"]
@@ -30,9 +23,17 @@ spec:
   validations:
     - expression: >-
         !(
-          object.spec.issuerRef.name == 'letsencrypt' && 
+          object.spec.issuerRef.name == 'letsencrypt' &&
           object.spec.issuerRef.kind == 'ClusterIssuer'
         )
       message: >-
         Direct use of 'letsencrypt' for *.uw.systems is restricted for visibility.
         Please create a 'PolicyException' in kube-system and reach out to us on #infra.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: restrict-letsencrypt-cluster-issuer-binding
+spec:
+  policyName: restrict-letsencrypt-cluster-issuer
+  validationActions: ["Deny"]

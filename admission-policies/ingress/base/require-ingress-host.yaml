@@ -1,0 +1,29 @@
+# Require Ingress Host
+#
+# Prevent ingresses from hijacking the default traefik route by requiring an
+# explicit host value.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: require-ingress-host
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["networking.k8s.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["ingresses"]
+  validations:
+    - expression: >-
+        has(object.spec) && has(object.spec.rules) && size(object.spec.rules) > 0 &&
+        object.spec.rules.all(rule, has(rule.host) && rule.host != null && rule.host != "")
+      message: "Ingresses must specify a host"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: require-ingress-host-binding
+spec:
+  policyName: require-ingress-host
+  validationActions: ["Deny"]

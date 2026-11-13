@@ -1,0 +1,41 @@
+# External-DNS Ingress Length Limit
+#
+# External-DNS uses TXT records to flag ownership of DNS records, using the
+# domain label `<prefix>-<type>-<domain-label>`. There is an RFC limitation of
+# 63 chars per DNS domain label, which should be respected by the generated TXT
+# records as well.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: external-dns-domain-label-length
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["networking.k8s.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["ingresses"]
+  matchConditions:
+    # This annotation will instruct external-DNS to create CNAME type records
+    - name: has-external-dns-target
+      expression: >-
+        'external-dns.alpha.kubernetes.io/target' in object.metadata.?annotations.orValue({})
+  variables:
+    - name: prefix
+      expression: >-
+        'infra'
+  validations:
+    - expression: >-
+        object.spec.?rules.orValue([]).all(rule,
+          size(variables.prefix + '-cname-' + rule.?host.orValue('').split('.')[0]) <= 63
+        )
+      message: "External-DNS TXT record domain label must be <= 63 chars"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: external-dns-domain-label-length-binding
+spec:
+  policyName: external-dns-domain-label-length
+  validationActions: ["Deny"]

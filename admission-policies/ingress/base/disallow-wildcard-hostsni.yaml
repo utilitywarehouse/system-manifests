@@ -1,0 +1,28 @@
+# Disallow Wildcard HostSNI
+#
+# Prevent IngressRouteTCP from hijacking all traffic by preventing wildcard
+# HostSNIs.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-wildcard-hostsni
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["traefik.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["ingressroutetcps"]
+  validations:
+    - expression: >-
+        object.spec.?routes.orValue([]).all(route, !route.?match.orValue('').matches('HostSNI\\(`.*\\*.*`\\)'))
+      message: "HostSNI rules must not contain a wildcard host '*'"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-wildcard-hostsni-binding
+spec:
+  policyName: disallow-wildcard-hostsni
+  validationActions: ["Deny"]

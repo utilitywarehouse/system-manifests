@@ -1,0 +1,26 @@
+# Negated PolicyExceptions for restrict-letsencrypt-cluster-issuer.
+- op: add
+  path: /spec/matchConditions/-
+  value:
+    name: allow-letsencrypt-team-c
+    expression: >-
+      !(
+        object.metadata.namespace == 'team-c' &&
+        has(object.spec.dnsNames) &&
+        object.spec.dnsNames.all(domain, domain in [
+          '*.one.team-c.uw.systems',
+          '*.api.uw.systems'
+        ])
+      )
+- op: add
+  path: /spec/matchConditions/-
+  value:
+    name: allow-letsencrypt-team-d
+    expression: >-
+      !(
+        object.metadata.namespace == 'team-d' &&
+        has(object.spec.dnsNames) &&
+        object.spec.dnsNames.all(domain, domain in [
+          '*.one.team-d.uw.systems'
+        ])
+      )

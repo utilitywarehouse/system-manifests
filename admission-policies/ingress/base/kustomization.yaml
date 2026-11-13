@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - disallow-default-tlsoptions.yaml
+  - disallow-or-operator.yaml
+  - disallow-wildcard-hostsni.yaml
+  - external-dns-domain-label-length.yaml
+  - require-ingress-host.yaml
+  - require-ingressroute-host.yaml

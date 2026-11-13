@@ -1,11 +1,9 @@
-apiVersion: policies.kyverno.io/v1
-kind: MutatingPolicy
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
 metadata:
   name: set-certificates-revision-history-limit
 spec:
-  autogen:
-    mutatingAdmissionPolicy:
-      enabled: true
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: ["cert-manager.io"]
@@ -15,6 +13,7 @@ spec:
   matchConditions:
     - name: revision-history-is-not-set
       expression: "!has(object.spec.revisionHistoryLimit)"
+  reinvocationPolicy: Never
   mutations:
     - patchType: ApplyConfiguration
       applyConfiguration:
@@ -24,3 +23,10 @@ spec:
               revisionHistoryLimit: 2
             }
           }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: set-certificates-revision-history-limit-binding
+spec:
+  policyName: set-certificates-revision-history-limit
