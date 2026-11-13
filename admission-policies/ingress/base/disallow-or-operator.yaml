@@ -1,0 +1,28 @@
+# Disallow OR Operator
+#
+# Using || can allow you to subvert other restrictions and hijack traffic with
+# non-specific rules that match generic paths or headers.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-or-operator
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["traefik.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["ingressroutes", "ingressroutetcps"]
+  validations:
+    - expression: >-
+        object.spec.?routes.orValue([]).all(route, !route.?match.orValue('').contains('||'))
+      message: "Route matches must not contain ||"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-or-operator-binding
+spec:
+  policyName: disallow-or-operator
+  validationActions: ["Deny"]

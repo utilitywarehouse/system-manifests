@@ -1,0 +1,35 @@
+# Disallow Default TLSOptions
+#
+# The TLSOption CustomResource sets cluster-wide TLS configuration options for
+# Traefik when none are specified in a TLS router. Since this can take effect
+# for all Ingress resources, creating the `default` TLSOption is a restricted
+# operation. This policy ensures that only a cluster-admin can create the
+# `default` TLSOption resource.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-default-tlsoptions
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["traefik.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["tlsoptions"]
+  matchConditions:
+    - name: is-default
+      expression: >-
+        object.metadata.name == 'default'
+  validations:
+    - expression: >-
+        'system:masters' in request.userInfo.groups
+      message: "Only cluster administrators are allowed to set default TLSOptions."
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-default-tlsoptions-binding
+spec:
+  policyName: disallow-default-tlsoptions
+  validationActions: ["Deny"]

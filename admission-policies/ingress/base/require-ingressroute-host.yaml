@@ -1,0 +1,34 @@
+# Require IngressRoutes Host Specification
+#
+# Every IngressRoute match must contain a specific host with a valid hostname as
+# defined by RFC 1123. By requiring a Host rule, we prevent widespread hijacking
+# by non-specific rules like PathPrefix(`/`).
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: require-ingressroute-host
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["traefik.io"]
+        apiVersions: ["*"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["ingressroutes"]
+  validations:
+    # The regular expression used here was adapted from the validation Kubernetes
+    # performs on the host field of Ingress rules, which adheres to RFC 1123:
+    # - https://github.com/kubernetes/kubernetes/blob/18856dace935db46d3ba84374ce23438922e272b/staging/src/k8s.io/apimachinery/pkg/util/validation/validation.go#L198
+    - expression: >-
+        object.spec.?routes.orValue([]).all(route,
+          route.?match.orValue('').matches('Host\\((`(([a-zA-Z0-9]{1,})|([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*\\.)+[a-z]{2,})`(, ?)?)+\\)')
+        )
+      message: "All route matches must contain a Host rule with valid hostnames as defined by RFC 1123"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: require-ingressroute-host-binding
+spec:
+  policyName: require-ingressroute-host
+  validationActions: ["Deny"]

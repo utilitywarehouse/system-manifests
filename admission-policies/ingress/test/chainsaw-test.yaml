@@ -1,43 +1,39 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: test-ingress-and-traefik-resources
+  name: test-ingress-admission-policies
 spec:
   steps:
-    - name: setup-prerequisites
+    # The fixtures use Traefik CRDs (IngressRoute, IngressRouteTCP, TLSOption).
+    # The Kyverno suite gets them from its install manifests; these tests do not
+    # install Kyverno, so add them here.
+    - name: setup-crds
       try:
-        - apply:
-            resource:
-              apiVersion: rbac.authorization.k8s.io/v1
-              kind: ClusterRole
-              metadata:
-                name: kyverno-ingress-role
-                labels:
-                  rbac.authorization.k8s.io/aggregate-to-view: "true"
-              rules:
-                - apiGroups: ["traefik.io"]
-                  resources: ["*"]
-                  verbs: ["get", "list", "watch"]
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl kustomize /repo/traefik/cluster/crds/traefik/crds | kubectl apply -f -
+              kubectl wait --for=condition=Established --timeout=60s \
+                crd/ingressroutes.traefik.io \
+                crd/ingressroutetcps.traefik.io \
+                crd/tlsoptions.traefik.io
 
-    - name: apply-policies
+    # What a cluster does: render the shared base with that cluster's exception
+    # patches and apply the result. No Kyverno involved.
+    - name: apply-admission-policies
       try:
-        - apply:
-            file: ../disallow-default-tsloptions.yaml
-        - apply:
-            file: ../disallow-or-operator.yaml
-        - apply:
-            file: ../disallow-wildcard-hostsni.yaml
-        - apply:
-            file: ../external-dns-domain-label-length.yaml
-        - apply:
-            file: ../require-ingress-host.yaml
-        - apply:
-            file: ../require-ingressroute-host.yaml
+        - script:
+            timeout: 120s
+            content: |
+              set -eu
+              kubectl kustomize --load-restrictor LoadRestrictionsNone . \
+                | kubectl apply -f -
 
-    - name: assert-vap-generated
+    - name: assert-admission-policies
       try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: vap-ready.yaml
 
     - name: test-tlsoption-non-admin
@@ -135,7 +131,6 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), 'Ingresses must specify a host'))": true
-
               - match:
                   apiVersion: traefik.io/v1alpha1
                   kind: IngressRoute
