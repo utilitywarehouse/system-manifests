@@ -4,3 +4,4 @@ resources:
   - services/base
   - ingress/base
   - certificates/base
+  - argocd/base

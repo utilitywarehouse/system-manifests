@@ -1,34 +1,43 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: test-argocd-policies
+  name: test-argocd-admission-policies
 spec:
   steps:
-    # Install the local ArgoCD CRDs and setup RBAC
-    - name: install-argocd-crds
+    # The fixtures use the ArgoCD Application CRD. The Kyverno suite gets it
+    # from its install manifests; these tests do not install Kyverno, so add it
+    # here.
+    - name: setup-crds
       try:
-        - apply:
-            resource:
-              apiVersion: rbac.authorization.k8s.io/v1
-              kind: ClusterRole
-              metadata:
-                name: kyverno-argocd-role
-                labels:
-                  rbac.authorization.k8s.io/aggregate-to-view: "true"
-              rules:
-                - apiGroups: ["argoproj.io"]
-                  resources: ["applications"]
-                  verbs: ["get", "list", "watch"]
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              kubectl apply --server-side --force-conflicts -f /repo/argocd/cluster/upstream/CustomResourceDefinition.yaml
+              # The CRD status can be empty for a moment right after the apply.
+              for i in $(seq 1 30); do
+                kubectl wait --for=condition=Established --timeout=5s \
+                  crd/applications.argoproj.io \
+                  crd/appprojects.argoproj.io \
+                  crd/applicationsets.argoproj.io && break
+                sleep 2
+              done
 
-    - name: apply-policy
+    # What a cluster does: render the shared base with that cluster's exception
+    # patches and apply the result. No Kyverno involved.
+    - name: apply-admission-policies
       try:
-        - apply:
-            file: ../application-field-validation.yaml
+        - script:
+            timeout: 120s
+            content: |
+              set -eu
+              kubectl kustomize --load-restrictor LoadRestrictionsNone . \
+                | kubectl apply -f -
 
-    - name: assert-vap-generated
+    - name: assert-admission-policies
       try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: vap-ready.yaml
 
     - name: test-argocd-application-field-validation
@@ -114,3 +123,5 @@ spec:
                 check:
                   ($error != null): true
                   "(contains(to_string($error), '`spec.destination.namespace` should not be empty'))": true
+
+    # The policies are cluster-scoped and stay applied, like every other group.
