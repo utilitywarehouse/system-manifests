@@ -11,5 +11,5 @@ resources:
   - inject-vault-sidecar-gcp-token-fail-open.yaml
   - inject-vault-sidecar-gcp-token.yaml
   - inject-vault-sidecar-github.yaml
-  - vault-annotation.yaml
-  - vault-github-permission-set-annotation.yaml
+  - vault-aws-role-arn.yaml
+  - vault-github-permission-set.yaml

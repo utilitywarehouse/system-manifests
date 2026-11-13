@@ -1,50 +1,31 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: test-service-accounts-policies
+  name: test-vault-admission-policies
 spec:
   # Every pod deletion costs a 5s grace period (forceTerminationGracePeriod), so
   # the test's ~20 pods take longer to clean up than the default deadline allows.
   timeouts:
     cleanup: 5m
   steps:
-    - name: apply-policies
+    # What a cluster does: render the shared base and apply the result. No
+    # Kyverno involved.
+    - name: apply-admission-policies
       try:
-        - apply:
-            file: ../vault-annotation.yaml
-        - apply:
-            file: ../inject-vault-sidecar-aws-fail-open.yaml
-        - apply:
-            file: ../inject-vault-sidecar-aws-gcp-fail-open.yaml
-        - apply:
-            file: ../inject-vault-sidecar-aws-gcp-key.yaml
-        - apply:
-            file: ../inject-vault-sidecar-aws-gcp.yaml
-        - apply:
-            file: ../inject-vault-sidecar-aws.yaml
-        - apply:
-            file: ../inject-vault-sidecar-gcp-key.yaml
-        - apply:
-            file: ../inject-vault-sidecar-gcp-token-fail-open.yaml
-        - apply:
-            file: ../inject-vault-sidecar-gcp-token.yaml
-        - apply:
-            file: ../inject-vault-init-container-aws.yaml
-        - apply:
-            file: ../inject-vault-sidecar-github.yaml
-        - apply:
-            file: ../vault-github-permission-set-annotation.yaml
+        - script:
+            timeout: 120s
+            content: |
+              set -eu
+              kubectl kustomize --load-restrictor LoadRestrictionsNone . \
+                | kubectl apply -f -
 
-    - name: assert-vap-generated
+    - name: assert-admission-policies
       try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: vap-ready.yaml
-
-    - name: assert-map-generated
-      try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: map-ready.yaml
 
     - name: test-vault-annotation
