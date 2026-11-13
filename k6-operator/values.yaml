@@ -2,35 +2,31 @@
 installCRDs: true
 namespace:
   create: false
-prometheus:
+
+# Render Role/RoleBinding in the release namespace instead of
+# ClusterRole/ClusterRoleBinding, and set WATCH_NAMESPACE to that namespace
+# (the chart sets WATCH_NAMESPACE itself when this is true; the Makefile passes
+# --namespace sys-k6). The operator only ever watches sys-k6, so cluster-wide
+# RBAC is not needed.
+rbac:
+  namespaced: true
+
+# The metrics Service (port 8443) is not scraped by anything, so do not render it.
+service:
   enabled: false
-authProxy:
-  enabled: true
-  image:
-    registry: quay.io
-    repository: brancz/kube-rbac-proxy
-    tag: v0.18.2
-    pullPolicy: IfNotPresent
-  resources: {}
-  livenessProbe: {}
-  readinessProbe: {}
-  containerSecurityContext: {}
 
 manager:
-  replicas: 1
+  # chart 4.7.0 defaults logging.development to true (--zap-devel=true, DEBUG);
+  # use production zap logging (JSON, INFO)
+  logging:
+    development: false
   serviceAccount:
     name: k6-operator-controller
     create: true
   image:
     registry: ghcr.io
     repository: grafana/k6-operator
-    tag: controller-v0.0.19
-    pullPolicy: IfNotPresent
-  livenessProbe: {}
-  readinessProbe: {}
-  env: 
-    - name: WATCH_NAMESPACE
-      value: "sys-k6"
+    tag: controller-v1.7.0
   resources:
     limits:
       cpu: 100m
@@ -38,4 +34,3 @@ manager:
     requests:
       cpu: 100m
       memory: 50Mi
-  containerSecurityContext: {}

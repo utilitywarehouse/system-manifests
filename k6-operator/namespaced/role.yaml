@@ -1,4 +1,4 @@
-# Source: k6-operator/templates/role.yaml
+# Source: k6-operator/templates/leaderRole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -6,10 +6,10 @@ metadata:
   namespace: sys-k6
   labels:
     app.kubernetes.io/component: controller
-    helm.sh/chart: k6-operator-3.11.0
+    helm.sh/chart: k6-operator-4.7.0
     app.kubernetes.io/name: k6-operator
     app.kubernetes.io/instance: k6-operator
-    app.kubernetes.io/version: "0.0.19"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
   annotations:
@@ -42,3 +42,106 @@ rules:
     verbs:
       - create
       - patch
+---
+# Source: k6-operator/templates/role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: k6-operator-manager-role
+  namespace: sys-k6
+  labels:
+    app.kubernetes.io/component: controller
+    helm.sh/chart: k6-operator-4.7.0
+    app.kubernetes.io/name: k6-operator
+    app.kubernetes.io/instance: k6-operator
+    app.kubernetes.io/version: "1.7.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: k6-operator
+  annotations:
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/log
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - get
+      - list
+      - update
+  - apiGroups:
+      - events.k8s.io
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - k6.io
+    resources:
+      - privateloadzones
+      - testruns
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - k6.io
+    resources:
+      - privateloadzones/finalizers
+      - privateloadzones/status
+      - testruns/finalizers
+      - testruns/status
+    verbs:
+      - get
+      - patch
+      - update
