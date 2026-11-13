@@ -1,23 +1,18 @@
-apiVersion: policies.kyverno.io/v1
-kind: MutatingPolicy
+# Set workload revision history limit
+#
+# Reduce old ReplicaSet retention on pod controllers to take pressure off
+# etcd, the API server watch and the Argo CD cache. Workloads whose manifest
+# sets revisionHistoryLimit are left alone; everything else is capped to 2.
+# "Set in the manifest" is read from the kubectl last-applied annotation,
+# which only client-side apply (kubectl, Argo CD's default) writes - objects
+# created server-side or by an operator carry no such record and are capped.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
 metadata:
   name: set-workloads-revision-history-limit
-  annotations:
-    policies.kyverno.io/title: Set workload revision history limit
-    policies.kyverno.io/category: Operations
-    policies.kyverno.io/severity: low
-    policies.kyverno.io/subject: Deployment, StatefulSet, DaemonSet
-    policies.kyverno.io/description: >-
-      Reduce old ReplicaSet retention on pod controllers to take pressure off
-      etcd, the API server watch and the Argo CD cache. Workloads whose manifest
-      sets revisionHistoryLimit are left alone; everything else is capped to 2.
-      "Set in the manifest" is read from the kubectl last-applied annotation,
-      which only client-side apply (kubectl, Argo CD's default) writes - objects
-      created server-side or by an operator carry no such record and are capped.
 spec:
-  autogen:
-    mutatingAdmissionPolicy:
-      enabled: true
+  failurePolicy: Fail
+  reinvocationPolicy: Never
   matchConstraints:
     resourceRules:
       - apiGroups: ["apps"]
@@ -26,7 +21,7 @@ spec:
         resources: ["deployments", "statefulsets", "daemonsets"]
   matchConditions:
     # revisionHistoryLimit is defaulted to 10 by the API server before the
-    # webhook runs, so check the value rather than its presence.
+    # policy runs, so check the value rather than its presence.
     - name: revision-history-is-default
       expression: "object.spec.?revisionHistoryLimit.orValue(10) == 10"
     # The last-applied annotation holds the manifest as written in Git, before
@@ -45,3 +40,10 @@ spec:
               revisionHistoryLimit: 2
             }
           }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: set-workloads-revision-history-limit-binding
+spec:
+  policyName: set-workloads-revision-history-limit

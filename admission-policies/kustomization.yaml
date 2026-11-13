@@ -6,3 +6,4 @@ resources:
   - certificates/base
   - argocd/base
   - namespaces/base
+  - workloads/base
