@@ -1,29 +1,18 @@
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Restrict LimitRange Values
+#
+# Restricts LimitRange max and default CPU to 6 cores and memory to 24Gi.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: restrict-limitrange-values
-  annotations:
-    policies.kyverno.io/title: Restrict LimitRange Values
-    policies.kyverno.io/category: Resource Management
-    policies.kyverno.io/subject: LimitRange
-    policies.kyverno.io/description: >-
-      Restricts LimitRange max and default CPU to 6 cores and memory to 24Gi.
-
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-
-  validationActions:
-    - Deny
-
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["limitranges"]
-
   variables:
     - name: limits
       expression: "object.spec.limits.orValue([])"
@@ -33,9 +22,7 @@ spec:
 
     - name: max_memory
       expression: "'24Gi'"
-
   validations:
-    # max.cpu
     - message: "LimitRange max.cpu cannot exceed 6 cores."
       expression: >-
         variables.limits.all(l,
@@ -44,7 +31,6 @@ spec:
           !quantity(l.max.cpu).isGreaterThan(quantity(variables.max_cpu))
         )
 
-    # max.memory
     - message: "LimitRange max.memory cannot exceed 24Gi."
       expression: >-
         variables.limits.all(l,
@@ -53,7 +39,6 @@ spec:
           !quantity(l.max.memory).isGreaterThan(quantity(variables.max_memory))
         )
 
-    # default.cpu
     - message: "LimitRange default.cpu cannot exceed 6 cores."
       expression: >-
         variables.limits.all(l,
@@ -62,7 +47,6 @@ spec:
           !quantity(l.default.cpu).isGreaterThan(quantity(variables.max_cpu))
         )
 
-    # default.memory
     - message: "LimitRange default.memory cannot exceed 24Gi."
       expression: >-
         variables.limits.all(l,
@@ -70,3 +54,11 @@ spec:
           !has(l.default.memory) ||
           !quantity(l.default.memory).isGreaterThan(quantity(variables.max_memory))
         )
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: restrict-limitrange-values-binding
+spec:
+  policyName: restrict-limitrange-values
+  validationActions: ["Deny"]

@@ -1,30 +1,27 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: test-namespace-policies
+  name: test-namespace-admission-policies
 spec:
   steps:
-    - name: apply-policies
+    # What a cluster does: render the shared base with that cluster's exception
+    # patches and apply the result. No Kyverno involved.
+    - name: apply-admission-policies
       try:
-        - apply:
-            file: ../ensure-ns-name-label.yaml
-        - apply:
-            file: ../restrict-limitrange-values.yaml
-        - apply:
-            file: ../require-annotation-to-delete-ns.yaml
-        - apply:
-            file: ../require-ns-owner-label.yaml
+        - script:
+            timeout: 120s
+            content: |
+              set -eu
+              kubectl kustomize --load-restrictor LoadRestrictionsNone . \
+                | kubectl apply -f -
 
-    - name: assert-vap-generated
+    - name: assert-admission-policies
       try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: vap-ready.yaml
-
-    - name: assert-map-generated
-      try:
         - assert:
-            timeout: 120s
+            timeout: 60s
             file: map-ready.yaml
 
     - name: test-require-ns-owner-label
@@ -235,22 +232,17 @@ spec:
                   ($error == null): true
 
     # The delete policy also blocks chainsaw's cleanup of the test namespaces.
-    # Remove the policy once the denial tests are done, wait for the generated
-    # policy to be collected, then give admission a moment to observe it.
+    # Remove it once the denial tests are done, wait for the policy to be
+    # collected, then give the API server a moment to observe the deletion.
     - name: remove-delete-policy
       try:
         - script:
             timeout: 90s
             content: |
-              kubectl delete validatingpolicy require-delete-annotation-ns-label --ignore-not-found
+              kubectl delete validatingadmissionpolicy require-delete-annotation-ns-label --ignore-not-found
+              kubectl delete validatingadmissionpolicybinding require-delete-annotation-ns-label-binding --ignore-not-found
               for i in $(seq 1 30); do
-                kubectl get validatingpolicy require-delete-annotation-ns-label >/dev/null 2>&1 || break
-                sleep 1
-              done
-              kubectl delete validatingadmissionpolicybinding vpol-require-delete-annotation-ns-label-binding --ignore-not-found
-              kubectl delete validatingadmissionpolicy vpol-require-delete-annotation-ns-label --ignore-not-found
-              for i in $(seq 1 30); do
-                kubectl get validatingadmissionpolicy vpol-require-delete-annotation-ns-label >/dev/null 2>&1 || break
+                kubectl get validatingadmissionpolicy require-delete-annotation-ns-label >/dev/null 2>&1 || break
                 sleep 1
               done
               sleep 5
