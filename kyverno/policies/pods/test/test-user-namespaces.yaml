@@ -176,6 +176,132 @@ spec:
     - name: test
       image: alpine
 ---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: test-user-ns-smb
+provisioner: smb.csi.k8s.io
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-user-ns-smb-pvc
+  namespace: sys-log
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: test-user-ns-smb
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-smb-pvc-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: test-user-ns-smb-pvc
+  containers:
+    - name: test
+      image: alpine
+---
+# Statically provisioned SMB PV with a PVC naming a StorageClass that does not
+# exist (as in the upstream csi-driver-smb static example). Excluded via the
+# bound PV's CSI driver instead of the StorageClass provisioner.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: test-user-ns-smb-static-pv
+spec:
+  capacity:
+    storage: 1Mi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: test-user-ns-smb-nonexistent
+  csi:
+    driver: smb.csi.k8s.io
+    volumeHandle: test-user-ns-smb-static-pv
+    volumeAttributes:
+      source: //smb.example.com/share
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-user-ns-smb-static-pvc
+  namespace: sys-log
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: test-user-ns-smb-nonexistent
+  volumeName: test-user-ns-smb-static-pv
+  resources:
+    requests:
+      storage: 1Mi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-smb-static-pvc-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: test-user-ns-smb-static-pvc
+  containers:
+    - name: test
+      image: alpine
+---
+# Inline (pod-level) SMB csi volume, no PVC involved.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-smb-inline-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      csi:
+        driver: smb.csi.k8s.io
+        volumeAttributes:
+          source: //smb.example.com/share
+  containers:
+    - name: test
+      image: alpine
+---
+# Generic ephemeral volume whose claim template uses the SMB StorageClass above.
+# The pod stays Pending on kind (no SMB driver), only its spec is asserted.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-user-ns-smb-ephemeral-pod
+  namespace: sys-log
+spec:
+  automountServiceAccountToken: false
+  volumes:
+    - name: data
+      ephemeral:
+        volumeClaimTemplate:
+          spec:
+            accessModes:
+              - ReadWriteMany
+            storageClassName: test-user-ns-smb
+            resources:
+              requests:
+                storage: 1Mi
+  containers:
+    - name: test
+      image: alpine
+---
+# Uses the `standard` StorageClass that kind ships (provisioner is not SMB).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
