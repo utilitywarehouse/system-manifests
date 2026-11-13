@@ -1,0 +1,17 @@
+# The base spec is the source of truth and the behavioural tests prove that
+# every policy denies and mutates the right objects. What is left to check is
+# that the API server compiled each policy and that CEL type checking found
+# nothing to warn about.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vault-aws-role-arn
+(status.observedGeneration == metadata.generation): true
+(length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: vault-github-permission-set
+(status.observedGeneration == metadata.generation): true
+(length(status.typeChecking.expressionWarnings || `[]`)): 0

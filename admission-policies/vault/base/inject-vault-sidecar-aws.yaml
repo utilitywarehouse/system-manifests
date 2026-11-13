@@ -1,18 +1,12 @@
-apiVersion: policies.kyverno.io/v1
-kind: MutatingPolicy
+# Inject Sidecar - AWS
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
 metadata:
   name: inject-vault-sidecar-aws
-  labels:
-    uw.systems/kyverno-policy-group: vault-sidecar-injector
-  annotations:
-    policies.kyverno.io/title: Inject Sidecar - AWS
 spec:
-  autogen:
-    mutatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: [] # disable autogen for other resources
-
+  failurePolicy: Fail
+  reinvocationPolicy: Never
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -112,3 +106,10 @@ spec:
                 ) : []
             }
           }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-binding
+spec:
+  policyName: inject-vault-sidecar-aws

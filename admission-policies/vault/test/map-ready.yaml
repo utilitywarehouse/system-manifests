@@ -1,0 +1,161 @@
+# MutatingAdmissionPolicies have no status; assert the compiled spec instead.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-init-container-aws
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - JSONPatch
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-init-container-aws-binding
+spec:
+  policyName: inject-vault-init-container-aws
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-aws-fail-open
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-fail-open-binding
+spec:
+  policyName: inject-vault-sidecar-aws-fail-open
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-aws-gcp-fail-open
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-gcp-fail-open-binding
+spec:
+  policyName: inject-vault-sidecar-aws-gcp-fail-open
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-aws-gcp-key
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-gcp-key-binding
+spec:
+  policyName: inject-vault-sidecar-aws-gcp-key
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-aws-gcp
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-gcp-binding
+spec:
+  policyName: inject-vault-sidecar-aws-gcp
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-aws
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-binding
+spec:
+  policyName: inject-vault-sidecar-aws
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-gcp-key
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-gcp-key-binding
+spec:
+  policyName: inject-vault-sidecar-gcp-key
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-gcp-token-fail-open
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-gcp-token-fail-open-binding
+spec:
+  policyName: inject-vault-sidecar-gcp-token-fail-open
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-gcp-token
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-gcp-token-binding
+spec:
+  policyName: inject-vault-sidecar-gcp-token
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-github
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-github-binding
+spec:
+  policyName: inject-vault-sidecar-github

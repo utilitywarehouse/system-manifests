@@ -1,18 +1,12 @@
-apiVersion: policies.kyverno.io/v1
-kind: MutatingPolicy
-metadata:
-  name: inject-vault-sidecar-aws-gcp
-  labels:
-    uw.systems/kyverno-policy-group: vault-sidecar-injector
-  annotations:
-    policies.kyverno.io/title: Inject Sidecar - AWS & GCP
-spec:
-  autogen:
-    mutatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: [] # disable autogen for other resources
+# Inject Sidecar - AWS & GCP (Fail Open)
 
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-aws-gcp-fail-open
+spec:
+  failurePolicy: Fail
+  reinvocationPolicy: Never
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -21,9 +15,9 @@ spec:
         resources: ["pods"]
 
   matchConditions:
-    - name: match-aws-gcp-annotation
+    - name: match-aws-gcp-fail-open-annotation
       expression: >-
-        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-sidecar-aws-gcp'
+        object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-sidecar-aws-gcp-fail-open'
     # Skip already-injected pods so re-invocation can't add a duplicate.
     - name: not-already-injected
       expression: >-
@@ -80,13 +74,11 @@ spec:
                     ports: [
                       Object.spec.initContainers.ports{ name: "metrics", containerPort: 8499, protocol: "TCP" }
                     ],
-                    startupProbe: Object.spec.initContainers.startupProbe{
-                      httpGet: Object.spec.initContainers.startupProbe.httpGet{ path: "/__/ready", port: 8499 }
-                    },
                     resources: Object.spec.initContainers.resources{
                       requests: {"cpu": "0m", "memory": "25Mi"},
                       limits: {"cpu": "1000m", "memory": "100Mi"}
                     }
+                    // No startupProbe: fail-open means the pod starts even when Vault is unreachable.
                   },
                   // Append the GCP credentials sidecar.
                   Object.spec.initContainers{
@@ -106,13 +98,11 @@ spec:
                     ports: [
                       Object.spec.initContainers.ports{ name: "metrics", containerPort: 8199, protocol: "TCP" }
                     ],
-                    startupProbe: Object.spec.initContainers.startupProbe{
-                      httpGet: Object.spec.initContainers.startupProbe.httpGet{ path: "/__/ready", port: 8199 }
-                    },
                     resources: Object.spec.initContainers.resources{
                       requests: {"cpu": "0m", "memory": "25Mi"},
                       limits: {"cpu": "1000m", "memory": "100Mi"}
                     }
+                    // No startupProbe: fail-open means the pod starts even when Vault is unreachable.
                   }
                 ],
               // Point existing containers at the credentials endpoint too.
@@ -129,3 +119,10 @@ spec:
                 ) : []
             }
           }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-gcp-fail-open-binding
+spec:
+  policyName: inject-vault-sidecar-aws-gcp-fail-open

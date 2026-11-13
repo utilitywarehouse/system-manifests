@@ -7,3 +7,4 @@ resources:
   - argocd/base
   - namespaces/base
   - workloads/base
+  - vault/base
