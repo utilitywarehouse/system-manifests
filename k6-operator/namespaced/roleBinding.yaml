@@ -1,4 +1,4 @@
-# Source: k6-operator/templates/roleBinding.yaml
+# Source: k6-operator/templates/leaderRoleBinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -6,10 +6,10 @@ metadata:
   namespace: sys-k6
   labels:
     app.kubernetes.io/component: controller
-    helm.sh/chart: k6-operator-3.11.0
+    helm.sh/chart: k6-operator-4.7.0
     app.kubernetes.io/name: k6-operator
     app.kubernetes.io/instance: k6-operator
-    app.kubernetes.io/version: "0.0.19"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
   annotations:

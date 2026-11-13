@@ -4,14 +4,14 @@ kind: CustomResourceDefinition
 metadata:
   labels:
     app.kubernetes.io/component: controller
-    helm.sh/chart: k6-operator-3.11.0
+    helm.sh/chart: k6-operator-4.7.0
     app.kubernetes.io/name: k6-operator
     app.kubernetes.io/instance: k6-operator
-    app.kubernetes.io/version: "0.0.19"
+    app.kubernetes.io/version: "1.7.0"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: k6-operator
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.1
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: privateloadzones.k6.io
 spec:
   group: k6.io
@@ -22,7 +22,15 @@ spec:
     singular: privateloadzone
   scope: Namespaced
   versions:
-    - name: v1alpha1
+    - additionalPrinterColumns:
+        - jsonPath: .metadata.creationTimestamp
+          name: Age
+          type: date
+        - description: The status of registration
+          jsonPath: .status.conditions[0].status
+          name: Registered
+          type: string
+      name: v1alpha1
       schema:
         openAPIV3Schema:
           properties:
@@ -34,6 +42,32 @@ spec:
               type: object
             spec:
               properties:
+                config:
+                  properties:
+                    secrets:
+                      items:
+                        properties:
+                          configMapRef:
+                            properties:
+                              name:
+                                default: ""
+                                type: string
+                              optional:
+                                type: boolean
+                            type: object
+                            x-kubernetes-map-type: atomic
+                          secretRef:
+                            properties:
+                              name:
+                                default: ""
+                                type: string
+                              optional:
+                                type: boolean
+                            type: object
+                            x-kubernetes-map-type: atomic
+                        type: object
+                      type: array
+                  type: object
                 image:
                   type: string
                 imagePullSecrets:
@@ -48,6 +82,48 @@ spec:
                 nodeSelector:
                   additionalProperties:
                     type: string
+                  type: object
+                podTemplate:
+                  properties:
+                    metadata:
+                      properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          type: object
+                        labels:
+                          additionalProperties:
+                            type: string
+                          type: object
+                      type: object
+                    spec:
+                      properties:
+                        containers:
+                          items:
+                            properties:
+                              name:
+                                type: string
+                              resources:
+                                type: object
+                              securityContext:
+                                type: object
+                                x-kubernetes-preserve-unknown-fields: true
+                            required:
+                              - name
+                            type: object
+                          maxItems: 1
+                          type: array
+                        resources:
+                          type: object
+                        securityContext:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
+                        tolerations:
+                          items:
+                            type: object
+                            x-kubernetes-preserve-unknown-fields: true
+                          type: array
+                      type: object
                   type: object
                 resources:
                   properties:
@@ -82,6 +158,9 @@ spec:
                         x-kubernetes-int-or-string: true
                       type: object
                   type: object
+                  x-kubernetes-validations:
+                    - message: resources.limits is mandatory to register with Grafana Cloud k6
+                      rule: has(self.limits.cpu) && has(self.limits.memory)
                 serviceAccountName:
                   type: string
                 token:
@@ -128,6 +207,9 @@ spec:
                       - type
                     type: object
                   type: array
+                  x-kubernetes-list-map-keys:
+                    - type
+                  x-kubernetes-list-type: map
               type: object
           type: object
       served: true

@@ -2,32 +2,21 @@
 installCRDs: true
 namespace:
   create: false
-prometheus:
-  enabled: false
-authProxy:
-  enabled: true
-  image:
-    registry: quay.io
-    repository: brancz/kube-rbac-proxy
-    tag: v0.18.2
-    pullPolicy: IfNotPresent
-  resources: {}
-  livenessProbe: {}
-  readinessProbe: {}
-  containerSecurityContext: {}
 
 manager:
   replicas: 1
+  # chart 4.7.0 defaults logging.development to true (--zap-devel=true, DEBUG);
+  # use production zap logging (JSON, INFO)
+  logging:
+    development: false
   serviceAccount:
     name: k6-operator-controller
     create: true
   image:
     registry: ghcr.io
     repository: grafana/k6-operator
-    tag: controller-v0.0.19
+    tag: controller-v1.7.0
     pullPolicy: IfNotPresent
-  livenessProbe: {}
-  readinessProbe: {}
   env: 
     - name: WATCH_NAMESPACE
       value: "sys-k6"
