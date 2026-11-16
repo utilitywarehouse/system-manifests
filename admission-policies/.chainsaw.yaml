@@ -8,6 +8,8 @@ spec:
   parallel: 1
   fullName: true
   forceTerminationGracePeriod: 5s
+  timeouts:
+    cleanup: 120s
   # add required labels to all temp NS created by chainsaw
   namespaceTemplate:
     metadata:

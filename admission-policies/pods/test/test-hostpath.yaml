@@ -33,28 +33,6 @@ spec:
         path: /data
         type: Directory
 ---
-apiVersion: policies.kyverno.io/v1
-kind: PolicyException
-metadata:
-  name: calico-node-hostpath-vols
-  namespace: kube-system
-spec:
-  policyRefs:
-    - name: hostpath-vols
-      kind: ValidatingPolicy
-  matchConditions:
-    - name: calico-node-hostpath-vols
-      expression: >-
-        object.metadata.?namespace.orValue('') == 'kube-system' &&
-        object.metadata.name.startsWith('test-hostpath-exception') &&
-        (
-          has(object.spec.template) ? object.spec.template.spec :
-          has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
-          object.spec
-        ).?volumes.orValue([]).all(v,
-          !has(v.hostPath) || !has(v.hostPath.path) || v.hostPath.path in ['/usr/share/ca-certificates', '/lib/modules', '/var/run/calico']
-        )
----
 apiVersion: v1
 kind: Pod
 metadata:

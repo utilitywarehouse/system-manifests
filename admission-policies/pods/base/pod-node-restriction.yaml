@@ -1,23 +1,9 @@
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: restrict-scheduling-to-master-nodes
-  annotations:
-    policies.kyverno.io/title: Restrict scheduling to master nodes
-    policies.kyverno.io/subject: Pod
-    policies.kyverno.io/description: >-
-      Scheduling non-system Pods to control plane nodes (which run kubelet) is often undesirable
-      because it takes away resources from the control plane components and can represent
-      a possible security threat vector. This policy prevents users from setting a toleration
-      in a Pod spec which allows running on control plane nodes
-      with the taint key `node-role.kubernetes.io/master` or `node-role.kubernetes.io/control-plane`.
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: []
-  validationActions: [Deny]
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -53,3 +39,11 @@ spec:
             t.?key.orValue('') != 'node-role.kubernetes.io/master' && 
             t.?key.orValue('') != 'node-role.kubernetes.io/control-plane'
           )
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: restrict-scheduling-to-master-nodes-binding
+spec:
+  policyName: restrict-scheduling-to-master-nodes
+  validationActions: ["Deny"]

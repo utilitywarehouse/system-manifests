@@ -1,0 +1,97 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-host-ipc-pods
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-host-network-pods
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-host-pid-pods
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-host-ports
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-privilege-escalation
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-privileged-containers
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-proc-mount
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: disallow-selinux
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: hostpath-vols
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: pod-capabilities
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: restrict-apparmor-profiles
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: restrict-scheduling-to-master-nodes
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: restrict-seccomp
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: restrict-sysctls
+  (status.observedGeneration == metadata.generation): true
+  (length(status.typeChecking.expressionWarnings || `[]`)): 0
