@@ -20,9 +20,9 @@ patches:
   - path: patches/disallow-privilege-escalation.yaml
     target:
       name: disallow-privilege-escalation
-  - path: patches/hostpath-vols.yaml
+  - path: patches/restrict-hostpath-vols.yaml
     target:
-      name: hostpath-vols
-  - path: patches/pod-capabilities.yaml
+      name: restrict-hostpath-vols
+  - path: patches/restrict-pod-capabilities.yaml
     target:
-      name: pod-capabilities
+      name: restrict-pod-capabilities

@@ -2,17 +2,17 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - AppArmor.yaml
-  - capabilities.yaml
-  - hostIPC.yaml
-  - hostNetwork.yaml
-  - hostPaths.yaml
-  - hostPID.yaml
-  - hostPorts.yaml
-  - pod-node-restriction.yaml
-  - privileged.yaml
-  - privilege-escalation.yaml
-  - procMount.yaml
-  - Seccomp.yaml
-  - SELinux.yaml
-  - sysctls.yaml
+  - disallow-host-ipc-pods.yaml
+  - disallow-host-network-pods.yaml
+  - disallow-host-pid-pods.yaml
+  - disallow-host-ports.yaml
+  - disallow-privileged-containers.yaml
+  - disallow-privilege-escalation.yaml
+  - disallow-proc-mount.yaml
+  - disallow-selinux.yaml
+  - restrict-apparmor-profiles.yaml
+  - restrict-hostpath-vols.yaml
+  - restrict-pod-capabilities.yaml
+  - restrict-scheduling-to-master-nodes.yaml
+  - restrict-seccomp.yaml
+  - restrict-sysctls.yaml

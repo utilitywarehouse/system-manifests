@@ -1,7 +1,12 @@
+# Based on: https://kyverno.io/policies/other/limit-hostpath-vols/limit-hostpath-vols/
+# Limit hostPath Volumes to Specific Directories
+#
+# hostPath volumes consume the underlying node's file system. Mounting host
+# paths should be disabled by default, except for specific cases
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
-  name: disallow-host-network-pods
+  name: restrict-hostpath-vols
 spec:
   failurePolicy: Fail
   matchConstraints:
@@ -26,16 +31,15 @@ spec:
         object.spec
 
   validations:
-    - message: >-
-        HostNetwork pods are disallowed. The field spec.hostNetwork must be
-        unset or set to `false`.
+    - message: HostPath volumes are not allowed.
       expression: >-
-        !has(variables.podSpec.hostNetwork) || variables.podSpec.hostNetwork == false
+        !has(variables.podSpec.volumes) ||
+        variables.podSpec.volumes.all(v, !has(v.hostPath))
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicyBinding
 metadata:
-  name: disallow-host-network-pods-binding
+  name: restrict-hostpath-vols-binding
 spec:
-  policyName: disallow-host-network-pods
+  policyName: restrict-hostpath-vols
   validationActions: ["Deny"]

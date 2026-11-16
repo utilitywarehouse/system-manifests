@@ -1,8 +1,10 @@
-# Based on: https://kyverno.io/policies/other/limit-hostpath-vols/limit-hostpath-vols/
+# Disallow HostNetwork Pods
+#
+# This policy ensures Pods do not use the host's network interfaces.
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
-  name: hostpath-vols
+  name: disallow-host-network-pods
 spec:
   failurePolicy: Fail
   matchConstraints:
@@ -27,15 +29,16 @@ spec:
         object.spec
 
   validations:
-    - message: HostPath volumes are not allowed.
+    - message: >-
+        HostNetwork pods are disallowed. The field spec.hostNetwork must be
+        unset or set to `false`.
       expression: >-
-        !has(variables.podSpec.volumes) ||
-        variables.podSpec.volumes.all(v, !has(v.hostPath))
+        !has(variables.podSpec.hostNetwork) || variables.podSpec.hostNetwork == false
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicyBinding
 metadata:
-  name: hostpath-vols-binding
+  name: disallow-host-network-pods-binding
 spec:
-  policyName: hostpath-vols
+  policyName: disallow-host-network-pods
   validationActions: ["Deny"]

@@ -1,3 +1,9 @@
+# Restrict AppArmor
+#
+# On supported hosts, the 'runtime/default' AppArmor profile is applied by default.
+# The default policy should prevent overriding or disabling the policy, or restrict
+# overrides to an allowed set of profiles. This policy ensures Pods do not
+# specify any other AppArmor profiles than `runtime/default` or `localhost/*`.
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
@@ -32,9 +38,9 @@ spec:
         must not be set to anything other than `runtime/default` or `localhost/*`.
       expression: >-
         !has(variables.podMetadata.annotations) ||
-        variables.podMetadata.annotations.all(k, 
-          !k.startsWith('container.apparmor.security.beta.kubernetes.io/') || 
-          variables.podMetadata.annotations[k] == 'runtime/default' || 
+        variables.podMetadata.annotations.all(k,
+          !k.startsWith('container.apparmor.security.beta.kubernetes.io/') ||
+          variables.podMetadata.annotations[k] == 'runtime/default' ||
           variables.podMetadata.annotations[k].startsWith('localhost/')
         )
 ---

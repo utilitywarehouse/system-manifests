@@ -1,8 +1,10 @@
-# https://kyverno.io/policies/pod-security/baseline/disallow-host-ports/disallow-host-ports/
+# Disallow HostPID Pods
+#
+# This policy ensures Pods cannot use host's PID.
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
-  name: disallow-host-ports
+  name: disallow-host-pid-pods
 spec:
   failurePolicy: Fail
   matchConstraints:
@@ -10,7 +12,7 @@ spec:
       - apiGroups: [""]
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
-        resources: ["pods", "pods/ephemeralcontainers"]
+        resources: ["pods"]
       - apiGroups: ["apps"]
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
@@ -25,25 +27,17 @@ spec:
         has(object.spec.template) ? object.spec.template.spec :
         has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec :
         object.spec
-    - name: allContainers
-      expression: >-
-        variables.podSpec.?containers.orValue([]) + 
-        variables.podSpec.?initContainers.orValue([]) + 
-        variables.podSpec.?ephemeralContainers.orValue([])
+
   validations:
     - message: >-
-        Use of host ports is disallowed. The fields spec.containers[*].ports[*].hostPort
-        , spec.initContainers[*].ports[*].hostPort, and spec.ephemeralContainers[*].ports[*].hostPort
-        must either be unset or set to `0`.
-      expression: >-
-        variables.allContainers.all(c, 
-          c.?ports.orValue([]).all(p, !has(p.hostPort) || p.hostPort == 0)
-        )
+        HostPID pods are disallowed. The field spec.hostPID must be unset or
+        set to `false`.
+      expression: "!has(variables.podSpec.hostPID) || variables.podSpec.hostPID == false"
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicyBinding
 metadata:
-  name: disallow-host-ports-binding
+  name: disallow-host-pid-pods-binding
 spec:
-  policyName: disallow-host-ports
+  policyName: disallow-host-pid-pods
   validationActions: ["Deny"]

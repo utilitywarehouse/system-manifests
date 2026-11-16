@@ -1,7 +1,12 @@
+# Restrict Seccomp
+#
+# The seccomp profile must not be explicitly set to Unconfined. This policy,
+# requiring Kubernetes v1.19 or later, ensures that seccomp is unset or
+# set to `RuntimeDefault` or `Localhost`.
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
-  name: pod-capabilities
+  name: restrict-seccomp
 spec:
   failurePolicy: Fail
   matchConstraints:
@@ -26,21 +31,27 @@ spec:
         object.spec
     - name: allContainers
       expression: >-
-        variables.podSpec.?containers.orValue([]) + 
-        variables.podSpec.?initContainers.orValue([]) + 
+        variables.podSpec.?containers.orValue([]) +
+        variables.podSpec.?initContainers.orValue([]) +
         variables.podSpec.?ephemeralContainers.orValue([])
-
   validations:
-    - message: Any capabilities added other than NET_BIND_SERVICE are disallowed.
+    - message: >-
+        Use of custom Seccomp profiles is disallowed. The fields
+        spec.securityContext.seccompProfile.type,
+        spec.containers[*].securityContext.seccompProfile.type,
+        spec.initContainers[*].securityContext.seccompProfile.type, and
+        spec.ephemeralContainers[*].securityContext.seccompProfile.type
+        must be unset or set to `RuntimeDefault` or `Localhost`.
       expression: >-
-        variables.allContainers.all(c, 
-          c.?securityContext.?capabilities.?add.orValue([]).all(cap, cap in ['NET_BIND_SERVICE', ''])
+        variables.podSpec.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost'] &&
+        variables.allContainers.all(c,
+          c.?securityContext.?seccompProfile.?type.orValue('RuntimeDefault') in ['RuntimeDefault', 'Localhost']
         )
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicyBinding
 metadata:
-  name: pod-capabilities-binding
+  name: restrict-seccomp-binding
 spec:
-  policyName: pod-capabilities
+  policyName: restrict-seccomp
   validationActions: ["Deny"]

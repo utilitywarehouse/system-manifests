@@ -1,8 +1,13 @@
-# https://kyverno.io/policies/pod-security/restricted/disallow-privilege-escalation/disallow-privilege-escalation/
+# Disallow procMount
+#
+# The default /proc masks are set up to reduce attack surface and should be required. This policy
+# ensures nothing but the default procMount can be specified. Note that in order for users
+# to deviate from the `Default` procMount requires setting a feature gate at the API
+# server.
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
-  name: disallow-privilege-escalation
+  name: disallow-proc-mount
 spec:
   failurePolicy: Fail
   matchConstraints:
@@ -27,22 +32,22 @@ spec:
         object.spec
     - name: allContainers
       expression: >-
-        variables.podSpec.?containers.orValue([]) + 
-        variables.podSpec.?initContainers.orValue([]) + 
+        variables.podSpec.?containers.orValue([]) +
+        variables.podSpec.?initContainers.orValue([]) +
         variables.podSpec.?ephemeralContainers.orValue([])
   validations:
     - expression: >-
-        variables.allContainers.all(c, 
-          c.?securityContext.?allowPrivilegeEscalation.orValue(false) == false
+        variables.allContainers.all(c,
+          c.?securityContext.?procMount.orValue('Default') == 'Default'
         )
       messageExpression: >-
-        'Privilege escalation is disallowed. The following containers have allowPrivilegeEscalation set to true: ' + 
-        variables.allContainers.filter(c, c.?securityContext.?allowPrivilegeEscalation.orValue(false) == true).map(c, c.name).join(', ')
+        'Changing the proc mount from the default is not allowed. The following containers have an invalid procMount: ' +
+        variables.allContainers.filter(c, c.?securityContext.?procMount.orValue('Default') != 'Default').map(c, c.name).join(', ')
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicyBinding
 metadata:
-  name: disallow-privilege-escalation-binding
+  name: disallow-proc-mount-binding
 spec:
-  policyName: disallow-privilege-escalation
+  policyName: disallow-proc-mount
   validationActions: ["Deny"]
