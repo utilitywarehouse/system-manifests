@@ -1,26 +1,15 @@
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Restrict AppArmor
+#
+# On supported hosts, the 'runtime/default' AppArmor profile is applied by default.
+# The default policy should prevent overriding or disabling the policy, or restrict
+# overrides to an allowed set of profiles. This policy ensures Pods do not
+# specify any other AppArmor profiles than `runtime/default` or `localhost/*`.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: restrict-apparmor-profiles
-  annotations:
-    policies.kyverno.io/title: Restrict AppArmor
-    policies.kyverno.io/category: Pod Security Standards (Baseline)
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/subject: Pod, Annotation
-    policies.kyverno.io/minversion: 1.14.0
-    policies.kyverno.io/description: >-
-      On supported hosts, the 'runtime/default' AppArmor profile is applied by default.
-      The default policy should prevent overriding or disabling the policy, or restrict
-      overrides to an allowed set of profiles. This policy ensures Pods do not
-      specify any other AppArmor profiles than `runtime/default` or `localhost/*`.
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: []
-  validationActions:
-    - Deny
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -49,8 +38,16 @@ spec:
         must not be set to anything other than `runtime/default` or `localhost/*`.
       expression: >-
         !has(variables.podMetadata.annotations) ||
-        variables.podMetadata.annotations.all(k, 
-          !k.startsWith('container.apparmor.security.beta.kubernetes.io/') || 
-          variables.podMetadata.annotations[k] == 'runtime/default' || 
+        variables.podMetadata.annotations.all(k,
+          !k.startsWith('container.apparmor.security.beta.kubernetes.io/') ||
+          variables.podMetadata.annotations[k] == 'runtime/default' ||
           variables.podMetadata.annotations[k].startsWith('localhost/')
         )
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: restrict-apparmor-profiles-binding
+spec:
+  policyName: restrict-apparmor-profiles
+  validationActions: ["Deny"]

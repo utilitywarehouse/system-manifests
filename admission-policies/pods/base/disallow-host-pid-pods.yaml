@@ -1,21 +1,12 @@
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Disallow HostPID Pods
+#
+# This policy ensures Pods cannot use host's PID.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: disallow-host-pid-pods
-  annotations:
-    policies.kyverno.io/title: Disallow HostPID Pods
-    policies.kyverno.io/category: Pod Security Standards (Baseline)
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/subject: Pod
-    policies.kyverno.io/description: >-
-      This policy ensures Pods cannot use host's PID.
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: []
-  validationActions: [Deny]
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -42,3 +33,11 @@ spec:
         HostPID pods are disallowed. The field spec.hostPID must be unset or
         set to `false`.
       expression: "!has(variables.podSpec.hostPID) || variables.podSpec.hostPID == false"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-host-pid-pods-binding
+spec:
+  policyName: disallow-host-pid-pods
+  validationActions: ["Deny"]

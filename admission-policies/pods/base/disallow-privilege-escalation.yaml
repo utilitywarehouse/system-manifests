@@ -1,23 +1,14 @@
 # https://kyverno.io/policies/pod-security/restricted/disallow-privilege-escalation/disallow-privilege-escalation/
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Disallow Privilege Escalation
+#
+# Privilege escalation, such as via set-user-ID or set-group-ID file mode, should not be allowed.
+# This policy ensures the `allowPrivilegeEscalation` field is set to `false`.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: disallow-privilege-escalation
-  annotations:
-    policies.kyverno.io/title: Disallow Privilege Escalation
-    policies.kyverno.io/category: Pod Security Standards (Restricted)
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/subject: Pod
-    policies.kyverno.io/description: >-
-      Privilege escalation, such as via set-user-ID or set-group-ID file mode, should not be allowed.
-      This policy ensures the `allowPrivilegeEscalation` field is set to `false`.
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: []
-  validationActions: [Deny]
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -40,14 +31,22 @@ spec:
         object.spec
     - name: allContainers
       expression: >-
-        variables.podSpec.?containers.orValue([]) + 
-        variables.podSpec.?initContainers.orValue([]) + 
+        variables.podSpec.?containers.orValue([]) +
+        variables.podSpec.?initContainers.orValue([]) +
         variables.podSpec.?ephemeralContainers.orValue([])
   validations:
     - expression: >-
-        variables.allContainers.all(c, 
+        variables.allContainers.all(c,
           c.?securityContext.?allowPrivilegeEscalation.orValue(false) == false
         )
       messageExpression: >-
-        'Privilege escalation is disallowed. The following containers have allowPrivilegeEscalation set to true: ' + 
+        'Privilege escalation is disallowed. The following containers have allowPrivilegeEscalation set to true: ' +
         variables.allContainers.filter(c, c.?securityContext.?allowPrivilegeEscalation.orValue(false) == true).map(c, c.name).join(', ')
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-privilege-escalation-binding
+spec:
+  policyName: disallow-privilege-escalation
+  validationActions: ["Deny"]

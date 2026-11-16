@@ -1,21 +1,12 @@
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Disallow HostIPC Pods
+#
+# This policy ensures Pods do not use the host's IPC namespace
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
-  name: disallow-host-network-pods
-  annotations:
-    policies.kyverno.io/title: Disallow HostNetwork Pods
-    policies.kyverno.io/category: Pod Security Standards (Baseline)
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/subject: Pod
-    policies.kyverno.io/description: >-
-      This policy ensures Pods do not use the host's network interfaces.
+  name: disallow-host-ipc-pods
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: []
-  validationActions: [Deny]
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -39,7 +30,15 @@ spec:
 
   validations:
     - message: >-
-        HostNetwork pods are disallowed. The field spec.hostNetwork must be
-        unset or set to `false`.
+        HostIPC pods are disallowed. The field spec.hostIPC must be unset or
+        set to `false`.
       expression: >-
-        !has(variables.podSpec.hostNetwork) || variables.podSpec.hostNetwork == false
+        !has(variables.podSpec.hostIPC) || variables.podSpec.hostIPC == false
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-host-ipc-pods-binding
+spec:
+  policyName: disallow-host-ipc-pods
+  validationActions: ["Deny"]

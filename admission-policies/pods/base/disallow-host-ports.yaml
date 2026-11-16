@@ -1,24 +1,15 @@
 # https://kyverno.io/policies/pod-security/baseline/disallow-host-ports/disallow-host-ports/
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Disallow hostPorts
+#
+# Access to host ports allows potential snooping of network traffic and should not be
+# allowed, or at minimum restricted to a known list. This policy ensures the `hostPort`
+# field is unset or set to `0`.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: disallow-host-ports
-  annotations:
-    policies.kyverno.io/title: Disallow hostPorts
-    policies.kyverno.io/category: Pod Security Standards (Baseline)
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/subject: Pod
-    policies.kyverno.io/description: >-
-      Access to host ports allows potential snooping of network traffic and should not be
-      allowed, or at minimum restricted to a known list. This policy ensures the `hostPort`
-      field is unset or set to `0`.
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: []
-  validationActions: [Deny]
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -41,8 +32,8 @@ spec:
         object.spec
     - name: allContainers
       expression: >-
-        variables.podSpec.?containers.orValue([]) + 
-        variables.podSpec.?initContainers.orValue([]) + 
+        variables.podSpec.?containers.orValue([]) +
+        variables.podSpec.?initContainers.orValue([]) +
         variables.podSpec.?ephemeralContainers.orValue([])
   validations:
     - message: >-
@@ -50,6 +41,14 @@ spec:
         , spec.initContainers[*].ports[*].hostPort, and spec.ephemeralContainers[*].ports[*].hostPort
         must either be unset or set to `0`.
       expression: >-
-        variables.allContainers.all(c, 
+        variables.allContainers.all(c,
           c.?ports.orValue([]).all(p, !has(p.hostPort) || p.hostPort == 0)
         )
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-host-ports-binding
+spec:
+  policyName: disallow-host-ports
+  validationActions: ["Deny"]

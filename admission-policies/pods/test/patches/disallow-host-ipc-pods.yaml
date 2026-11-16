@@ -1,0 +1,6 @@
+# The policy exceptions from the Kyverno suite, as negated match conditions.
+- op: add
+  path: /spec/matchConditions
+  value:
+    - name: trident-disallow-host-ipc-pods
+      expression: "!(object.metadata.?namespace.orValue('') == 'default' && object.metadata.name.startsWith('test-hostipc-set-to-true-exception'))"

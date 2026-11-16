@@ -1,24 +1,15 @@
-apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+# Disallow procMount
+#
+# The default /proc masks are set up to reduce attack surface and should be required. This policy
+# ensures nothing but the default procMount can be specified. Note that in order for users
+# to deviate from the `Default` procMount requires setting a feature gate at the API
+# server.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
 metadata:
   name: disallow-proc-mount
-  annotations:
-    policies.kyverno.io/title: Disallow procMount
-    policies.kyverno.io/category: Pod Security Standards (Baseline)
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/subject: Pod
-    policies.kyverno.io/description: >-
-      The default /proc masks are set up to reduce attack surface and should be required. This policy
-      ensures nothing but the default procMount can be specified. Note that in order for users
-      to deviate from the `Default` procMount requires setting a feature gate at the API
-      server.
 spec:
-  autogen:
-    validatingAdmissionPolicy:
-      enabled: true
-    podControllers:
-      controllers: []
-  validationActions: [Deny]
+  failurePolicy: Fail
   matchConstraints:
     resourceRules:
       - apiGroups: [""]
@@ -41,14 +32,22 @@ spec:
         object.spec
     - name: allContainers
       expression: >-
-        variables.podSpec.?containers.orValue([]) + 
-        variables.podSpec.?initContainers.orValue([]) + 
+        variables.podSpec.?containers.orValue([]) +
+        variables.podSpec.?initContainers.orValue([]) +
         variables.podSpec.?ephemeralContainers.orValue([])
   validations:
     - expression: >-
-        variables.allContainers.all(c, 
+        variables.allContainers.all(c,
           c.?securityContext.?procMount.orValue('Default') == 'Default'
         )
       messageExpression: >-
-        'Changing the proc mount from the default is not allowed. The following containers have an invalid procMount: ' + 
+        'Changing the proc mount from the default is not allowed. The following containers have an invalid procMount: ' +
         variables.allContainers.filter(c, c.?securityContext.?procMount.orValue('Default') != 'Default').map(c, c.name).join(', ')
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: disallow-proc-mount-binding
+spec:
+  policyName: disallow-proc-mount
+  validationActions: ["Deny"]

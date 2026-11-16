@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+patches:
+  - path: patches/disallow-host-ipc-pods.yaml
+    target:
+      name: disallow-host-ipc-pods
+  - path: patches/disallow-host-network-pods.yaml
+    target:
+      name: disallow-host-network-pods
+  - path: patches/disallow-host-pid-pods.yaml
+    target:
+      name: disallow-host-pid-pods
+  - path: patches/disallow-host-ports.yaml
+    target:
+      name: disallow-host-ports
+  - path: patches/disallow-privilege-escalation.yaml
+    target:
+      name: disallow-privilege-escalation
+  - path: patches/restrict-hostpath-vols.yaml
+    target:
+      name: restrict-hostpath-vols
+  - path: patches/restrict-pod-capabilities.yaml
+    target:
+      name: restrict-pod-capabilities

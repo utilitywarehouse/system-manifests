@@ -5,6 +5,7 @@ resources:
   - ingress/base
   - certificates/base
   - argocd/base
+  - pods/base
   - namespaces/base
   - workloads/base
   - vault/base
