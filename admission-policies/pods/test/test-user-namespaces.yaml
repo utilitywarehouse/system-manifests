@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-unns-default
+spec:
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-unns-skip
+  labels:
+    uw.systems/user-namespaces: disabled
+spec:
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-unns-explicit
+spec:
+  hostUsers: true
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-unns-enabled
+  labels:
+    uw.systems/user-namespaces: "enabled"
+spec:
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-unns-host-network
+spec:
+  hostNetwork: true
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-unns-host-pid
+spec:
+  hostPID: true
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-unns-host-ipc
+spec:
+  hostIPC: true
+  containers:
+    - name: test
+      image: alpine
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-unns-hostpath
+spec:
+  containers:
+    - name: test
+      image: alpine
+      volumeMounts:
+        - name: host
+          mountPath: /host
+  volumes:
+    - name: host
+      hostPath:
+        path: /var/lib

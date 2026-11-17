@@ -1,0 +1,21 @@
+# MutatingAdmissionPolicy reports no status today; pin the parts of the spec
+# that carry the policy's intent.
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: enforce-user-namespaces
+spec:
+  reinvocationPolicy: Never
+  (matchConditions[*].name):
+    - exclude-host-namespaces
+    - exclude-hostpath-volumes
+    - exclude-disabled
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: enforce-user-namespaces-binding
+spec:
+  policyName: enforce-user-namespaces

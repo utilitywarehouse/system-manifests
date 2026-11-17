@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - enforce-user-namespaces.yaml
   - disallow-host-ipc-pods.yaml
   - disallow-host-network-pods.yaml
   - disallow-host-pid-pods.yaml
