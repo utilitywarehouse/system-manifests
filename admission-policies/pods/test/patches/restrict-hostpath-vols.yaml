@@ -4,3 +4,5 @@
   value:
     - name: calico-node-hostpath-vols
       expression: "!(object.metadata.?namespace.orValue('') == 'kube-system' && object.metadata.name.startsWith('test-hostpath-exception') && ( has(object.spec.template) ? object.spec.template.spec : has(object.spec.jobTemplate) ? object.spec.jobTemplate.spec.template.spec : object.spec ).?volumes.orValue([]).all(v, !has(v.hostPath) || !has(v.hostPath.path) || v.hostPath.path in ['/usr/share/ca-certificates', '/lib/modules', '/var/run/calico'] ))"
+    - name: test-unns-hostpath
+      expression: "!(object.metadata.name == 'test-unns-hostpath')"

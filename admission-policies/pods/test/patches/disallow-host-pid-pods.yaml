@@ -4,3 +4,5 @@
   value:
     - name: kured-disallow-host-pid-pods
       expression: "!(object.metadata.?namespace.orValue('') == 'default' && object.metadata.name.startsWith('test-hostpid-true-exceptions'))"
+    - name: test-unns-host-pid
+      expression: "!(object.metadata.name == 'test-unns-host-pid')"

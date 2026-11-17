@@ -4,3 +4,5 @@
   value:
     - name: etcd-backup-disallow-host-network-pods
       expression: "!(object.metadata.?namespace.orValue('') == 'default' && object.metadata.name.startsWith('test-host-network-set-to-true-exception'))"
+    - name: test-unns-host-network
+      expression: "!(object.metadata.name == 'test-unns-host-network')"

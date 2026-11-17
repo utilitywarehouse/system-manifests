@@ -1,0 +1,59 @@
+# Enforce User Namespaces
+#
+# Sets `hostUsers: false` on pods, so containers run in a user namespace and
+# root inside the container is mapped to an unprivileged user on the node.
+# Pods that cannot use one are skipped: host namespaces, hostPath volumes, and
+# workloads that opt out with the `uw.systems/user-namespaces: disabled` label
+#
+# Upstream: https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: enforce-user-namespaces
+spec:
+  failurePolicy: Fail
+  reinvocationPolicy: Never
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+  matchConditions:
+    # https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/#limitations
+    - name: exclude-host-namespaces
+      expression: >-
+        !(
+          object.spec.?hostNetwork.orValue(false) ||
+          object.spec.?hostPID.orValue(false) ||
+          object.spec.?hostIPC.orValue(false)
+        )
+    # failed to fulfil mount request: failed to set MOUNT_ATTR_IDMAP on /dev: invalid
+    # argument (maybe the filesystem used doesn't support idmap mounts on this kernel?)
+    - name: exclude-hostpath-volumes
+      expression: >-
+        object.spec.?volumes.orValue([]).all(v,!has(v.hostPath))
+
+    # Some workloads cannot run in a user namespace. NFS-backed volumes are the
+    # main case: the Linux NFS client does not support idmap mounts yet.
+    # They opt out with uw.systems/user-namespaces=disabled on the pod template.
+    - name: exclude-disabled
+      expression: >-
+        object.metadata.?labels['uw.systems/user-namespaces'].orValue('') != 'disabled'
+
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: >-
+          Object{
+            spec: Object.spec{
+              hostUsers: false
+            }
+          }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: enforce-user-namespaces-binding
+spec:
+  policyName: enforce-user-namespaces

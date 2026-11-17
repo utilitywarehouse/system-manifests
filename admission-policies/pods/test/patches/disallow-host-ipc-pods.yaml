@@ -4,3 +4,5 @@
   value:
     - name: trident-disallow-host-ipc-pods
       expression: "!(object.metadata.?namespace.orValue('') == 'default' && object.metadata.name.startsWith('test-hostipc-set-to-true-exception'))"
+    - name: test-unns-host-ipc
+      expression: "!(object.metadata.name == 'test-unns-host-ipc')"

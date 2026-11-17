@@ -332,3 +332,90 @@ spec:
                 check:
                   ($error != null): true
 
+
+    - name: test-user-namespaces
+      try:
+        # MutatingAdmissionPolicies are compiled asynchronously after apply; a pod
+        # created before the policy is active is never mutated, so poll a canary.
+        - script:
+            timeout: 180s
+            content: |
+              set -eu
+              for i in $(seq 1 60); do
+                kubectl delete pod canary-unns --ignore-not-found --wait=false >/dev/null 2>&1 || true
+                kubectl run canary-unns --image=alpine --restart=Never >/dev/null 2>&1 || true
+                v=$(kubectl get pod canary-unns -o jsonpath='{.spec.hostUsers}' 2>/dev/null || true)
+                if [ "$v" = "false" ]; then
+                  kubectl delete pod canary-unns --wait=false >/dev/null 2>&1 || true
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "the MutatingAdmissionPolicy did not set hostUsers" >&2
+              exit 1
+        - apply:
+            file: test-user-namespaces.yaml
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-unns-default
+              spec:
+                hostUsers: false
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-unns-skip
+              spec:
+                (hostUsers == null): true
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-unns-explicit
+              spec:
+                hostUsers: false
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-unns-enabled
+              spec:
+                hostUsers: false
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-unns-host-network
+              spec:
+                (hostUsers == null): true
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-unns-host-pid
+              spec:
+                (hostUsers == null): true
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-unns-host-ipc
+              spec:
+                (hostUsers == null): true
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-unns-hostpath
+              spec:
+                (hostUsers == null): true
