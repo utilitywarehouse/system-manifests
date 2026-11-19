@@ -218,3 +218,49 @@ spec:
       image: alpine
       restartPolicy: Never
   containers: [{ name: app, image: alpine }]
+---
+# Pod opting in to one AWS profile per role.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-sts-profile
+  annotations:
+    vault.uw.systems/aws-credentials: "sts-profile"
+spec:
+  containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]
+---
+# The fail-open policy injects an older-style agent name, so the sts-profile
+# mode has to land on that container too.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-fail-open-sts-profile
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-fail-open"
+    vault.uw.systems/aws-credentials: "sts-profile"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+# Same opt-in on top of the aws + gcp key combination, which already has a
+# volume and mounts of its own.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-gcp-key-sts-profile
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-aws-gcp-key"
+    vault.uw.systems/aws-credentials: "sts-profile"
+spec:
+  containers: [{ name: app, image: alpine }]
+---
+# sts-http keeps matching this policy on top of a legacy label for another
+# policy, exactly as before the sts-profile mode existed.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-gcp-key-sts-http
+  annotations:
+    uw.systems/kyverno-inject-sidecar-request: "vault-sidecar-gcp-key"
+    vault.uw.systems/aws-credentials: "sts-http"
+spec:
+  containers: [{ name: app, image: alpine }]

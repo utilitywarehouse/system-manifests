@@ -37,6 +37,13 @@ spec:
       expression: >-
         variables.vkac_env + "_gcp_" + variables.pod_namespace + "_" + variables.pod_sa
 
+    # Multi-role credentials are enabled by the sts-profile credentials mode:
+    # the sidecar writes one profile per role into a shared directory and
+    # serves no HTTP credentials endpoint.
+    - name: aws_profiles
+      expression: >-
+        object.metadata.?annotations['vault.uw.systems/aws-credentials'].orValue('') == 'sts-profile'
+
   mutations:
     - patchType: ApplyConfiguration
       applyConfiguration:
@@ -70,7 +77,14 @@ spec:
                       Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8499" },
                       Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
                       Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
-                    ],
+                    ] + (variables.aws_profiles ? [
+                      Object.spec.initContainers.env{ name: "VKCC_AWS_CREDENTIALS_DIR", value: "/var/run/secrets/vkcc/aws" },
+                      Object.spec.initContainers.env{ name: "VKCC_DISABLE_HTTP", value: "true" }
+                    ] : []),
+                    // volumeMounts is optional, so pods without the annotation carry no extra mount.
+                    ?volumeMounts: variables.aws_profiles ? optional.of([
+                      Object.spec.initContainers.volumeMounts{ name: "vault-aws-roles", mountPath: "/var/run/secrets/vkcc/aws" }
+                    ]) : optional.none(),
                     ports: [
                       Object.spec.initContainers.ports{ name: "metrics", containerPort: 8499, protocol: "TCP" }
                     ],
@@ -110,13 +124,23 @@ spec:
                 object.spec.containers.map(c,
                   Object.spec.containers{
                     name: c.name,
-                    env: [
-                      Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" },
+                    env: (variables.aws_profiles ? [
+                      Object.spec.containers.env{ name: "AWS_CONFIG_FILE", value: "/var/run/secrets/vkcc/aws/config" },
+                      Object.spec.containers.env{ name: "AWS_PROFILE", value: "default" }
+                    ] : [
+                      Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" }
+                    ]) + [
                       Object.spec.containers.env{ name: "GCE_METADATA_HOST", value: "127.0.0.1:8198" },
                       Object.spec.containers.env{ name: "GCE_METADATA_ROOT", value: "127.0.0.1:8198" }
-                    ]
+                    ],
+                    ?volumeMounts: variables.aws_profiles ? optional.of([
+                      Object.spec.containers.volumeMounts{ name: "vault-aws-roles", mountPath: "/var/run/secrets/vkcc/aws", readOnly: true }
+                    ]) : optional.none()
                   }
-                ) : []
+                ) : [],
+              ?volumes: variables.aws_profiles ? optional.of([
+                Object.spec.volumes{ name: "vault-aws-roles", emptyDir: Object.spec.volumes.emptyDir{ medium: "Memory" } }
+              ]) : optional.none()
             }
           }
 ---
