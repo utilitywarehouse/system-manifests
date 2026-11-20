@@ -18,7 +18,16 @@ spec:
     - name: match-aws-annotation
       expression: >-
         object.metadata.?annotations['vault.uw.systems/aws-credentials'].orValue('') == 'sts-http' ||
+        object.metadata.?annotations['vault.uw.systems/aws-credentials'].orValue('') == 'sts-profile' ||
         object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') == 'vault-sidecar-aws'
+    # A pod on a legacy label that already injects the AWS sidecar is owned by
+    # that label's policy when it also sets the sts-profile credentials mode;
+    # matching here as well would inject a second AWS sidecar. Every other pod,
+    # including every sts-http pod whatever its label, still matches.
+    - name: not-legacy-other-label
+      expression: >-
+        object.metadata.?annotations['vault.uw.systems/aws-credentials'].orValue('') != 'sts-profile' ||
+        !(object.metadata.?annotations['uw.systems/kyverno-inject-sidecar-request'].orValue('') in ['vault-sidecar-aws-fail-open', 'vault-sidecar-aws-gcp', 'vault-sidecar-aws-gcp-key', 'vault-sidecar-aws-gcp-fail-open'])
     # Skip already-injected pods so re-invocation can't add a duplicate.
     - name: not-already-injected
       expression: >-
@@ -37,12 +46,19 @@ spec:
 
     # Fail-open is a pod-wide toggle (vault.uw.systems/credentials-inject-failure-policy: fail-open)
     # that only decides whether the sidecar waits for credentials before the pod
-    # starts. It is honoured only for pods on the new annotation; old-annotation
-    # pods use the dedicated inject-vault-sidecar-aws-fail-open policy instead,
-    # which this policy never matches or overlaps with.
+    # starts. It is honoured only for pods on the new annotation; sts-profile pods
+    # on one of the AWS-injecting legacy labels are excluded above and get their
+    # fail-open behaviour from that label's own policy instead.
     - name: fail_open
       expression: >-
         object.metadata.?annotations['vault.uw.systems/credentials-inject-failure-policy'].orValue('') == 'fail-open'
+
+    # Multi-role credentials are enabled by the sts-profile credentials mode:
+    # the sidecar writes one profile per role into a shared directory and
+    # serves no HTTP credentials endpoint.
+    - name: aws_profiles
+      expression: >-
+        object.metadata.?annotations['vault.uw.systems/aws-credentials'].orValue('') == 'sts-profile'
 
   mutations:
     - patchType: ApplyConfiguration
@@ -76,7 +92,14 @@ spec:
                       Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8499" },
                       Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
                       Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
-                    ],
+                    ] + (variables.aws_profiles ? [
+                      Object.spec.initContainers.env{ name: "VKCC_AWS_CREDENTIALS_DIR", value: "/var/run/secrets/vkcc/aws" },
+                      Object.spec.initContainers.env{ name: "VKCC_DISABLE_HTTP", value: "true" }
+                    ] : []),
+                    // volumeMounts is optional, so pods without the annotation carry no extra mount.
+                    ?volumeMounts: variables.aws_profiles ? optional.of([
+                      Object.spec.initContainers.volumeMounts{ name: "vault-aws-roles", mountPath: "/var/run/secrets/vkcc/aws" }
+                    ]) : optional.none(),
                     ports: [
                       Object.spec.initContainers.ports{ name: "metrics", containerPort: 8499, protocol: "TCP" }
                     ],
@@ -98,12 +121,20 @@ spec:
                 object.spec.containers.map(c,
                   Object.spec.containers{
                     name: c.name,
-                    env: [Object.spec.containers.env{
-                      name: "AWS_CONTAINER_CREDENTIALS_FULL_URI",
-                      value: "http://127.0.0.1:8498/credentials"
-                    }]
+                    env: (variables.aws_profiles ? [
+                      Object.spec.containers.env{ name: "AWS_CONFIG_FILE", value: "/var/run/secrets/vkcc/aws/config" },
+                      Object.spec.containers.env{ name: "AWS_PROFILE", value: "default" }
+                    ] : [
+                      Object.spec.containers.env{ name: "AWS_CONTAINER_CREDENTIALS_FULL_URI", value: "http://127.0.0.1:8498/credentials" }
+                    ]),
+                    ?volumeMounts: variables.aws_profiles ? optional.of([
+                      Object.spec.containers.volumeMounts{ name: "vault-aws-roles", mountPath: "/var/run/secrets/vkcc/aws", readOnly: true }
+                    ]) : optional.none()
                   }
-                ) : []
+                ) : [],
+              ?volumes: variables.aws_profiles ? optional.of([
+                Object.spec.volumes{ name: "vault-aws-roles", emptyDir: Object.spec.volumes.emptyDir{ medium: "Memory" } }
+              ]) : optional.none()
             }
           }
 ---

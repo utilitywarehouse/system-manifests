@@ -1,0 +1,74 @@
+# `vault.uw.systems/aws-role` is read as a list: a comma followed by `arn:`
+# separates roles, any other comma belongs to the role name. Every element is
+# trimmed, and must be a role arn in a 12 digit account, with no empty
+# element, no trailing comma and no duplicate.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-valid-role-list
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/sys-test, arn:aws:iam::703452047160:role/sys-test/with/path"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-valid-role-name-with-comma
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/sys-test,with,commas"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-valid-role-list-comma-in-first
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/sys-test,with,commas, arn:aws:iam::703452047160:role/sys-test/with/path"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-valid-role-list-no-space
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/sys-test,arn:aws:iam::703452047160:role/other"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-empty-role-list-element
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/sys-test,,arn:aws:iam::950135041896:role/other"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-duplicate-role-list
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/sys-test,arn:aws:iam::950135041896:role/sys-test"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-role-list-trailing-garbage
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/sys-test, arn:aws:iam::950135041896:role/other garbage"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-role-list-short-account
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::95013504:role/sys-test"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-role-list-trailing-comma
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/sys-test,"
+---
+# An oversized value is refused before it is split into roles.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-role-list-too-long
+  annotations:
+    vault.uw.systems/aws-role: "arn:aws:iam::950135041896:role/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"

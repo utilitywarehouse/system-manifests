@@ -1,7 +1,7 @@
 # Validate Vault AWS role arn
 #
-# Verify that `vault.uw.systems/aws-role` annotation contains a valid role
-# arn
+# Verify that `vault.uw.systems/aws-role` annotation contains a comma
+# separated list of valid role arns
 
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
@@ -15,11 +15,28 @@ spec:
         apiVersions: ["v1"]
         operations: ["CREATE", "UPDATE"]
         resources: ["serviceaccounts"]
+  variables:
+    # Split the same way the vkcc operator parses it: a comma only separates
+    # roles when it is followed by `arn:`, so any other comma is part of the
+    # role name. One optional space after that comma is accepted here.
+    - name: aws_roles
+      expression: >-
+        object.metadata.?annotations['vault.uw.systems/aws-role'].orValue('')
+        .replace(', arn:', ',arn:').split(',arn:')
+        .map(r, r.trim())
+        .map(r, r.startsWith('arn:') ? r : 'arn:' + r)
   validations:
     - expression: >-
-        has(object.metadata.annotations) && 'vault.uw.systems/aws-role' in object.metadata.annotations ? 
-        object.metadata.annotations['vault.uw.systems/aws-role'].matches('^arn:aws:iam::[0-9]+:role/[a-zA-Z0-9_+=,.@-]+') : true
-      message: "The annotation `vault.uw.systems/aws-role` must contain a valid role arn"
+        !(has(object.metadata.annotations) && 'vault.uw.systems/aws-role' in object.metadata.annotations) ? true :
+        size(object.metadata.annotations['vault.uw.systems/aws-role']) <= 2048
+      message: "The annotation `vault.uw.systems/aws-role` must be at most 2048 characters long"
+    - expression: >-
+        !(has(object.metadata.annotations) && 'vault.uw.systems/aws-role' in object.metadata.annotations) ? true :
+        size(object.metadata.annotations['vault.uw.systems/aws-role']) <= 2048 &&
+        variables.aws_roles.all(r, r.matches('^arn:aws:iam::[0-9]{12}:role/[a-zA-Z0-9_+=,.@/-]+$')) &&
+        variables.aws_roles.all(r, r != '' && !r.endsWith(',')) &&
+        variables.aws_roles.all(r, variables.aws_roles.filter(o, o == r).size() == 1)
+      message: "The annotation `vault.uw.systems/aws-role` must contain a comma separated list of valid role arns, where a comma followed by `arn:` separates roles and any other comma is part of the role name"
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicyBinding

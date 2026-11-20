@@ -40,7 +40,93 @@ spec:
                     name: test-invalid-annotation
                 check:
                   ($error != null): true
-                  "(contains(to_string($error), 'The annotation `vault.uw.systems/aws-role` must contain a valid role arn'))": true
+                  "(contains(to_string($error), 'comma separated list of valid role arns'))": true
+
+    - name: test-vault-annotation-list
+      try:
+        - apply:
+            file: test-vault-annotation-list.yaml
+            expect:
+              - match:
+                  apiVersion: v1
+                  kind: ServiceAccount
+                  metadata:
+                    name: test-empty-role-list-element
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'comma separated list of valid role arns'))": true
+              - match:
+                  apiVersion: v1
+                  kind: ServiceAccount
+                  metadata:
+                    name: test-duplicate-role-list
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'comma separated list of valid role arns'))": true
+              - match:
+                  apiVersion: v1
+                  kind: ServiceAccount
+                  metadata:
+                    name: test-role-list-trailing-garbage
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'comma separated list of valid role arns'))": true
+              - match:
+                  apiVersion: v1
+                  kind: ServiceAccount
+                  metadata:
+                    name: test-role-list-short-account
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'comma separated list of valid role arns'))": true
+              - match:
+                  apiVersion: v1
+                  kind: ServiceAccount
+                  metadata:
+                    name: test-role-list-trailing-comma
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'comma separated list of valid role arns'))": true
+              - match:
+                  apiVersion: v1
+                  kind: ServiceAccount
+                  metadata:
+                    name: test-role-list-too-long
+                check:
+                  ($error != null): true
+                  "(contains(to_string($error), 'at most 2048 characters'))": true
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: ServiceAccount
+              metadata:
+                name: test-valid-role-list
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: ServiceAccount
+              metadata:
+                name: test-valid-role-name-with-comma
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: ServiceAccount
+              metadata:
+                name: test-valid-role-list-comma-in-first
+
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: ServiceAccount
+              metadata:
+                name: test-valid-role-list-no-space
 
     - name: test-vault-github-permission-set-annotation
       try:
@@ -100,6 +186,7 @@ spec:
                 annotations:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
+                (length(initContainers[?name=='vault-credentials-agent-aws'][0].env[?name=='VKCC_DISABLE_HTTP'])): 0
                 initContainers:
                   - name: vault-credentials-agent-aws
                     <<: &aws-agent-base
@@ -138,8 +225,46 @@ spec:
                     env: &app-aws-env
                       - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
                         value: "http://127.0.0.1:8498/credentials"
+                    # Without the sts-profile credentials mode there is no
+                    # shared credentials directory, on the sidecar or on the app.
+                    (length(env[?name=='AWS_CONFIG_FILE'])): 0
+                    (length(env[?name=='AWS_PROFILE'])): 0
+                    (length(volumeMounts[?name=='vault-aws-roles'])): 0
                   - name: backend
                     env: *app-aws-env
+                    (length(env[?name=='AWS_PROFILE'])): 0
+                (length(volumes[?name=='vault-aws-roles'])): 0
+
+    - name: inject-vault-sidecar-aws-sts-profile
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-sts-profile
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec:
+                (volumes[?name=='vault-aws-roles'] | [0].emptyDir.medium): "Memory"
+                initContainers:
+                  - name: vault-credentials-agent-aws
+                    (env[?name=='VKCC_AWS_CREDENTIALS_DIR'] | [0].value): "/var/run/secrets/vkcc/aws"
+                    (env[?name=='VKCC_DISABLE_HTTP'] | [0].value): "true"
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].mountPath): "/var/run/secrets/vkcc/aws"
+                containers:
+                  - name: app
+                    (env[?name=='AWS_CONFIG_FILE'] | [0].value): "/var/run/secrets/vkcc/aws/config"
+                    (env[?name=='AWS_PROFILE'] | [0].value): "default"
+                    (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].mountPath): "/var/run/secrets/vkcc/aws"
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].readOnly): true
+                  - name: backend
+                    (env[?name=='AWS_CONFIG_FILE'] | [0].value): "/var/run/secrets/vkcc/aws/config"
+                    (env[?name=='AWS_PROFILE'] | [0].value): "default"
+                    (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].readOnly): true
 
     - name: inject-vault-sidecar-aws-gcp
       try:
@@ -508,6 +633,72 @@ spec:
                       - name: gcp
                         mountPath: /gcp
 
+    - name: inject-vault-sidecar-aws-gcp-key-sts-profile
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-gcp-key-sts-profile
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec:
+                (volumes[?name=='vault-aws-roles'] | [0].emptyDir.medium): "Memory"
+                # The /gcp volume survives alongside the new one.
+                (volumes[?name=='gcp'] | [0].emptyDir): {}
+                initContainers:
+                  - name: vault-credentials-agent-aws
+                    (env[?name=='VKCC_AWS_CREDENTIALS_DIR'] | [0].value): "/var/run/secrets/vkcc/aws"
+                    (env[?name=='VKCC_DISABLE_HTTP'] | [0].value): "true"
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].mountPath): "/var/run/secrets/vkcc/aws"
+                  - name: vault-credentials-agent-gcp
+                    (volumeMounts[?name=='gcp'] | [0].mountPath): "/gcp"
+                    (volumeMounts[?name=='vault-aws-roles']): []
+                containers:
+                  - name: app
+                    (env[?name=='AWS_CONFIG_FILE'] | [0].value): "/var/run/secrets/vkcc/aws/config"
+                    (env[?name=='AWS_PROFILE'] | [0].value): "default"
+                    (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
+                    (env[?name=='GOOGLE_APPLICATION_CREDENTIALS'] | [0].value): "/gcp/sa.json"
+                    (volumeMounts[?name=='gcp'] | [0].mountPath): "/gcp"
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].mountPath): "/var/run/secrets/vkcc/aws"
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].readOnly): true
+
+    - name: inject-vault-sidecar-aws-gcp-key-sts-http
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-gcp-key-sts-http
+                annotations:
+                  uw.systems/kyverno-inject-sidecar-status: "injected"
+              spec:
+                # Only the gcp-key sidecar comes from the legacy label; the AWS
+                # sidecar is still this policy's, with no sts-profile extras.
+                (length(initContainers)): 2
+                (initContainers[?name=='vault-credentials-agent-aws']):
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.4
+                    restartPolicy: Always
+                    ports:
+                      - name: metrics
+                        containerPort: 8499
+                        protocol: TCP
+                (length(initContainers[?name=='vault-credentials-agent-aws'][0].env[?name=='VKCC_DISABLE_HTTP'])): 0
+                (initContainers[?name=='vault-credentials-agent-gcp-key']):
+                  - image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.4
+                containers:
+                  - name: app
+                    (env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'] | [0].value): "http://127.0.0.1:8498/credentials"
+                    (length(env[?name=='AWS_CONFIG_FILE'])): 0
+                    (length(env[?name=='AWS_PROFILE'])): 0
+                    (length(volumeMounts[?name=='vault-aws-roles'])): 0
+                (length(volumes[?name=='vault-aws-roles'])): 0
+
     - name: inject-vault-init-container-aws
       try:
         - assert:
@@ -639,6 +830,7 @@ spec:
                 containers:
                   - name: app
                     env: *app-aws-env
+                    (length(env[?name=='AWS_PROFILE'])): 0
 
     - name: inject-vault-sidecar-gcp-key-old
       try:
@@ -718,6 +910,7 @@ spec:
               metadata:
                 name: test-aws-fail-open
               spec:
+                (length(initContainers[?name=='vault-credentials-agent-aws'][0].env[?name=='VKCC_DISABLE_HTTP'])): 0
                 initContainers:
                   - name: vault-credentials-agent-aws
                     <<: &aws-fail-open-base
@@ -747,6 +940,32 @@ spec:
                 containers:
                   - name: app
                     env: *app-aws-env
+                    (length(env[?name=='AWS_PROFILE'])): 0
+                (length(volumes[?name=='vault-aws-roles'])): 0
+
+    - name: inject-vault-sidecar-aws-fail-open-sts-profile
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: test-aws-fail-open-sts-profile
+              spec:
+                (volumes[?name=='vault-aws-roles'] | [0].emptyDir.medium): "Memory"
+                (length(initContainers)): 1
+                initContainers:
+                  - name: vault-credentials-agent
+                    (env[?name=='VKCC_AWS_CREDENTIALS_DIR'] | [0].value): "/var/run/secrets/vkcc/aws"
+                    (env[?name=='VKCC_DISABLE_HTTP'] | [0].value): "true"
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].mountPath): "/var/run/secrets/vkcc/aws"
+                containers:
+                  - name: app
+                    (env[?name=='AWS_CONFIG_FILE'] | [0].value): "/var/run/secrets/vkcc/aws/config"
+                    (env[?name=='AWS_PROFILE'] | [0].value): "default"
+                    (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
+                    (volumeMounts[?name=='vault-aws-roles'] | [0].readOnly): true
 
     - name: inject-vault-sidecar-aws-gcp-fail-open
       try:
