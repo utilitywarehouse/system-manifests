@@ -46,7 +46,7 @@ sinks:
       - kubernetes_tetragon_events
     bucket: "${TETRAGON_S3_BUCKET}"
     region: "${AWS_REGION:-eu-west-1}"
-    key_prefix: "tetragon/cluster=${KUBERNETES_CLUSTER}/year=%Y/month=%m/day=%d/hour=%H/"
+    key_prefix: "tetragon/${KUBERNETES_CLUSTER}/%Y/%m/%d/%H/"
     encoding:
       codec: text
     framing:
