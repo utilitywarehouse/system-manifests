@@ -24,19 +24,12 @@ transforms:
     type: remap
     source: |
       .log_source = "kube_audits_apiserver"
-  kubernetes_tetragon_events_remap:
-    inputs:
-      - kubernetes_tetragon_events
-    type: remap
-    source: |
-      .log_source = "kube_tetragon_events"
 
 sinks:
   loki_audits:
     inputs:
       - kubernetes_events_remap
       - kubernetes_apiserver_remap
-      - kubernetes_tetragon_events_remap
     type: loki
     endpoint: http://loki.sys-audit.svc.cluster.aws:3100
     encoding:
@@ -46,3 +39,22 @@ sinks:
       uw_environment: "${UW_ENVIRONMENT}"
       kubernetes_cluster: "${KUBERNETES_CLUSTER}"
       log_source: "{{ log_source }}"
+  # Raw tetragon JSON lines, newline-delimited and gzipped.
+  s3_tetragon:
+    type: aws_s3
+    inputs:
+      - kubernetes_tetragon_events
+    bucket: "${TETRAGON_S3_BUCKET}"
+    region: "${AWS_REGION:-eu-west-1}"
+    key_prefix: "tetragon/cluster=${KUBERNETES_CLUSTER}/year=%Y/month=%m/day=%d/hour=%H/"
+    encoding:
+      codec: text
+    framing:
+      method: newline_delimited
+    compression: gzip
+    filename_extension: json.gz
+    # Node-local disk buffer (hostPath /var/lib/vector) so a short S3 outage
+    # does not stall the tetragon file source.
+    buffer:
+      type: disk
+      max_size: 536870912 # 512 MiB
