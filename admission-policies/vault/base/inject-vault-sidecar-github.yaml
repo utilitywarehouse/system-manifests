@@ -50,20 +50,8 @@ spec:
             },
             spec: Object.spec{
               // Point existing initContainers at the credentials endpoint.
-              initContainers: (has(object.spec.initContainers) ?
-                  object.spec.initContainers.filter(c, !c.name.startsWith("vault-credentials-agent")).map(c,
-                    Object.spec.initContainers{
-                      name: c.name,
-                      env: [
-                        Object.spec.initContainers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/var/run/secrets/github/token" }
-                      ],
-                      volumeMounts: [
-                        Object.spec.initContainers.volumeMounts{ name: "github-token", mountPath: "/var/run/secrets/github" }
-                      ]
-                    }
-                  ) : []) +
-                [
-                  // Append the vault credentials sidecar.
+              initContainers: [
+                  // The sidecar goes first so it starts before user init containers.
                   Object.spec.initContainers{
                     name: "vault-credentials-agent-github",
                     image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.4",
@@ -93,7 +81,19 @@ spec:
                       limits: {"cpu": "1000m", "memory": "100Mi"}
                     }
                   }
-                ],
+                ] +
+                (has(object.spec.initContainers) ?
+                    object.spec.initContainers.filter(c, !c.name.startsWith("vault-credentials-agent")).map(c,
+                      Object.spec.initContainers{
+                        name: c.name,
+                        env: [
+                          Object.spec.initContainers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/var/run/secrets/github/token" }
+                        ],
+                        volumeMounts: [
+                          Object.spec.initContainers.volumeMounts{ name: "github-token", mountPath: "/var/run/secrets/github" }
+                        ]
+                      }
+                    ) : []),
               // Point existing containers at the credentials endpoint too.
               containers: has(object.spec.containers) ?
                 object.spec.containers.map(c,

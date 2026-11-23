@@ -220,14 +220,6 @@ spec:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
                 initContainers:
-                  - name: init
-                    env: &app-aws-gcp-env
-                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
-                        value: "http://127.0.0.1:8498/credentials"
-                      - name: GCE_METADATA_HOST
-                        value: "127.0.0.1:8198"
-                      - name: GCE_METADATA_ROOT
-                        value: "127.0.0.1:8198"
                   - name: vault-credentials-agent-aws
                     <<: *aws-agent-base
                   - name: vault-credentials-agent-gcp
@@ -264,6 +256,14 @@ spec:
                         limits:
                           cpu: "1"
                           memory: 100Mi
+                  - name: init
+                    env: &app-aws-gcp-env
+                      - name: AWS_CONTAINER_CREDENTIALS_FULL_URI
+                        value: "http://127.0.0.1:8498/credentials"
+                      - name: GCE_METADATA_HOST
+                        value: "127.0.0.1:8198"
+                      - name: GCE_METADATA_ROOT
+                        value: "127.0.0.1:8198"
                 containers:
                   - name: app
                     env: *app-aws-gcp-env
