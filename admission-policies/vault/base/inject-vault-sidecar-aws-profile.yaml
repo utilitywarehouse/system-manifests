@@ -93,6 +93,10 @@ spec:
                         Object.spec.initContainers.env{
                           name: "AWS_CONFIG_FILE",
                           value: "/etc/aws/config"
+                        },
+                        Object.spec.initContainers.env{
+                          name: "AWS_SDK_LOAD_CONFIG",
+                          value: "1"
                         }
                       ],
                       volumeMounts: [
@@ -113,6 +117,10 @@ spec:
                       Object.spec.containers.env{
                         name: "AWS_CONFIG_FILE",
                         value: "/etc/aws/config"
+                      },
+                      Object.spec.containers.env{
+                        name: "AWS_SDK_LOAD_CONFIG",
+                        value: "1"
                       }
                     ],
                     volumeMounts: [
