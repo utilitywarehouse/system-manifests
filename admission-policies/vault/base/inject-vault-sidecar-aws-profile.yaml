@@ -60,7 +60,7 @@ spec:
                     env: [
                       Object.spec.initContainers.env{ name: "VKCC_VAULT_ROLE", value: variables.vault_role },
                       Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8499" },
-                      Object.spec.initContainers.env{ name: "VKCC_AWS_CREDENTIALS_DIR", value: "/var/run/secrets/vkcc/aws" },
+                      Object.spec.initContainers.env{ name: "VKCC_AWS_CREDENTIALS_DIR", value: "/etc/aws" },
                       Object.spec.initContainers.env{ name: "VKCC_DISABLE_HTTP", value: "true" },
                       Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
                       Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
@@ -68,7 +68,7 @@ spec:
                     volumeMounts: [
                       Object.spec.initContainers.volumeMounts{
                         name: "vault-aws-roles",
-                        mountPath: "/var/run/secrets/vkcc/aws"
+                        mountPath: "/etc/aws"
                       }
                     ],
                     ports: [
@@ -92,13 +92,13 @@ spec:
                       env: [
                         Object.spec.initContainers.env{
                           name: "AWS_CONFIG_FILE",
-                          value: "/var/run/secrets/vkcc/aws/config"
+                          value: "/etc/aws/config"
                         }
                       ],
                       volumeMounts: [
                         Object.spec.initContainers.volumeMounts{
                           name: "vault-aws-roles",
-                          mountPath: "/var/run/secrets/vkcc/aws",
+                          mountPath: "/etc/aws",
                           readOnly: true
                         }
                       ]
@@ -112,13 +112,13 @@ spec:
                     env: [
                       Object.spec.containers.env{
                         name: "AWS_CONFIG_FILE",
-                        value: "/var/run/secrets/vkcc/aws/config"
+                        value: "/etc/aws/config"
                       }
                     ],
                     volumeMounts: [
                       Object.spec.containers.volumeMounts{
                         name: "vault-aws-roles",
-                        mountPath: "/var/run/secrets/vkcc/aws",
+                        mountPath: "/etc/aws",
                         readOnly: true
                       }
                     ]

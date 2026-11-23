@@ -61,12 +61,12 @@ spec:
                       Object.spec.initContainers.env{ name: "VKCC_GITHUB_PERMISSION_SET", value: variables.permission_set },
                       Object.spec.initContainers.env{ name: "VKCC_LISTEN_ADDRESS", value: "127.0.0.1:8398" },
                       Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8399" },
-                      Object.spec.initContainers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/var/run/secrets/github/token" },
+                      Object.spec.initContainers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/etc/github/token" },
                       Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
                       Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
                     ],
                     volumeMounts: [
-                      Object.spec.initContainers.volumeMounts{ name: "github-token", mountPath: "/var/run/secrets/github" }
+                      Object.spec.initContainers.volumeMounts{ name: "github-token", mountPath: "/etc/github" }
                     ],
                     ports: [
                       Object.spec.initContainers.ports{ name: "metrics", containerPort: 8399, protocol: "TCP" }
@@ -87,10 +87,10 @@ spec:
                       Object.spec.initContainers{
                         name: c.name,
                         env: [
-                          Object.spec.initContainers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/var/run/secrets/github/token" }
+                          Object.spec.initContainers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/etc/github/token" }
                         ],
                         volumeMounts: [
-                          Object.spec.initContainers.volumeMounts{ name: "github-token", mountPath: "/var/run/secrets/github" }
+                          Object.spec.initContainers.volumeMounts{ name: "github-token", mountPath: "/etc/github" }
                         ]
                       }
                     ) : []),
@@ -100,10 +100,10 @@ spec:
                   Object.spec.containers{
                     name: c.name,
                     env: [
-                      Object.spec.containers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/var/run/secrets/github/token" }
+                      Object.spec.containers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/etc/github/token" }
                     ],
                     volumeMounts: [
-                      Object.spec.containers.volumeMounts{ name: "github-token", mountPath: "/var/run/secrets/github" }
+                      Object.spec.containers.volumeMounts{ name: "github-token", mountPath: "/etc/github" }
                     ]
                   }
                 ) : [],

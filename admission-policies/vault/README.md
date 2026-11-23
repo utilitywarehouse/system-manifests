@@ -13,6 +13,17 @@ Kyverno.
 - `vault-github-permission-set.yaml` — requires
   `github.uw.systems/permission-set` on pods that request the GitHub sidecar.
 
+## Paths
+
+Paths on the injected volume, for workloads that cannot use the env vars:
+
+| Payload | Path |
+| --- | --- |
+| AWS credentials file | `/etc/aws/credentials` |
+| AWS profiles | `/etc/aws` (`AWS_CONFIG_FILE=/etc/aws/config`) |
+| GCP key | `/gcp/sa.json` |
+| GitHub token | `/etc/github/token` |
+
 ## Annotations
 
 The sidecar-injection policies use one annotation per provider, valued by an

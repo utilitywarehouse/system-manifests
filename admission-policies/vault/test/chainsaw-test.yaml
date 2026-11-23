@@ -168,14 +168,14 @@ spec:
                       - name: VKCC_OPERATIONAL_ADDRESS
                         value: ":8499"
                       - name: VKCC_AWS_CREDENTIALS_DIR
-                        value: "/var/run/secrets/vkcc/aws"
+                        value: "/etc/aws"
                       - name: VKCC_DISABLE_HTTP
                         value: "true"
                       - name: VAULT_CAURL
                         value: "http://vault-ca-cert.sys-vault:8100"
                       - name: VAULT_ADDR
                         value: "https://vault.sys-vault:8200"
-                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/var/run/secrets/vkcc/aws'])): 1
+                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/etc/aws'])): 1
                     ports:
                       - name: metrics
                         containerPort: 8499
@@ -190,22 +190,22 @@ spec:
                   - name: init
                     env:
                       - name: AWS_CONFIG_FILE
-                        value: "/var/run/secrets/vkcc/aws/config"
+                        value: "/etc/aws/config"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
-                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/var/run/secrets/vkcc/aws'])): 1
+                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/etc/aws'])): 1
                 containers:
                   - name: app
                     env:
                       - name: AWS_CONFIG_FILE
-                        value: "/var/run/secrets/vkcc/aws/config"
+                        value: "/etc/aws/config"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
-                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/var/run/secrets/vkcc/aws'])): 1
+                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/etc/aws'])): 1
                   - name: backend
                     env:
                       - name: AWS_CONFIG_FILE
-                        value: "/var/run/secrets/vkcc/aws/config"
+                        value: "/etc/aws/config"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
-                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/var/run/secrets/vkcc/aws'])): 1
+                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/etc/aws'])): 1
 
     - name: inject-vault-sidecar-aws-gcp
       try:
@@ -393,7 +393,7 @@ spec:
                         - name: VKCC_OPERATIONAL_ADDRESS
                           value: ":8399"
                         - name: GITSYNC_PASSWORD_FILE
-                          value: "/var/run/secrets/github/token"
+                          value: "/etc/github/token"
                         - *vault-caurl
                         - *vault-addr
                       ports:
@@ -409,17 +409,17 @@ spec:
                           memory: 100Mi
                       volumeMounts:
                         - name: github-token
-                          mountPath: /var/run/secrets/github
+                          mountPath: /etc/github
                         - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
                 containers:
                   - name: app
                     env: &app-github-env
                       - name: GITSYNC_PASSWORD_FILE
-                        value: "/var/run/secrets/github/token"
+                        value: "/etc/github/token"
                     volumeMounts:
                       - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
                       - name: github-token
-                        mountPath: /var/run/secrets/github
+                        mountPath: /etc/github
 
     - name: inject-vault-sidecar-aws-and-github
       try:
@@ -461,7 +461,7 @@ spec:
                         protocol: TCP
                 containers:
                   - name: app
-                    (env[?name=='GITSYNC_PASSWORD_FILE'] | [0].value): "/var/run/secrets/github/token"
+                    (env[?name=='GITSYNC_PASSWORD_FILE'] | [0].value): "/etc/github/token"
                     (env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'] | [0].value): "http://127.0.0.1:8498/credentials"
 
     - name: inject-vault-sidecar-aws-and-gcp-token
