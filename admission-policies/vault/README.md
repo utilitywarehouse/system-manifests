@@ -84,9 +84,11 @@ Notes:
   underlying Vault role or static account.
 - `aws-credentials: "sts-profile"` is a separate, opt-in policy. It disables
   the sidecar HTTP endpoint, publishes one profile per role into a shared
-  memory volume, and sets `AWS_CONFIG_FILE` on the workload and init
-  containers. SDKs use the `default` profile when `AWS_PROFILE` is unset; set
-  it only to choose another profile. It requires a VKCC image with multi-role
+  memory volume, and sets `AWS_CONFIG_FILE` and `AWS_SDK_LOAD_CONFIG=1` on the
+  workload and init containers. The latter is required by AWS SDK for Go v1
+  to read the config file; other SDKs ignore it. SDKs use the `default`
+  profile when `AWS_PROFILE` is unset; set it only to choose another profile.
+  It requires a VKCC image with multi-role
   profile support. Its startup probe holds the following init containers until
   the first profiles are ready; fail-open pods skip the probe and may start
   them before profiles exist.

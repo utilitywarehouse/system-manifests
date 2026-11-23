@@ -191,6 +191,8 @@ spec:
                     env:
                       - name: AWS_CONFIG_FILE
                         value: "/etc/aws/config"
+                      - name: AWS_SDK_LOAD_CONFIG
+                        value: "1"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
                     (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/etc/aws'])): 1
                 containers:
@@ -198,12 +200,16 @@ spec:
                     env:
                       - name: AWS_CONFIG_FILE
                         value: "/etc/aws/config"
+                      - name: AWS_SDK_LOAD_CONFIG
+                        value: "1"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
                     (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/etc/aws'])): 1
                   - name: backend
                     env:
                       - name: AWS_CONFIG_FILE
                         value: "/etc/aws/config"
+                      - name: AWS_SDK_LOAD_CONFIG
+                        value: "1"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
                     (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/etc/aws'])): 1
 
