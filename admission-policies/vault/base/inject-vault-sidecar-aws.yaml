@@ -54,18 +54,8 @@ spec:
             },
             spec: Object.spec{
               // Point existing initContainers at the credentials endpoint.
-              initContainers: (has(object.spec.initContainers) ?
-                  object.spec.initContainers.filter(c, !c.name.startsWith("vault-credentials-agent")).map(c,
-                    Object.spec.initContainers{
-                      name: c.name,
-                      env: [Object.spec.initContainers.env{
-                        name: "AWS_CONTAINER_CREDENTIALS_FULL_URI",
-                        value: "http://127.0.0.1:8498/credentials"
-                      }]
-                    }
-                  ) : []) +
-                [
-                  // Append the vault credentials sidecar.
+              initContainers: [
+                  // The sidecar goes first so it starts before user init containers.
                   Object.spec.initContainers{
                     name: "vault-credentials-agent-aws",
                     image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.4",
@@ -91,7 +81,17 @@ spec:
                       limits: {"cpu": "1000m", "memory": "100Mi"}
                     }
                   }
-                ],
+                ] +
+                (has(object.spec.initContainers) ?
+                    object.spec.initContainers.filter(c, !c.name.startsWith("vault-credentials-agent")).map(c,
+                      Object.spec.initContainers{
+                        name: c.name,
+                        env: [Object.spec.initContainers.env{
+                          name: "AWS_CONTAINER_CREDENTIALS_FULL_URI",
+                          value: "http://127.0.0.1:8498/credentials"
+                        }]
+                      }
+                    ) : []),
 
               // Point existing containers at the credentials endpoint too.
               containers: has(object.spec.containers) ?
