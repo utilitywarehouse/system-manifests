@@ -1,0 +1,142 @@
+# Inject Sidecar - AWS (profile credentials)
+
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
+  name: inject-vault-sidecar-aws-profile
+spec:
+  failurePolicy: Fail
+  reinvocationPolicy: Never
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: ["v1"]
+        operations: ["CREATE"]
+        resources: ["pods"]
+
+  matchConditions:
+    - name: match-aws-profile-annotation
+      expression: >-
+        object.metadata.?annotations['vault.uw.systems/aws-credentials'].orValue('') == 'sts-profile'
+    # Skip pods that already have a sidecar injected by any Vault policy.
+    - name: not-already-injected
+      expression: >-
+        !object.spec.?initContainers.orValue([]).exists(c, c.?name.orValue('') == 'vault-credentials-agent-aws')
+
+  variables:
+    - name: vkac_env
+      expression: "'test-env'"
+    - name: pod_namespace
+      expression: "object.metadata.?namespace.orValue('default')"
+    - name: pod_sa
+      expression: "object.spec.?serviceAccountName.orValue('default')"
+    - name: vault_role
+      expression: >-
+        variables.vkac_env + "_aws_" + variables.pod_namespace + "_" + variables.pod_sa
+
+    # Fail-open is a pod-wide toggle. It only decides whether the sidecar waits
+    # for profiles before the pod starts
+    - name: fail_open
+      expression: >-
+        object.metadata.?annotations['vault.uw.systems/credentials-inject-failure-policy'].orValue('') == 'fail-open'
+
+  mutations:
+    - patchType: ApplyConfiguration
+      applyConfiguration:
+        expression: |
+          Object{
+            metadata: Object.metadata{
+              annotations: { "uw.systems/kyverno-inject-sidecar-status": "injected" }
+            },
+            spec: Object.spec{
+              // The sidecar goes first so it starts before user init
+              // containers. fail-open pods skip the probe and
+              // therefore may start their init containers before profiles exist.
+              initContainers: [
+                  Object.spec.initContainers{
+                    name: "vault-credentials-agent-aws",
+                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:master",
+                    restartPolicy: "Always",
+                    env: [
+                      Object.spec.initContainers.env{ name: "VKCC_VAULT_ROLE", value: variables.vault_role },
+                      Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8499" },
+                      Object.spec.initContainers.env{ name: "VKCC_AWS_CREDENTIALS_DIR", value: "/var/run/secrets/vkcc/aws" },
+                      Object.spec.initContainers.env{ name: "VKCC_DISABLE_HTTP", value: "true" },
+                      Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
+                      Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
+                    ],
+                    volumeMounts: [
+                      Object.spec.initContainers.volumeMounts{
+                        name: "vault-aws-roles",
+                        mountPath: "/var/run/secrets/vkcc/aws"
+                      }
+                    ],
+                    ports: [
+                      Object.spec.initContainers.ports{ name: "metrics", containerPort: 8499, protocol: "TCP" }
+                    ],
+                    ?startupProbe: variables.fail_open ? optional.none() : optional.of(
+                      Object.spec.initContainers.startupProbe{
+                        httpGet: Object.spec.initContainers.startupProbe.httpGet{ path: "/__/ready", port: 8499 }
+                      }
+                    ),
+                    resources: Object.spec.initContainers.resources{
+                      requests: {"cpu": "0m", "memory": "25Mi"},
+                      limits: {"cpu": "1000m", "memory": "100Mi"}
+                    }
+                  }
+                ] +
+                (has(object.spec.initContainers) ?
+                  object.spec.initContainers.filter(c, !c.name.startsWith("vault-credentials-agent")).map(c,
+                    Object.spec.initContainers{
+                      name: c.name,
+                      env: [
+                        Object.spec.initContainers.env{
+                          name: "AWS_CONFIG_FILE",
+                          value: "/var/run/secrets/vkcc/aws/config"
+                        }
+                      ],
+                      volumeMounts: [
+                        Object.spec.initContainers.volumeMounts{
+                          name: "vault-aws-roles",
+                          mountPath: "/var/run/secrets/vkcc/aws",
+                          readOnly: true
+                        }
+                      ]
+                    }
+                  ) : []),
+
+              containers: has(object.spec.containers) ?
+                object.spec.containers.map(c,
+                  Object.spec.containers{
+                    name: c.name,
+                    env: [
+                      Object.spec.containers.env{
+                        name: "AWS_CONFIG_FILE",
+                        value: "/var/run/secrets/vkcc/aws/config"
+                      }
+                    ],
+                    volumeMounts: [
+                      Object.spec.containers.volumeMounts{
+                        name: "vault-aws-roles",
+                        mountPath: "/var/run/secrets/vkcc/aws",
+                        readOnly: true
+                      }
+                    ]
+                  }
+                ) : [],
+
+              volumes: [
+                Object.spec.volumes{
+                  name: "vault-aws-roles",
+                  emptyDir: Object.spec.volumes.emptyDir{ medium: "Memory" }
+                }
+              ]
+            }
+          }
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-profile-binding
+spec:
+  policyName: inject-vault-sidecar-aws-profile
