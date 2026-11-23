@@ -218,3 +218,16 @@ spec:
       image: alpine
       restartPolicy: Never
   containers: [{ name: app, image: alpine }]
+---
+# Pod opting in to one AWS profile per role.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-aws-sts-profile
+  annotations:
+    vault.uw.systems/aws-credentials: "sts-profile"
+spec:
+  initContainers:
+    - name: init
+      image: alpine
+  containers: [{ name: app, image: alpine }, { name: backend, image: alpine }]

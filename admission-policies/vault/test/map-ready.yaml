@@ -83,6 +83,22 @@ spec:
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingAdmissionPolicy
 metadata:
+  name: inject-vault-sidecar-aws-profile
+spec:
+  reinvocationPolicy: Never
+  (mutations[*].patchType):
+    - ApplyConfiguration
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicyBinding
+metadata:
+  name: inject-vault-sidecar-aws-profile-binding
+spec:
+  policyName: inject-vault-sidecar-aws-profile
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingAdmissionPolicy
+metadata:
   name: inject-vault-sidecar-aws
 spec:
   reinvocationPolicy: Never

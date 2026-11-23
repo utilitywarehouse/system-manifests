@@ -6,6 +6,7 @@ resources:
   - inject-vault-sidecar-aws-gcp-fail-open.yaml
   - inject-vault-sidecar-aws-gcp-key.yaml
   - inject-vault-sidecar-aws-gcp.yaml
+  - inject-vault-sidecar-aws-profile.yaml
   - inject-vault-sidecar-aws.yaml
   - inject-vault-sidecar-gcp-key.yaml
   - inject-vault-sidecar-gcp-token-fail-open.yaml
