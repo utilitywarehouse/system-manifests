@@ -64,18 +64,44 @@ rules:
     resources: ["csinodes"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["trident.netapp.io"]
-    resources: ["tridentversions", "tridentbackends", "tridentstorageclasses", "tridentvolumes","tridentnodes",
-"tridenttransactions", "tridentsnapshots", "tridentbackendconfigs", "tridentbackendconfigs/status",
-"tridentmirrorrelationships", "tridentmirrorrelationships/status", "tridentsnapshotinfos",
-"tridentsnapshotinfos/status", "tridentvolumepublications", "tridentvolumereferences",
-"tridentactionmirrorupdates", "tridentactionmirrorupdates/status",
-"tridentactionsnapshotrestores", "tridentactionsnapshotrestores/status",
-"tridentnoderemediations", "tridentnoderemediations/status",
-"tridentnoderemediationtemplates", "tridentnoderemediationtemplates/status",
-"tridentgroupsnapshots", "tridentgroupsnapshots/status",
-"tridentautogrowpolicies", "tridentautogrowpolicies/status",
-"tridentautogrowrequestinternals", "tridentautogrowrequestinternals/status",
-"tridentvolumemoves", "tridentvolumemoves/status"]
+    resources: [
+      "tridentactionmirrorupdates",
+      "tridentactionmirrorupdates/status",
+      "tridentactionsnapshotrestores",
+      "tridentactionsnapshotrestores/status",
+      "tridentautogrowpolicies",
+      "tridentautogrowpolicies/status",
+      "tridentautogrowrequestinternals",
+      "tridentautogrowrequestinternals/status",
+      "tridentbackends",
+      "tridentobjectstores",
+      "tridentobjectstores/status",
+      "tridentbuckets",
+      "tridentbucketaccesses",
+      "tridentbackendconfigs",
+      "tridentbackendconfigs/status",
+      "tridentgroupsnapshots",
+      "tridentgroupsnapshots/status",
+      "tridentmirrorrelationships",
+      "tridentmirrorrelationships/status",
+      "tridentnodes",
+      "tridentnodes/status",
+      "tridentnoderemediations",
+      "tridentnoderemediations/status",
+      "tridentnoderemediationtemplates",
+      "tridentnoderemediationtemplates/status",
+      "tridentsnapshotinfos",
+      "tridentsnapshotinfos/status",
+      "tridentsnapshots",
+      "tridentstorageclasses",
+      "tridenttransactions",
+      "tridentversions",
+      "tridentvolumemoves",
+      "tridentvolumemoves/status",
+      "tridentvolumepublications",
+      "tridentvolumereferences",
+      "tridentvolumes"
+    ]
     verbs: ["get", "list", "watch", "create", "delete", "update", "patch"]
   - apiGroups: ["policy"]
     resources: ["podsecuritypolicies"]

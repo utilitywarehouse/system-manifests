@@ -34,7 +34,7 @@ spec:
             - all
             add:
             - SYS_ADMIN
-        image: docker.io/netapp/trident:26.06.1
+        image: docker.io/netapp/trident:26.10.1
         imagePullPolicy: IfNotPresent
         command:
         - /trident_orchestrator
@@ -54,6 +54,7 @@ spec:
         - "--https_rest"
         - "--https_port=17546"
         - "--enable_force_detach=false"
+        - "--enable_datalif_refresh=false"
         - "--iscsi_self_healing_interval=5m0s"
         - "--iscsi_self_healing_wait_time=7m0s"
         #- -debug
