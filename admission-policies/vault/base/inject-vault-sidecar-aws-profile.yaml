@@ -110,8 +110,7 @@ spec:
                         Object.spec.initContainers.env{
                           name: "AWS_CONFIG_FILE",
                           value: "/var/run/secrets/vkcc/aws/config"
-                        },
-                        Object.spec.initContainers.env{ name: "AWS_PROFILE", value: "default" }
+                        }
                       ],
                       volumeMounts: [
                         Object.spec.initContainers.volumeMounts{
@@ -131,8 +130,7 @@ spec:
                       Object.spec.containers.env{
                         name: "AWS_CONFIG_FILE",
                         value: "/var/run/secrets/vkcc/aws/config"
-                      },
-                      Object.spec.containers.env{ name: "AWS_PROFILE", value: "default" }
+                      }
                     ],
                     volumeMounts: [
                       Object.spec.containers.volumeMounts{

@@ -196,8 +196,6 @@ spec:
                     env:
                       - name: AWS_CONFIG_FILE
                         value: "/var/run/secrets/vkcc/aws/config"
-                      - name: AWS_PROFILE
-                        value: "default"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
                     volumeMounts:
                       - name: vault-aws-roles
@@ -208,8 +206,6 @@ spec:
                     env:
                       - name: AWS_CONFIG_FILE
                         value: "/var/run/secrets/vkcc/aws/config"
-                      - name: AWS_PROFILE
-                        value: "default"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
                     volumeMounts:
                       - name: vault-aws-roles
@@ -219,8 +215,6 @@ spec:
                     env:
                       - name: AWS_CONFIG_FILE
                         value: "/var/run/secrets/vkcc/aws/config"
-                      - name: AWS_PROFILE
-                        value: "default"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
                     volumeMounts:
                       - name: vault-aws-roles
