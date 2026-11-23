@@ -153,10 +153,7 @@ spec:
                 annotations:
                   uw.systems/kyverno-inject-sidecar-status: "injected"
               spec:
-                volumes:
-                  - name: vault-aws-roles
-                    emptyDir:
-                      medium: Memory
+                (length(volumes[?name=='vault-aws-roles' && emptyDir.medium=='Memory'])): 1
                 initContainers:
                   - name: vault-credentials-agent-aws
                     image: quay.io/utilitywarehouse/vault-kube-cloud-credentials:master
@@ -178,9 +175,7 @@ spec:
                         value: "http://vault-ca-cert.sys-vault:8100"
                       - name: VAULT_ADDR
                         value: "https://vault.sys-vault:8200"
-                    volumeMounts:
-                      - name: vault-aws-roles
-                        mountPath: /var/run/secrets/vkcc/aws
+                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/var/run/secrets/vkcc/aws'])): 1
                     ports:
                       - name: metrics
                         containerPort: 8499
@@ -197,29 +192,20 @@ spec:
                       - name: AWS_CONFIG_FILE
                         value: "/var/run/secrets/vkcc/aws/config"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
-                    volumeMounts:
-                      - name: vault-aws-roles
-                        mountPath: /var/run/secrets/vkcc/aws
-                        readOnly: true
+                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/var/run/secrets/vkcc/aws'])): 1
                 containers:
                   - name: app
                     env:
                       - name: AWS_CONFIG_FILE
                         value: "/var/run/secrets/vkcc/aws/config"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
-                    volumeMounts:
-                      - name: vault-aws-roles
-                        mountPath: /var/run/secrets/vkcc/aws
-                        readOnly: true
+                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/var/run/secrets/vkcc/aws'])): 1
                   - name: backend
                     env:
                       - name: AWS_CONFIG_FILE
                         value: "/var/run/secrets/vkcc/aws/config"
                     (length(env[?name=='AWS_CONTAINER_CREDENTIALS_FULL_URI'])): 0
-                    volumeMounts:
-                      - name: vault-aws-roles
-                        mountPath: /var/run/secrets/vkcc/aws
-                        readOnly: true
+                    (length(volumeMounts[?name=='vault-aws-roles' && mountPath=='/var/run/secrets/vkcc/aws'])): 1
 
     - name: inject-vault-sidecar-aws-gcp
       try:
