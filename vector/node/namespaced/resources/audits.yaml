@@ -24,6 +24,18 @@ transforms:
     type: remap
     source: |
       .log_source = "kube_audits_apiserver"
+  kubernetes_tetragon_remap:
+    inputs:
+      - kubernetes_tetragon_events
+    type: remap
+    source: |
+      if is_string(.message) {
+        parsed, err = parse_json(.message)
+        if err == null && is_object(parsed) {
+          parsed.product = "tetragon"
+          .message = encode_json(parsed)
+        }
+      }
 
 sinks:
   loki_audits:
@@ -43,7 +55,7 @@ sinks:
   s3_tetragon:
     type: aws_s3
     inputs:
-      - kubernetes_tetragon_events
+      - kubernetes_tetragon_remap
     bucket: "${TETRAGON_S3_BUCKET}"
     region: "${AWS_REGION:-eu-west-1}"
     key_prefix: "tetragon/${KUBERNETES_CLUSTER}/%Y/%m/%d/%H/"
