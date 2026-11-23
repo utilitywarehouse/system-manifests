@@ -1,20 +1,4 @@
 # Inject Sidecar - AWS (profile credentials)
-#
-# Opt-in for pods that need one AWS profile per role. The sidecar writes
-# credentials into a shared directory and turns off its HTTP credentials
-# endpoint; the workload reads the generated shared config instead.
-#
-# Use the new annotation:
-#
-#   vault.uw.systems/aws-credentials: sts-profile
-#
-# Do not combine it with the legacy uw.systems/kyverno-inject-sidecar-request
-# labels. Those are handled by the existing policies and would inject a second
-# AWS sidecar.
-#
-# VKCC_AWS_CREDENTIALS_DIR and VKCC_DISABLE_HTTP require a vault-kube-cloud-
-# credentials release containing the multi-role support
-# (utilitywarehouse/vault-kube-cloud-credentials#440).
 
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingAdmissionPolicy
@@ -37,8 +21,7 @@ spec:
     # Skip pods that already have a sidecar injected by any Vault policy.
     - name: not-already-injected
       expression: >-
-        !object.spec.?initContainers.orValue([]).exists(c,
-          c.?name.orValue('').startsWith('vault-credentials-agent'))
+        !object.spec.?initContainers.orValue([]).exists(c, c.?name.orValue('') == 'vault-credentials-agent-aws')
 
   variables:
     - name: vkac_env
