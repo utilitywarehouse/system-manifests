@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       annotations:
-        uw.systems/kyverno-inject-sidecar-request-aws: "true"
+        vault.uw.systems/aws-credentials: "sts-http"
       labels:
         app: *app
     spec:
