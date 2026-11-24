@@ -58,7 +58,7 @@ spec:
                   // The sidecar goes first so it starts before user init containers.
                   Object.spec.initContainers{
                     name: "vault-credentials-agent-aws",
-                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.4",
+                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.5",
                     restartPolicy: "Always",
                     env: [
                       Object.spec.initContainers.env{ name: "VKCC_VAULT_ROLE", value: variables.vault_role },
