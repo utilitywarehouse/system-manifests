@@ -18,7 +18,7 @@ spec:
           labels:
             app.kubernetes.io/name: etcd-backup
           annotations:
-            uw.systems/kyverno-inject-sidecar-request-aws: "true"
+            vault.uw.systems/aws-credentials: "sts-http"
         spec:
           serviceAccountName: etcd-backup
           initContainers:
