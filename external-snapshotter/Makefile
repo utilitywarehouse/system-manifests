@@ -1,5 +1,5 @@
 # https://github.com/kubernetes-csi/external-snapshotter/releases
-VERSION=v8.6.0
+VERSION=v8.7.0
 
 # tool 'yq' can be downloaded from https://github.com/mikefarah/yq
 
@@ -13,3 +13,6 @@ update-manifests:
 	curl -Ls -O https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
 	curl -Ls -O https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshotcontents.yaml
 	curl -Ls -O https://raw.githubusercontent.com/kubernetes-csi/external-snapshotter/$(VERSION)/client/config/crd/snapshot.storage.k8s.io_volumesnapshots.yaml
+
+	# upstream deploy manifests reference the previous release image
+	sed -i 's|\(image: registry.k8s.io/sig-storage/snapshot-controller:\).*|\1$(VERSION)|' setup-snapshot-controller.yaml
