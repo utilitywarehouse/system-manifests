@@ -27,17 +27,27 @@ spec:
             # will include secrets
             - name: ARGOCD_CMP_SERVER_LOGLEVEL
               value: info
-            - name: AVP_GLOBAL_GIT_SSH_KEY_FILE
-              value: /etc/global-git-ssh-key/ssh
-            - name: AVP_GLOBAL_GIT_SSH_KNOWN_HOSTS_FILE
-              value: /etc/global-git-ssh-key/known_hosts
+            # Clusters that want the GitHub App credential create this secret.
+            - name: AVP_GLOBAL_GIT_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sys-argocd-app-creds
+                  key: githubAppID
+            - name: AVP_GLOBAL_GIT_APP_INSTALLATION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: sys-argocd-app-creds
+                  key: githubAppInstallationID
+            - name: AVP_GLOBAL_GIT_APP_PRIVATE_KEY_FILE
+              value: /etc/github-app/app.pem
           imagePullPolicy: Always
           securityContext:
             runAsNonRoot: true
             runAsUser: 999
           volumeMounts:
-            - mountPath: /etc/global-git-ssh-key
-              name: global-git-ssh-key
+            - mountPath: /etc/github-app
+              name: github-app
+              readOnly: true
             - mountPath: /var/run/argocd
               name: var-files
             - mountPath: /home/argocd/cmp-server/plugins
@@ -70,10 +80,13 @@ spec:
         - configMap:
             name: argocd-voodoobox-plugin
           name: argocd-voodoobox-plugin
-        - name: global-git-ssh-key
+        - name: github-app
           secret:
-            secretName: global-git-ssh-key
+            secretName: sys-argocd-app-creds
             defaultMode: 0440
+            items:
+              - key: githubAppPrivateKey
+                path: app.pem
         - $patch: delete
           name: tmp
   volumeClaimTemplates:
