@@ -49,7 +49,7 @@ spec:
                   // The sidecar goes first so it starts before user init containers.
                   Object.spec.initContainers{
                     name: "vault-credentials-agent-gcp-key",
-                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.5",
+                    image: "quay.io/utilitywarehouse/vault-kube-cloud-credentials:v0.10.6",
                     restartPolicy: "Always",
                     env: [
                       Object.spec.initContainers.env{ name: "GOOGLE_APPLICATION_CREDENTIALS", value: "/gcp/sa.json" },
