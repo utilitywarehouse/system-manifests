@@ -400,6 +400,8 @@ spec:
                           value: ":8399"
                         - name: GITSYNC_PASSWORD_FILE
                           value: "/etc/github/token"
+                        - name: GITHUB_TOKEN_FILE
+                          value: "/etc/github/token"
                         - *vault-caurl
                         - *vault-addr
                       ports:

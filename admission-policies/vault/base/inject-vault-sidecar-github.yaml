@@ -62,6 +62,7 @@ spec:
                       Object.spec.initContainers.env{ name: "VKCC_LISTEN_ADDRESS", value: "127.0.0.1:8398" },
                       Object.spec.initContainers.env{ name: "VKCC_OPERATIONAL_ADDRESS", value: ":8399" },
                       Object.spec.initContainers.env{ name: "GITSYNC_PASSWORD_FILE", value: "/etc/github/token" },
+                      Object.spec.initContainers.env{ name: "GITHUB_TOKEN_FILE", value: "/etc/github/token" },
                       Object.spec.initContainers.env{ name: "VAULT_CAURL", value: "http://vault-ca-cert.sys-vault:8100" },
                       Object.spec.initContainers.env{ name: "VAULT_ADDR", value: "https://vault.sys-vault:8200" }
                     ],
