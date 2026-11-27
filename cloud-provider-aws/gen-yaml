@@ -1,4 +1,12 @@
 #!/bin/sh
 
-helm repo add aws-cloud-controller-manager https://kubernetes.github.io/cloud-provider-aws
-helm template aws-cloud-controller-manager aws-cloud-controller-manager/aws-cloud-controller-manager > upstream.yaml
+# The latest chart release lags behind the controller releases, so the image tag
+# is set explicitly. Keep its minor version in line with the clusters'
+# Kubernetes version.
+CHART_VERSION=0.0.12
+IMAGE_TAG=v1.36.2
+
+helm template aws-cloud-controller-manager aws-cloud-controller-manager \
+  --repo https://kubernetes.github.io/cloud-provider-aws \
+  --version "${CHART_VERSION}" \
+  --set image.tag="${IMAGE_TAG}" > upstream.yaml
